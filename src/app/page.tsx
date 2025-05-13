@@ -5,12 +5,14 @@ import { auth } from "~/server/auth";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
+  // const hello = await api.post.hello({ text: "from tRPC" });
   const session = await auth();
 
   if (session?.user) {
-    void api.post.getLatest.prefetch();
+    void api.recipe.getAll.prefetch();
   }
+
+ 
 
   return (
     <HydrateClient>
@@ -44,9 +46,9 @@ export default async function Home() {
             </Link>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
+            {/* <p className="text-2xl text-white">
               {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
+            </p> */}
 
             <div className="flex flex-col items-center justify-center gap-4">
               <p className="text-center text-2xl text-white">
@@ -62,6 +64,11 @@ export default async function Home() {
           </div>
 
           {session?.user && <LatestPost />}
+          <Link href="/recipes">
+            <button className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20">
+              View Recipes
+            </button>
+          </Link>
         </div>
       </main>
     </HydrateClient>
