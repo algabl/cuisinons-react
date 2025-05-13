@@ -1,7 +1,7 @@
 "use client";
 
 import { IconCirclePlusFilled, IconMail } from "@tabler/icons-react";
-import { Icon } from "lucide-react";
+import type { Icon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import {
