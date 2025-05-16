@@ -3,6 +3,7 @@
 import { IconCirclePlusFilled, IconMail } from "@tabler/icons-react";
 import type { Icon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import {
   SidebarGroup,
@@ -24,7 +25,21 @@ export function NavMain({
   }[];
 }) {
   const title = usePageTitle();
+  const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  // Get active item from the pathname, active item is the item that most closely matches the pathname
+  const activeItem = items.reduce(
+    (bestMatch, item) => {
+      if (
+        pathname.startsWith(item.url) &&
+        item.url.length > (bestMatch?.url.length ?? 0)
+      ) {
+        return item;
+      }
+      return bestMatch;
+    },
+    undefined as (typeof items)[0] | undefined,
+  );
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -57,7 +72,7 @@ export function NavMain({
               >
                 <SidebarMenuButton
                   tooltip={item.title}
-                  isActive={item.title == title}
+                  isActive={item === activeItem}
                 >
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
