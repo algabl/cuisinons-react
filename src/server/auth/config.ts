@@ -2,6 +2,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import type { Provider } from "next-auth/providers";
+import type { DiscordProfile } from "next-auth/providers/discord";
 
 import { db } from "~/server/db";
 import {
@@ -10,6 +11,7 @@ import {
   users,
   verificationTokens,
 } from "~/server/db/schema";
+import { eq } from "drizzle-orm";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -32,8 +34,23 @@ declare module "next-auth" {
   // }
 }
 
+function getDiscordImage(profile: DiscordProfile): string {
+  const baseUrl = "https://cdn.discordapp.com/avatars";
+  const isAnimated = profile.avatar?.startsWith("a_");
+  const format = isAnimated ? "gif" : "png";
+  return `${baseUrl}/${profile.id}/${profile.avatar}.${format}`;
+}
+
 const providers: Provider[] = [
-  DiscordProvider,
+  DiscordProvider({
+    profile(profile: DiscordProfile) {
+      return {
+        id: profile.id,
+        name: profile.username,
+        image: getDiscordImage(profile),
+      };
+    },
+  }),
   /**
    * ...add more providers here.
    *
@@ -70,15 +87,28 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
+    async signIn({ user, profile }) {
+      if (profile?.avatar && typeof user.id === "string") {
+        const image = getDiscordImage(profile as DiscordProfile);
+        if (user.image !== image) {
+          await db
+            .update(users)
+            .set({ image: image })
+            .where(eq(users.id, user.id));
+        }
+      }
+      return true;
+    },
     session: ({ session, user }) => ({
       ...session,
       user: {
         ...session.user,
         id: user.id,
+        image: user.image,
       },
     }),
   },
   pages: {
-    signIn: "/auth/signin",
-  }
+    signIn: "/login",
+  },
 } satisfies NextAuthConfig;
