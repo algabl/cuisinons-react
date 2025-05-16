@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "~/components/ui/sidebar";
 import { usePageTitle } from "~/hooks/use-page-title";
 
@@ -23,6 +24,7 @@ export function NavMain({
   }[];
 }) {
   const title = usePageTitle();
+  const { isMobile, setOpenMobile } = useSidebar();
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -48,7 +50,11 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <Link href={item.url} prefetch={true}>
+              <Link
+                href={item.url}
+                prefetch={true}
+                onClick={() => setOpenMobile(false)}
+              >
                 <SidebarMenuButton
                   tooltip={item.title}
                   isActive={item.title == title}
