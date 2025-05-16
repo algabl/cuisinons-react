@@ -3,8 +3,13 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const authHeader = request.cookies.get("authjs.session-token");
+  const { pathname } = new URL(request.url);
 
-  if (!authHeader) {
+  if (pathname === "/login" && authHeader) {
+    return NextResponse.redirect(new URL("/app", request.url));
+  }
+
+  if (!authHeader && pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -12,5 +17,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|public|login).*)"], // Protect all routes except API, _next, and public assets
+  matcher: ["/((?!api|_next|public|$).*)"], // Protect all routes except API, _next, public assets, and "/"
 };

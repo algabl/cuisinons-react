@@ -39,12 +39,12 @@ const data = {
   navMain: [
     {
       title: "Home",
-      url: "/",
+      url: "/app",
       icon: Home,
     },
     {
       title: "Recipes",
-      url: "/recipes",
+      url: "/app/recipes",
       icon: Hamburger,
     },
   ],
