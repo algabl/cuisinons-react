@@ -1,10 +1,10 @@
 import { HydrateClient } from "~/trpc/server";
-import { Recipes } from "../_components/recipes";
+import { Recipes } from "~/app/_components/recipes";
 import type { Metadata } from "next";
 
- export const metadata: Metadata = {
-    title: "Recipes"
-  }
+export const metadata: Metadata = {
+  title: "Recipes",
+};
 
 export default async function RecipesPage() {
   return (
