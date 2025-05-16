@@ -1,10 +1,8 @@
 "use client";
 
-import { IconCirclePlusFilled, IconMail } from "@tabler/icons-react";
 import type { Icon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "~/components/ui/button";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -24,9 +22,8 @@ export function NavMain({
     icon?: typeof Icon;
   }[];
 }) {
-  const title = usePageTitle();
   const pathname = usePathname();
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { setOpenMobile } = useSidebar();
   // Get active item from the pathname, active item is the item that most closely matches the pathname
   const activeItem = items.reduce(
     (bestMatch, item) => {

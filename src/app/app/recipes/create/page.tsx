@@ -10,7 +10,7 @@ export const metadata = {
 export default async function Page() {
   return (
     <Suspense fallback={<Spinner />}>
-      <CreateForm />;
+      <CreateForm />
     </Suspense>
   );
 }

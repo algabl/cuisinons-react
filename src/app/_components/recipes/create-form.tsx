@@ -15,11 +15,17 @@ import {
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
+import { redirect } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().optional(),
-  image: z.string().url({ message: "Must be a valid URL" }).optional(),
+  image: z
+    .string()
+    .optional()
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: "Must be a valid URL",
+    }),
   cookingTime: z.coerce.number().int().positive().optional(),
   preparationTime: z.coerce.number().int().positive().optional(),
   servings: z.coerce.number().int().positive().optional(),
@@ -47,7 +53,7 @@ export function CreateForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     recipeCreate.mutate({
       name: values.name,
-      description: values.description ?? null,
+      description: values.description,
       image: values.image,
       cookingTime: values.cookingTime,
       preparationTime: values.preparationTime,
@@ -55,6 +61,7 @@ export function CreateForm() {
       calories: values.calories,
       instructions: values.instructions,
     });
+    redirect("/app/recipes");
   }
 
   return (

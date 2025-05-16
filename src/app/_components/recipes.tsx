@@ -11,9 +11,13 @@ import {
 } from "~/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
+import { auth } from "~/server/auth";
 
 export async function Recipes() {
-  const recipes = await api.recipe.getAll();
+  const session = await auth();
+  const recipes = session?.user.id
+    ? await api.recipe.getByUserId({ userId: session.user.id })
+    : [];
 
   return (
     <div className="container flex px-4 py-16">
@@ -39,7 +43,7 @@ type Recipe = RouterOutputs["recipe"]["getAll"][number];
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/app/recipes/${recipe.id}`}>
-      <Card className="h-60">
+      <Card className="h-60 duration-200 hover:scale-105 hover:shadow-lg">
         <CardContent>
           <div className="h-30 w-full rounded-lg bg-gray-200">
             {recipe.image && (

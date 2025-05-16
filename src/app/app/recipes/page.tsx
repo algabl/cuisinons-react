@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Recipes",
+  title: "Your Recipes",
 };
 
 export default async function RecipesPage() {

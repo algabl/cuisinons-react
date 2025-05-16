@@ -1,12 +1,18 @@
-import { notFound } from "next/navigation";
+import { notFound, unauthorized } from "next/navigation";
 import { api } from "~/trpc/server"; // Use the server-side trpc API
+import { auth } from "~/server/auth";
 
 export default async function Page(props: { params: { id: string } }) {
   const { id } = props.params;
+  const session = await auth();
   const recipe = await api.recipe.getById({ id });
 
   if (!recipe) {
     notFound();
+  }
+
+  if (!session?.user?.id || recipe.createdById !== session.user.id) {
+    unauthorized();
   }
 
   return (

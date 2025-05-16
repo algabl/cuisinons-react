@@ -47,6 +47,7 @@ const providers: Provider[] = [
       return {
         id: profile.id,
         name: profile.username,
+        email: profile.email,
         image: getDiscordImage(profile),
       };
     },
