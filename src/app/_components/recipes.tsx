@@ -12,6 +12,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "~/server/auth";
+import { Dropdown } from "./recipes/dropdown";
+import { Button } from "~/components/ui/button";
+import { MoreHorizontalIcon } from "lucide-react";
 
 export async function Recipes() {
   const session = await auth();
@@ -43,7 +46,15 @@ type Recipe = RouterOutputs["recipe"]["getAll"][number];
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/app/recipes/${recipe.id}`}>
-      <Card className="h-60 duration-200 hover:scale-105 hover:shadow-lg">
+      <Card className="h-60 duration-200 hover:shadow-lg">
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle className="truncate">{recipe.name}</CardTitle>
+          <Dropdown id={recipe.id}>
+            <Button variant="ghost">
+              <MoreHorizontalIcon />
+            </Button>
+          </Dropdown>
+        </CardHeader>
         <CardContent>
           <div className="h-30 w-full rounded-lg bg-gray-200">
             {recipe.image && (
@@ -56,13 +67,10 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               />
             )}
           </div>
-        </CardContent>
-        <CardHeader>
-          <CardTitle className="truncate">{recipe.name}</CardTitle>
           <CardDescription className="truncate">
             {recipe.description}
           </CardDescription>
-        </CardHeader>
+        </CardContent>
       </Card>
     </Link>
   );

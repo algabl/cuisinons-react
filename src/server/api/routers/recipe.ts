@@ -7,6 +7,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { recipes } from "~/server/db/schema";
+import { eq, and } from "drizzle-orm";
 
 export const createValidation = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -39,6 +40,32 @@ export const recipeRouter = createTRPCRouter({
         calories: input.calories,
         instructions: input.instructions,
       });
+    }),
+  update: protectedProcedure
+    .input(
+      createValidation.extend({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(recipes)
+        .set({
+          name: input.name,
+          description: input.description,
+          image: input.image,
+          cookingTime: input.cookingTime,
+          preparationTime: input.preparationTime,
+          servings: input.servings,
+          calories: input.calories,
+          instructions: input.instructions,
+        })
+        .where(
+          and(
+            eq(recipes.id, input.id),
+            eq(recipes.createdById, ctx.session.user.id),
+          ),
+        );
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const allRecipes = await ctx.db.query.recipes.findMany({
