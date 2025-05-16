@@ -62,6 +62,11 @@ export default async function Home() {
           </div>
 
           {session?.user && <LatestPost />}
+          <Link href="/recipes">
+            <button className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20">
+              View Recipes
+            </button>
+          </Link>
         </div>
       </main>
     </HydrateClient>
