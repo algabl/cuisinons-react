@@ -44,7 +44,7 @@ erDiagram
         INTEGER cookingTime
         INTEGER preparationTime
         INTEGER servings
-        INTEGER caloriesPerServing
+        INTEGER calories
         VARCHAR instructions[] "Array of text steps"
     }
 
@@ -58,19 +58,9 @@ erDiagram
         VARCHAR userID FK "nullable"
     }
 
-    cuisinons_user_ingredient {
-        VARCHAR id PK
-        VARCHAR userID FK
-        VARCHAR name
-        TEXT description
-        TIMESTAMP createdAt
-        TIMESTAMP updatedAt
-    }
-
     cuisinons_recipe_ingredient {
         VARCHAR recipeId
         VARCHAR ingredientId FK "References either cuisinons_ingredient or cuisinons_user_ingredient based on ingredientType"
-        ENUM ingredientType "global,user"
         REAL quantity
         VARCHAR unit
     }
@@ -80,7 +70,6 @@ erDiagram
     cuisinons_recipe }o--|| cuisinons_user : createdBy
     cuisinons_user_ingredient }o--|| cuisinons_user: createdBy
     cuisinons_recipe_ingredient }o--|| cuisinons_recipe : has_ingredient
-    cuisinons_recipe_ingredient }o--o| cuisinons_ingredient : is_global_ingredient
-    cuisinons_recipe_ingredient }o--o| cuisinons_user_ingredient : is_user_ingredient
+    cuisinons_recipe_ingredient }o--|| cuisinons_ingredient : is_ingredient
 
 ```

@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
+import { index, pgEnum, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
@@ -9,27 +9,6 @@ import { type AdapterAccount } from "next-auth/adapters";
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
 export const createTable = pgTableCreator((name) => `cuisinons_${name}`);
-
-export const posts = createTable(
-  "post",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdById: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [
-    index("created_by_idx").on(t.createdById),
-    index("name_idx").on(t.name),
-  ],
-);
 
 export const users = createTable("user", (d) => ({
   id: d
@@ -50,6 +29,9 @@ export const users = createTable("user", (d) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  sessions: many(sessions),
+  recipes: many(recipes),
+  ingredients: many(ingredients),
 }));
 
 export const accounts = createTable(
@@ -105,4 +87,96 @@ export const verificationTokens = createTable(
     expires: d.timestamp({ mode: "date", withTimezone: true }).notNull(),
   }),
   (t) => [primaryKey({ columns: [t.identifier, t.token] })],
+);
+
+export const recipes = createTable(
+  "recipe",
+  (d) => ({
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: d.varchar({ length: 255 }).notNull(),
+    description: d.text(),
+    image: d.varchar({ length: 255 }),
+    createdById: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => users.id),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    cookingTime: d.integer(),
+    preparationTime: d.integer(),
+    servings: d.integer(),
+    calories: d.integer(),
+    instructions: d.text().array(),
+  }),
+  (t) => {
+    return {
+      createdAtIndex: index("created_at_index").on(t.createdAt),
+    };
+  },
+);
+
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
+  user: one(users, { fields: [recipes.createdById], references: [users.id] }),
+  recipeIngredients: many(recipeIngredients),
+}));
+
+export const ingredientTypeEnum = pgEnum("type", ["global", "user"]);
+
+export const ingredients = createTable("ingredient", (d) => ({
+  id: d
+    .varchar({ length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: d.varchar({ length: 255 }).notNull(),
+  description: d.text(),
+  createdAt: d
+    .timestamp({ withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  type: ingredientTypeEnum(),
+  createdById: d.varchar({ length: 255 }),
+}));
+
+export const ingredientsRelations = relations(ingredients, ({ one, many }) => ({
+  user: one(users, {
+    fields: [ingredients.createdById],
+    references: [users.id],
+  }),
+  recipeIngredients: many(recipeIngredients),
+}));
+
+export const recipeIngredients = createTable("recipe_ingredient", (d) => ({
+  recipeId: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => recipes.id),
+  ingredientId: d
+    .varchar({ length: 255 })
+    .notNull()
+    .references(() => ingredients.id),
+  quantity: d.real(), // Null meaning no quantity
+  unit: d.varchar({ length: 255 }), // Null meaning no unit
+}));
+
+export const recipeIngredientsRelations = relations(
+  recipeIngredients,
+  ({ one }) => ({
+    recipe: one(recipes, {
+      fields: [recipeIngredients.recipeId],
+      references: [recipes.id],
+    }),
+    ingredient: one(ingredients, {
+      fields: [recipeIngredients.ingredientId],
+      references: [ingredients.id],
+    }),
+  }),
 );
