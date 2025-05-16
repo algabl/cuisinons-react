@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default async function RecipesPage() {
   return (
     <HydrateClient>
-      <main className="flex min-h-screen">
+      <main className="flex min-h-full">
         <Recipes />
       </main>
     </HydrateClient>
