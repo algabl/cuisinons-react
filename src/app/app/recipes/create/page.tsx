@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { CreateForm } from "~/app/_components/recipes/create-form";
+import { Spinner } from "~/components/ui/spinner";
 
 export const metadata = {
   title: "Create Recipe",
@@ -6,5 +8,9 @@ export const metadata = {
 };
 
 export default async function Page() {
-  return <CreateForm />;
+  return (
+    <Suspense fallback={<Spinner />}>
+      <CreateForm />;
+    </Suspense>
+  );
 }

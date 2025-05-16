@@ -15,12 +15,12 @@ export default async function RecipesPage() {
   return (
     <HydrateClient>
       <main className="flex min-h-full flex-col">
-        <Link href={"/app/recipes/create"}>
-          <Button variant="outline">
+        <Button asChild variant="outline">
+          <Link href={"/app/recipes/create"}>
             <Plus />
             Create Recipe
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <Suspense fallback={<Skeleton />}>
           <Recipes />
         </Suspense>
