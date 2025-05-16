@@ -39,7 +39,7 @@ type Recipe = RouterOutputs["recipe"]["getAll"][number];
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/app/recipes/${recipe.id}`}>
-      <Card>
+      <Card className="h-60">
         <CardContent>
           <div className="h-30 w-full rounded-lg bg-gray-200">
             {recipe.image && (
@@ -54,8 +54,10 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           </div>
         </CardContent>
         <CardHeader>
-          <CardTitle>{recipe.name}</CardTitle>
-          <CardDescription>{recipe.description}</CardDescription>
+          <CardTitle className="truncate">{recipe.name}</CardTitle>
+          <CardDescription className="truncate">
+            {recipe.description}
+          </CardDescription>
         </CardHeader>
       </Card>
     </Link>
