@@ -1,10 +1,8 @@
-import type { get } from "http";
 import { z } from "zod";
 
 import {
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "~/server/api/trpc";
 import { recipes } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";

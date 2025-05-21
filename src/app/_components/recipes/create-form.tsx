@@ -16,8 +16,6 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
 import { redirect } from "next/navigation";
-import { Router } from "lucide-react";
-import { useRouter } from "next/router";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),

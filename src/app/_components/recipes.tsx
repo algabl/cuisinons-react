@@ -3,7 +3,6 @@ import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,

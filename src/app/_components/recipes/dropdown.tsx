@@ -12,7 +12,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,9 +39,9 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
     );
   };
 
-  function handleShare() {
-    console.log("Share clicked");
-  }
+  // function handleShare() {
+  //   console.log("Share clicked");
+  // }
   return (
     <>
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
@@ -90,8 +89,8 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                handleDelete(props.id);
+              onClick={async () => {
+                await handleDelete(props.id);
                 setOpen(false);
               }}
             >

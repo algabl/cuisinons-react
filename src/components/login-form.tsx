@@ -1,8 +1,6 @@
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import Image from "next/image";
 import { providerMap } from "~/server/auth/config";
 import { signIn } from "~/server/auth";
@@ -37,7 +35,7 @@ export async function LoginForm({
 }) {
   const providerCount = Object.keys(providerMap).length;
   const baseCols = 3;
-  const shouldSpan = providerCount % baseCols !== 0;
+  // const shouldSpan = providerCount % baseCols !== 0;
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
