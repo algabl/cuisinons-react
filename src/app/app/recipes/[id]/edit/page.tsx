@@ -5,5 +5,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const recipe = await api.recipe.getById({ id });
 
+  if (!recipe) {
+    return <div>Recipe not found</div>;
+  }
   return <EditForm recipe={recipe} />;
 }

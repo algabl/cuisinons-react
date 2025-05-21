@@ -53,8 +53,8 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
 
   const recipeUpdate = api.recipe.update.useMutation();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    recipeUpdate.mutate({
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await recipeUpdate.mutateAsync({
       id: recipe.id,
       name: values.name,
       description: values.description,

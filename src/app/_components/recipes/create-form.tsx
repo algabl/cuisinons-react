@@ -16,6 +16,8 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
 import { redirect } from "next/navigation";
+import { Router } from "lucide-react";
+import { useRouter } from "next/router";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -47,11 +49,10 @@ export function CreateForm() {
       instructions: [""],
     },
   });
-
   const recipeCreate = api.recipe.create.useMutation();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    recipeCreate.mutate({
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    await recipeCreate.mutateAsync({
       name: values.name,
       description: values.description,
       image: values.image,

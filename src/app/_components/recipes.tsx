@@ -26,13 +26,6 @@ export async function Recipes() {
     <div className="container flex px-4 py-16">
       <div className="grid w-full grid-cols-3 gap-4 sm:grid-cols-2 md:gap-8">
         {recipes.map((recipe) => (
-          // <div
-          //   key={recipe.id}
-          //   className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-          // >
-          //   <h3 className="text-2xl font-bold">{recipe.name}</h3>
-          //   <p>{recipe.description}</p>
-          // </div>
           <RecipeCard key={recipe.id} recipe={recipe} />
         ))}
       </div>
@@ -45,17 +38,19 @@ type Recipe = RouterOutputs["recipe"]["getAll"][number];
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <Link href={`/app/recipes/${recipe.id}`}>
-      <Card className="h-60 duration-200 hover:shadow-lg">
-        <CardHeader className="flex items-center justify-between">
+    <Card className="h-60 duration-200 hover:shadow-lg">
+      <CardHeader className="flex items-center justify-between">
+        <Link href={`/app/recipes/${recipe.id}`} className="min-w-0 flex-1">
           <CardTitle className="truncate">{recipe.name}</CardTitle>
-          <Dropdown id={recipe.id}>
-            <Button variant="ghost">
-              <MoreHorizontalIcon />
-            </Button>
-          </Dropdown>
-        </CardHeader>
-        <CardContent>
+        </Link>
+        <Dropdown id={recipe.id}>
+          <Button variant="ghost">
+            <MoreHorizontalIcon />
+          </Button>
+        </Dropdown>
+      </CardHeader>
+      <CardContent>
+        <Link href={`/app/recipes/${recipe.id}`}>
           <div className="h-30 w-full rounded-lg bg-gray-200">
             {recipe.image && (
               <Image
@@ -67,11 +62,11 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               />
             )}
           </div>
-          <CardDescription className="truncate">
-            {recipe.description}
-          </CardDescription>
-        </CardContent>
-      </Card>
-    </Link>
+        </Link>
+        <CardDescription className="truncate">
+          {recipe.description}
+        </CardDescription>
+      </CardContent>
+    </Card>
   );
 }

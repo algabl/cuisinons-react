@@ -67,6 +67,18 @@ export const recipeRouter = createTRPCRouter({
           ),
         );
     }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(recipes)
+        .where(
+          and(
+            eq(recipes.id, input.id),
+            eq(recipes.createdById, ctx.session.user.id),
+          ),
+        );
+    }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const allRecipes = await ctx.db.query.recipes.findMany({
       orderBy: (recipes, { desc }) => [desc(recipes.createdAt)],
