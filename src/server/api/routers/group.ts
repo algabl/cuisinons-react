@@ -3,8 +3,6 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { groupMembers, groups } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
-import { db } from "~/server/db";
-import { addMember } from "~/app/actions";
 
 export const createValidation = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -104,7 +102,7 @@ export const groupRouter = createTRPCRouter({
       z.object({
         groupId: z.string(),
         userId: z.string(),
-        role: z.enum(["admin", "member"]),
+        role: z.enum(["admin", "member", "owner"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {

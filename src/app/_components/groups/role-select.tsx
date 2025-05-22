@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
@@ -25,15 +25,20 @@ export function RoleSelect(props: { member: User; group: Group }) {
     member.role ?? "member",
   );
   const updateMember = api.group.updateMember.useMutation();
+  const isFirstRender = useRef(true);
 
-  const handleChange = (value: "admin" | "member") => {
-    setRole(value);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     updateMember.mutate({
       userId: member.userId,
       groupId: group.id,
-      role: value,
+      role,
     });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
 
   return (
     <>
@@ -41,7 +46,7 @@ export function RoleSelect(props: { member: User; group: Group }) {
         name="role"
         value={role}
         disabled={updateMember.isPending}
-        onValueChange={handleChange}
+        onValueChange={(value) => setRole(value as "admin" | "member")}
         defaultValue={role}
       >
         <SelectTrigger className="min-w-28">

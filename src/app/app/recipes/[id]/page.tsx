@@ -12,6 +12,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { Share2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "~/components/ui/dropdown-menu";
+import { ShareItems } from "~/app/_components/recipes/share-items";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -105,12 +113,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                 </div>
               )}
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
               <Link href={`/app/recipes/${id}/edit`}>
                 <Button variant="outline" size="sm">
                   Edit
                 </Button>
               </Link>
+
+              <ShareItems />
             </div>
           </div>
         </CardContent>
