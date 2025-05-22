@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 
 export async function List() {
   const session = await auth();
-  const groups = session?.user.id ? await api.group.getAll() : [];
+  const groups = session?.user.id
+    ? await api.group.getByUserId(session.user.id)
+    : [];
   return (
     <div className="flex flex-col gap-4">
       {groups.map((group) => (
@@ -14,9 +17,12 @@ export async function List() {
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-bold">{group.name}</h2>
           </div>
-          <button className="rounded-lg bg-blue-500 px-4 py-2 text-white">
+          <Link
+            href={`/app/groups/${group.id}`}
+            className="rounded-lg bg-blue-500 px-4 py-2 text-white"
+          >
             View Group
-          </button>
+          </Link>
         </div>
       ))}
     </div>

@@ -14,11 +14,16 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { api } from "~/trpc/react";
+
+import { api } from "~/trpc/server";
 import { redirect } from "next/navigation";
+import { createGroup } from "~/app/actions";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
+  emails: z
+    .array(z.string().email({ message: "Invalid email address" }))
+    .optional(),
 });
 
 export function CreateForm() {
@@ -28,18 +33,19 @@ export function CreateForm() {
       name: "",
     },
   });
-  const groupCreate = api.group.create.useMutation();
+  // async function onSubmit(formData: FormData) {
+  //   "use server";
+  //   // await api.group.create({
+  //   //   name: formData.get("name") as string,
+  //   // });
+  //   redirect("/app/groups");
+  // }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    await groupCreate.mutateAsync({
-      name: values.name,
-    });
-    redirect("/app/groups");
-  }
+  
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form action={createGroup} className="space-y-4">
         {/* Name */}
         <FormField
           control={form.control}
@@ -55,9 +61,93 @@ export function CreateForm() {
             </FormItem>
           )}
         />
-        {/* Field that allows you to add multiple email addresses to add users */}
+
         <Button type="submit">Submit</Button>
       </form>
     </Form>
   );
+}
+
+{
+  /* Field that allows you to add multiple email addresses to add users, with search */
+}
+{
+  /* {form.watch("emails")?.map((email, idx) => (
+  <FormField
+    key={idx}
+    control={form.control}
+    name={`emails.${idx}`}
+    render={({ field }) => (
+      <FormItem className="flex items-end gap-2">
+        <div className="relative flex-1">
+          <FormLabel>Email {idx + 1}</FormLabel>
+          <FormControl>
+            <div className="relative">
+              <Input
+                placeholder="Email address"
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  setSearchEmail(e.target.value);
+                }}
+                autoComplete="off"
+              />
+              {searchEmail &&
+                userSearch.data &&
+                userSearch.data.length > 0 && (
+                  <div className="bg-popover text-popover-foreground absolute right-0 left-0 z-10 mt-1 rounded-md border shadow-lg">
+                    <Command className="max-h-48 overflow-y-auto">
+                      <CommandList>
+                        {userSearch.isLoading && (
+                          <CommandItem disabled>Loading…</CommandItem>
+                        )}
+                        <CommandEmpty>No users found.</CommandEmpty>
+                        {userSearch.data?.map((user) => (
+                          <CommandItem
+                            key={user.id}
+                            value={user.email}
+                            onSelect={() => {
+                              form.setValue(
+                                `emails.${idx}`,
+                                user.email,
+                              );
+                              setSearchEmail(""); // close popover
+                            }}
+                          >
+                            <span className="font-medium">
+                              {user.name}
+                            </span>
+                            <span className="text-muted-foreground ml-2 text-xs">
+                              {user.email}
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandList>
+                    </Command>
+                  </div>
+                )}
+            </div>
+          </FormControl>
+          <FormDescription>
+            Search and add user by email address.
+          </FormDescription>
+          <FormMessage />
+        </div>
+      </FormItem>
+    )}
+  />
+))} */
+}
+
+{
+  /* <Button
+  type="button"
+  variant="secondary"
+  onClick={() => {
+    const emails = form.getValues("emails") ?? [];
+    form.setValue("emails", [...emails, ""]);
+  }}
+>
+  Add another email
+</Button> */
 }
