@@ -35,4 +35,12 @@ export const userRouter = createTRPCRouter({
       }
       return usersResult;
     }),
+  getById: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.id, input),
+      });
+      return user;
+    }),
 });

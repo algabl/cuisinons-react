@@ -28,7 +28,7 @@ export const groupRouter = createTRPCRouter({
       await ctx.db.insert(groupMembers).values({
         groupId: createdGroup.id,
         userId: ctx.session.user.id,
-        role: "admin",
+        role: "owner",
       });
       return createdGroup.id;
     }),
@@ -98,5 +98,57 @@ export const groupRouter = createTRPCRouter({
         userId: user.id,
         role: input.role,
       });
+    }),
+  updateMember: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        userId: z.string(),
+        role: z.enum(["admin", "member"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const groupMember = await ctx.db.query.groupMembers.findFirst({
+        where: (groupMembers, { and, eq }) =>
+          and(
+            eq(groupMembers.groupId, input.groupId),
+            eq(groupMembers.userId, input.userId),
+          ),
+      });
+      if (!groupMember) {
+        throw new Error("User not in group");
+      }
+      await ctx.db
+        .update(groupMembers)
+        .set({ role: input.role })
+        .where(
+          and(
+            eq(groupMembers.groupId, input.groupId),
+            eq(groupMembers.userId, input.userId),
+          ),
+        );
+    }),
+  getMemberById: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        groupId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const groupMember = await ctx.db.query.groupMembers.findFirst({
+        where: (groupMembers, { and, eq }) =>
+          and(
+            eq(groupMembers.groupId, input.groupId),
+            eq(groupMembers.userId, input.userId),
+          ),
+        with: {
+          user: true,
+        },
+      });
+      if (!groupMember) {
+        throw new Error("User not in group");
+      }
+      return groupMember;
     }),
 });

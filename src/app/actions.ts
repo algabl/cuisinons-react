@@ -35,3 +35,35 @@ export async function addMember(formData: FormData) {
   });
   redirect(`/app/groups/${groupId}`);
 }
+
+export async function updateMember(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+  const groupId = formData.get("groupId") as string;
+  const userId = formData.get("userId") as string;
+  const roleValue = formData.get("role");
+  const role =
+    roleValue === "admin" || roleValue === "member" ? roleValue : "member";
+  await api.group.updateMember({
+    groupId,
+    userId,
+    role,
+  });
+  // redirect(`/app/groups/${groupId}`);
+}
+
+export async function deleteMember(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+  const groupId = formData.get("groupId") as string;
+  const userId = formData.get("userId") as string;
+  await api.group.deleteMember({
+    groupId,
+    userId,
+  });
+  redirect(`/app/groups/${groupId}`);
+}
