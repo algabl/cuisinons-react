@@ -1,10 +1,7 @@
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "~/server/api/trpc";
-import { recipes } from "~/server/db/schema";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { recipes, recipeSharings } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export const createValidation = z.object({
@@ -108,4 +105,17 @@ export const recipeRouter = createTRPCRouter({
 
     return recipe ?? null;
   }),
+  shareWithGroup: protectedProcedure
+    .input(
+      z.object({
+        recipeId: z.string(),
+        groupId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(recipeSharings).values({
+        recipeId: input.recipeId,
+        groupId: input.groupId,
+      });
+    }),
 });

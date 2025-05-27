@@ -120,7 +120,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                 </Button>
               </Link>
 
-              <ShareItems />
+              <ShareItems recipeId={id} />
             </div>
           </div>
         </CardContent>

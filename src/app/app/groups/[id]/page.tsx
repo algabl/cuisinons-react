@@ -12,6 +12,7 @@ import {
 } from "~/components/ui/dialog";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
+import { RecipeCard } from "~/app/_components/recipes/card";
 
 export default async function GroupPage(props: {
   params: Promise<{ id: string }>;
@@ -93,6 +94,25 @@ export default async function GroupPage(props: {
             ) : (
               <p className="py-4 text-center text-gray-500">
                 No members in this group.
+              </p>
+            )}
+          </div>
+          <div>
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-lg font-semibold text-gray-700">Recipes</h2>
+            </div>
+            {group.recipeSharings.length > 0 ? (
+              <ul className="space-y-4">
+                {group.recipeSharings.map((recipeSharing) => (
+                  <RecipeCard
+                    key={recipeSharing.recipe.id}
+                    recipe={recipeSharing.recipe}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <p className="py-4 text-center text-gray-500">
+                No recipes in this group.
               </p>
             )}
           </div>

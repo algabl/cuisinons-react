@@ -17,6 +17,8 @@ import { Input } from "~/components/ui/input";
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
+import { Switch } from "~/components/ui/switch";
+import { Label } from "~/components/ui/label";
 
 type Recipe = NonNullable<inferRouterOutputs<AppRouter>["recipe"]["getById"]>;
 
@@ -34,6 +36,7 @@ const formSchema = z.object({
   servings: z.coerce.number().int().positive().optional(),
   calories: z.coerce.number().int().positive().optional(),
   instructions: z.string().array().optional(),
+  isPrivate: z.boolean().optional(),
 });
 
 export default function EditForm({ recipe }: { recipe: Recipe }) {
@@ -48,6 +51,7 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
       servings: recipe.servings ?? undefined,
       calories: recipe.calories ?? undefined,
       instructions: recipe.instructions ?? [""],
+      isPrivate: recipe.isPrivate ?? true,
     },
   });
 
@@ -64,6 +68,7 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
       servings: values.servings,
       calories: values.calories,
       instructions: values.instructions,
+      isPrivate: values.isPrivate ?? true,
     });
     redirect(`/app/recipes/${recipe.id}`);
   }
@@ -207,6 +212,28 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
                 />
               </FormControl>
               <FormDescription>Enter each step on a new line.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {/* Is Private */}
+        <FormField
+          control={form.control}
+          name="isPrivate"
+          render={({ field }) => (
+            <FormItem className="flex items-center space-x-2">
+              <FormControl>
+                <Switch
+                  id="isPrivate"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel>Private Recipe</FormLabel>
+              <FormDescription>
+                Check this if you want to keep this recipe private. Sharing this
+                recipe to a group will still make it visible to that group.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

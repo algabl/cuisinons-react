@@ -59,11 +59,11 @@ export async function deleteMember(formData: FormData) {
   if (!session?.user?.id) {
     redirect("/login");
   }
-  const groupId = formData.get("groupId") as string;
-  const userId = formData.get("userId") as string;
-  await api.group.deleteMember({
-    groupId,
-    userId,
-  });
-  redirect(`/app/groups/${groupId}`);
+  // const groupId = formData.get("groupId") as string;
+  // const userId = formData.get("userId") as string;
+  // await api.group.deleteMember({
+  //   groupId,
+  //   userId,
+  // });
+  // redirect(`/app/groups/${groupId}`);
 }

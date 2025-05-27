@@ -1,4 +1,3 @@
-import { api } from "~/trpc/server";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
 import {
@@ -10,34 +9,16 @@ import {
 } from "~/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
-import { auth } from "~/server/auth";
-import { Dropdown } from "./recipes/dropdown";
+import { Dropdown } from "~/app/_components/recipes/dropdown";
 import { Button } from "~/components/ui/button";
 import { MoreHorizontalIcon } from "lucide-react";
-
-export async function Recipes() {
-  const session = await auth();
-  const recipes = session?.user.id
-    ? await api.recipe.getByUserId({ userId: session.user.id })
-    : [];
-
-  return (
-    <div className="container flex px-4 py-16">
-      <div className="grid w-full grid-cols-3 gap-4 sm:grid-cols-2 md:gap-8">
-        {recipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 type Recipe = RouterOutputs["recipe"]["getAll"][number];
 
-function RecipeCard({ recipe }: { recipe: Recipe }) {
+export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <Card className="h-60 duration-200 hover:shadow-lg">
+    <Card className="h-60 max-w-80 duration-200 hover:shadow-lg">
       <CardHeader className="flex items-center justify-between">
         <Link href={`/app/recipes/${recipe.id}`} className="min-w-0 flex-1">
           <CardTitle className="truncate">{recipe.name}</CardTitle>

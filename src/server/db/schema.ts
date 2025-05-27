@@ -209,7 +209,7 @@ export const groups = createTable("group", (d) => {
 
 export const groupsRelations = relations(groups, ({ many }) => ({
   groupMembers: many(groupMembers),
-  recipeSharings: many(recipes),
+  recipeSharings: many(recipeSharings),
 }));
 
 export const roleEnum = pgEnum("role", ["admin", "member", "owner"]);

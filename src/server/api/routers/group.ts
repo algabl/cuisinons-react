@@ -42,7 +42,11 @@ export const groupRouter = createTRPCRouter({
       const groupsByUserId = await ctx.db.query.groupMembers.findMany({
         where: (groupMembers, { eq }) => eq(groupMembers.userId, input),
         with: {
-          group: true,
+          group: {
+            with: {
+              recipeSharings: true,
+            },
+          },
         },
         orderBy: (groupMembers, { asc }) => [asc(groupMembers.groupId)],
       });
@@ -60,6 +64,11 @@ export const groupRouter = createTRPCRouter({
           groupMembers: {
             with: {
               user: true,
+            },
+          },
+          recipeSharings: {
+            with: {
+              recipe: true,
             },
           },
         },
