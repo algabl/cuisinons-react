@@ -5,7 +5,9 @@ import { NextResponse } from "next/server";
 const { auth } = NextAuth(authConfig);
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(png|jpg|jpeg|svg|webp|ico|txt|xml|json)).*)",
+  ],
 };
 
 export default auth((req) => {
