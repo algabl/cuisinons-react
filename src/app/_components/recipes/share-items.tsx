@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Share, Users } from "lucide-react";
+import { Check, Copy, Share, Users, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -47,7 +47,7 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
     });
 
   // Share mutation
-  const shareMutation = api.recipe.shareWithGroup.useMutation({
+  const shareMutation = api.sharing.shareRecipeToGroup.useMutation({
     onSuccess: () => {
       setShareSuccess(true);
       setSelectedGroup(undefined);
@@ -59,6 +59,8 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
       }, 3000);
     },
   });
+
+  const removeSharedGroupMutation = api.sharing.removeS;
 
   // Filter shared and unshared groups
   const sharedGroups =
@@ -181,6 +183,7 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
                       >
                         <span>{group.name}</span>
                         <Check className="h-3 w-3 text-green-500" />
+                        <X className="h-3 w-3 text-red-400" />
                       </Badge>
                     ))}
                   </div>

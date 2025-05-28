@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { recipeSharings } from "~/server/db/schema";
+import { and } from "drizzle-orm";
 
 export const sharingRouter = createTRPCRouter({
   shareRecipeToGroup: protectedProcedure
@@ -23,5 +24,28 @@ export const sharingRouter = createTRPCRouter({
         groupId,
         recipeId,
       });
+    }),
+  removeSharedRecipeFromGroup: protectedProcedure
+    .input(z.object({ recipeId: z.string(), groupId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { recipeId, groupId } = input;
+      const sharing = await ctx.db.query.recipeSharings.findFirst({
+        where: (recipeSharings, { and, eq }) =>
+          and(
+            eq(recipeSharings.recipeId, recipeId),
+            eq(recipeSharings.groupId, groupId),
+          ),
+      });
+      if (!sharing) {
+        throw new Error("Recipe sharing not found");
+      }
+      await ctx.db
+        .delete(recipeSharings)
+        .where(
+          and(
+            eq(recipeSharings.recipeId, recipeId),
+            eq(recipeSharings.groupId, groupId),
+          ),
+        );
     }),
 });

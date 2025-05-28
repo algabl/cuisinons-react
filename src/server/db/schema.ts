@@ -32,6 +32,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   recipes: many(recipes),
   ingredients: many(ingredients),
+  groupMembers: many(groupMembers),
 }));
 
 export const accounts = createTable(
@@ -126,7 +127,7 @@ export const recipes = createTable(
 export const recipesRelations = relations(recipes, ({ one, many }) => ({
   user: one(users, { fields: [recipes.createdById], references: [users.id] }),
   recipeIngredients: many(recipeIngredients),
-  recipeSharings: many(groups),
+  recipeSharings: many(recipeSharings),
 }));
 
 export const ingredientTypeEnum = pgEnum("type", ["global", "user"]);

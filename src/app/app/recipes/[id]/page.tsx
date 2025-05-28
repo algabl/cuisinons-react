@@ -25,12 +25,20 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const session = await auth();
   const recipe = await api.recipe.getById({ id });
+  const user = await api.user.getById(session?.user?.id ?? "");
 
   if (!recipe) {
     notFound();
   }
 
-  if (!session?.user?.id || recipe.createdById !== session.user.id) {
+  const isOwner = session?.user?.id === recipe.createdById;
+  const isInGroup = recipe.recipeSharings.some((sharing) =>
+    user?.groupMembers.some(
+      (groupMember) => sharing.groupId === groupMember.groupId,
+    ),
+  );
+
+  if (!session?.user?.id || (!isOwner && recipe.isPrivate && !isInGroup)) {
     unauthorized();
   }
 

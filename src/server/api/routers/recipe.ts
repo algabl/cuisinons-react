@@ -94,6 +94,9 @@ export const recipeRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const recipe = await ctx.db.query.recipes.findFirst({
         where: (recipes, { eq }) => eq(recipes.id, input.id),
+        with: {
+          recipeSharings: true,
+        },
       });
 
       return recipe ?? null;

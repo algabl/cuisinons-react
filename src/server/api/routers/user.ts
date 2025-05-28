@@ -40,6 +40,9 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const user = await ctx.db.query.users.findFirst({
         where: (users, { eq }) => eq(users.id, input),
+        with: {
+          groupMembers: true,
+        },
       });
       return user;
     }),
