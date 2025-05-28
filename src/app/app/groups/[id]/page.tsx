@@ -13,6 +13,7 @@ import {
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { RecipeCard } from "~/app/_components/recipes/card";
+import { Plus } from "lucide-react";
 
 export default async function GroupPage(props: {
   params: Promise<{ id: string }>;
@@ -47,6 +48,7 @@ export default async function GroupPage(props: {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="mt-2 sm:mt-0">
+                    <Plus />
                     Add Member
                   </Button>
                 </DialogTrigger>

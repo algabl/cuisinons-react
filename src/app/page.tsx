@@ -23,7 +23,7 @@ export default function Home() {
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <Link href="/login" passHref>
+          <Link href="/app" passHref>
             <Button className="w-100 cursor-pointer">Get Started</Button>
           </Link>
         </CardContent>
