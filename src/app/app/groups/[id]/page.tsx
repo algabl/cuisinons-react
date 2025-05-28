@@ -102,14 +102,14 @@ export default async function GroupPage(props: {
               <h2 className="text-lg font-semibold text-gray-700">Recipes</h2>
             </div>
             {group.recipeSharings.length > 0 ? (
-              <ul className="space-y-4">
+              <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {group.recipeSharings.map((recipeSharing) => (
                   <RecipeCard
                     key={recipeSharing.recipe.id}
                     recipe={recipeSharing.recipe}
                   />
                 ))}
-              </ul>
+              </div>
             ) : (
               <p className="py-4 text-center text-gray-500">
                 No recipes in this group.

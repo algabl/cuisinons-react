@@ -18,35 +18,36 @@ type Recipe = RouterOutputs["recipe"]["getAll"][number];
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <Card className="h-60 max-w-80 duration-200 hover:shadow-lg">
-      <CardHeader className="flex items-center justify-between">
-        <Link href={`/app/recipes/${recipe.id}`} className="min-w-0 flex-1">
-          <CardTitle className="truncate">{recipe.name}</CardTitle>
-        </Link>
-        <Dropdown id={recipe.id}>
-          <Button variant="ghost">
-            <MoreHorizontalIcon />
-          </Button>
-        </Dropdown>
-      </CardHeader>
-      <CardContent>
-        <Link href={`/app/recipes/${recipe.id}`}>
-          <div className="h-30 w-full rounded-lg bg-gray-200">
-            {recipe.image && (
-              <Image
-                className="h-full w-full rounded-lg object-cover"
-                src={recipe.image}
-                alt={recipe.name}
-                width={500}
-                height={300}
-              />
-            )}
+    <Link href={`/app/recipes/${recipe.id}`}>
+      <Card className="overflow-hidden pt-0 duration-200 hover:shadow-lg">
+        <div className="relative aspect-[5/3] w-full bg-gray-200">
+          {recipe.image && (
+            <Image
+              className="h-full w-full rounded-t-xl object-cover"
+              src={recipe.image}
+              alt={recipe.name}
+              fill
+              sizes="(max-width: 600px) 100vw, 500px"
+              priority={false}
+            />
+          )}
+          <div className="absolute top-2 right-2">
+            <Dropdown id={recipe.id}>
+              <Button variant="secondary">
+                <MoreHorizontalIcon />
+              </Button>
+            </Dropdown>
           </div>
-        </Link>
-        <CardDescription className="truncate">
-          {recipe.description}
-        </CardDescription>
-      </CardContent>
-    </Card>
+        </div>
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle className="truncate">{recipe.name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CardDescription className="truncate">
+            {recipe.description}
+          </CardDescription>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

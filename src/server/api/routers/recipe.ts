@@ -18,6 +18,7 @@ export const createValidation = z.object({
   servings: z.coerce.number().int().positive().optional(),
   calories: z.coerce.number().int().positive().optional(),
   instructions: z.string().array().optional(),
+  isPrivate: z.boolean().optional(),
 });
 
 export const recipeRouter = createTRPCRouter({

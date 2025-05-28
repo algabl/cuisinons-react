@@ -18,7 +18,6 @@ import { redirect } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
-import { Label } from "~/components/ui/label";
 
 type Recipe = NonNullable<inferRouterOutputs<AppRouter>["recipe"]["getById"]>;
 

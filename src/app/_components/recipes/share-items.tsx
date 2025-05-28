@@ -27,6 +27,8 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { api } from "~/trpc/react";
 import { Badge } from "~/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { Spinner } from "~/components/ui/spinner";
 
 export function ShareItems({ recipeId }: { recipeId: string }) {
   const [open, setOpen] = useState(false);
@@ -34,11 +36,13 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
   const [selectedGroup, setSelectedGroup] = useState<string | undefined>(
     undefined,
   );
+  const [removingId, setRemovingId] = useState<string | undefined>(undefined);
   const [shareSuccess, setShareSuccess] = useState(false);
 
   // Get session data
   const session = useSession();
   const userId = session.data?.user.id ?? "";
+  const router = useRouter();
 
   // Fetch all user's groups
   const { data: groupsData, refetch: refetchGroups } =
@@ -60,8 +64,8 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
     },
   });
 
-  const removeSharedGroupMutation = api.sharing.removeS;
-
+  const removeSharedGroupMutation =
+    api.sharing.removeSharedRecipeFromGroup.useMutation();
   // Filter shared and unshared groups
   const sharedGroups =
     groupsData?.filter((group) =>
@@ -82,6 +86,23 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
       recipeId,
       groupId: selectedGroup,
     });
+  };
+
+  const handleRemoveSharedGroup = (groupId: string) => {
+    if (!groupId) return;
+    setRemovingId(groupId);
+    removeSharedGroupMutation
+      .mutateAsync({
+        recipeId,
+        groupId,
+      })
+      .then(() => {
+        setRemovingId(undefined);
+        void refetchGroups();
+      })
+      .catch((error) => {
+        console.error("Error removing shared group:", error);
+      });
   };
 
   return (
@@ -176,15 +197,25 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
                   <h3 className="text-sm font-medium">Already shared with:</h3>
                   <div className="flex flex-wrap gap-2">
                     {sharedGroups.map((group) => (
-                      <Badge
-                        key={group.id}
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        <span>{group.name}</span>
-                        <Check className="h-3 w-3 text-green-500" />
-                        <X className="h-3 w-3 text-red-400" />
-                      </Badge>
+                      <div className="flex" key={group.id}>
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          <span>{group.name}</span>
+                          <Check className="h-3 w-3 text-green-500" />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-3 w-3 cursor-pointer p-0 text-red-400"
+                            onClick={() => handleRemoveSharedGroup(group.id)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                        {removeSharedGroupMutation.isPending &&
+                          removingId === group.id && <Spinner />}
+                      </div>
                     ))}
                   </div>
                 </div>
