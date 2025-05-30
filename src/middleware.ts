@@ -9,7 +9,12 @@ export const config = {
 };
 
 export default auth((req) => {
+  const pathname = req.nextUrl.pathname;
   const isAuthenticated = !!req.auth;
+  if (/\.[^\/]+$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
   if (!isAuthenticated && req.nextUrl.pathname !== "/login") {
     const url = req.nextUrl.clone();
     url.search = "callbackUrl=" + url.pathname;
