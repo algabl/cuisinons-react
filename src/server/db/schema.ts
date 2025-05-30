@@ -32,6 +32,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   recipes: many(recipes),
   ingredients: many(ingredients),
+  groupMembers: many(groupMembers),
 }));
 
 export const accounts = createTable(
@@ -114,6 +115,7 @@ export const recipes = createTable(
     servings: d.integer(),
     calories: d.integer(),
     instructions: d.text().array(),
+    isPrivate: d.boolean().default(true),
   }),
   (t) => {
     return {
@@ -125,6 +127,7 @@ export const recipes = createTable(
 export const recipesRelations = relations(recipes, ({ one, many }) => ({
   user: one(users, { fields: [recipes.createdById], references: [users.id] }),
   recipeIngredients: many(recipeIngredients),
+  recipeSharings: many(recipeSharings),
 }));
 
 export const ingredientTypeEnum = pgEnum("type", ["global", "user"]);
@@ -154,18 +157,26 @@ export const ingredientsRelations = relations(ingredients, ({ one, many }) => ({
   recipeIngredients: many(recipeIngredients),
 }));
 
-export const recipeIngredients = createTable("recipe_ingredient", (d) => ({
-  recipeId: d
-    .varchar({ length: 255 })
-    .notNull()
-    .references(() => recipes.id),
-  ingredientId: d
-    .varchar({ length: 255 })
-    .notNull()
-    .references(() => ingredients.id),
-  quantity: d.real(), // Null meaning no quantity
-  unit: d.varchar({ length: 255 }), // Null meaning no unit
-}));
+export const recipeIngredients = createTable(
+  "recipe_ingredient",
+  (d) => ({
+    recipeId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => recipes.id),
+    ingredientId: d
+      .varchar({ length: 255 })
+      .notNull()
+      .references(() => ingredients.id),
+    quantity: d.real(), // Null meaning no quantity
+    unit: d.varchar({ length: 255 }), // Null meaning no unit
+  }),
+  (t) => {
+    return {
+      primaryKey: primaryKey({ columns: [t.recipeId, t.ingredientId] }),
+    };
+  },
+);
 
 export const recipeIngredientsRelations = relations(
   recipeIngredients,
@@ -180,3 +191,91 @@ export const recipeIngredientsRelations = relations(
     }),
   }),
 );
+
+export const groups = createTable("group", (d) => {
+  return {
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    name: d.varchar({ length: 255 }).notNull(),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  };
+});
+
+export const groupsRelations = relations(groups, ({ many }) => ({
+  groupMembers: many(groupMembers),
+  recipeSharings: many(recipeSharings),
+}));
+
+export const roleEnum = pgEnum("role", ["admin", "member", "owner"]);
+
+export const groupMembers = createTable(
+  "group_member",
+  (d) => {
+    return {
+      groupId: d
+        .varchar({ length: 255 })
+        .notNull()
+        .references(() => groups.id),
+      userId: d
+        .varchar({ length: 255 })
+        .notNull()
+        .references(() => users.id),
+      role: roleEnum(),
+    };
+  },
+  (t) => {
+    return {
+      primaryKey: primaryKey({ columns: [t.groupId, t.userId] }),
+    };
+  },
+);
+
+export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
+  group: one(groups, {
+    fields: [groupMembers.groupId],
+    references: [groups.id],
+  }),
+  user: one(users, {
+    fields: [groupMembers.userId],
+    references: [users.id],
+  }),
+}));
+
+export const recipeSharings = createTable(
+  "recipe_sharing",
+  (d) => {
+    return {
+      recipeId: d
+        .varchar({ length: 255 })
+        .notNull()
+        .references(() => recipes.id),
+      groupId: d
+        .varchar({ length: 255 })
+        .notNull()
+        .references(() => groups.id),
+    };
+  },
+  (t) => {
+    return {
+      primaryKey: primaryKey({ columns: [t.recipeId, t.groupId] }),
+    };
+  },
+);
+
+export const recipeSharingsRelations = relations(recipeSharings, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [recipeSharings.recipeId],
+    references: [recipes.id],
+  }),
+  group: one(groups, {
+    fields: [recipeSharings.groupId],
+    references: [groups.id],
+  }),
+}));

@@ -1,16 +1,19 @@
+import NextAuth from "next-auth";
+import authConfig from "~/server/auth/config";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const authHeader = request.cookies.get("authjs.session-token");
-
-  if (!authHeader) {
-    return NextResponse.redirect(new URL("/api/auth/signin", request.url));
-  }
-
-  return NextResponse.next();
-}
+const { auth } = NextAuth(authConfig);
 
 export const config = {
-  matcher: ["/((?!api|_next|public).*)"], // Protect all routes except API, _next, and public assets
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
+
+export default auth((req) => {
+  const isAuthenticated = !!req.auth;
+  if (!isAuthenticated && req.nextUrl.pathname !== "/login") {
+    const url = req.nextUrl.clone();
+    url.search = "callbackUrl=" + url.pathname;
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+});
