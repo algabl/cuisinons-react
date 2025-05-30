@@ -44,10 +44,12 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   return (
     <div className="flex justify-center px-2 py-10">
-      <Card className="w-full max-w-2xl shadow-lg">
+      <Card hover={false} className="w-full max-w-2xl shadow-lg">
         <CardHeader className="flex flex-col items-center gap-2">
           {recipe.image && (
             <Image
+              width={128}
+              height={128}
               src={recipe.image}
               alt={recipe.name}
               className="mb-2 h-32 w-32 rounded-lg border object-cover"

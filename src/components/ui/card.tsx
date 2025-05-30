@@ -2,12 +2,21 @@ import * as React from "react";
 
 import { cn } from "~/lib/utils";
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+/**
+ * Card component
+ * @param hover - If false, disables hover styles by adding 'no-hover' class. Default: true.
+ */
+function Card({
+  className,
+  hover = true,
+  ...props
+}: React.ComponentProps<"div"> & { hover?: boolean }): React.JSX.Element {
   return (
     <div
       data-slot="card"
       className={cn(
         "bg-card text-card-foreground cartoon-card flex flex-col gap-6 py-6",
+        !hover && "no-hover",
         className,
       )}
       {...props}

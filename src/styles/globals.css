@@ -234,7 +234,7 @@
       box-shadow 0.2s ease;
   }
 
-  .cartoon-card:hover {
+  .cartoon-card:not(.no-hover):hover {
     transform: translateY(-2px);
     box-shadow:
       0 calc(var(--cartoon-card-shadow-depth) + 2px) 0
