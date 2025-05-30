@@ -36,6 +36,7 @@ export const recipeRouter = createTRPCRouter({
         calories: input.calories,
         instructions: input.instructions,
       });
+      return { success: true, message: "Recipe created successfully" };
     }),
   update: protectedProcedure
     .input(
@@ -62,6 +63,7 @@ export const recipeRouter = createTRPCRouter({
             eq(recipes.createdById, ctx.session.user.id),
           ),
         );
+      return { success: true, message: "Recipe updated successfully" };
     }),
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))

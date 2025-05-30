@@ -18,6 +18,7 @@ import { redirect } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
+import { IngredientSelect } from "./ingredient-select";
 
 type Recipe = NonNullable<inferRouterOutputs<AppRouter>["recipe"]["getById"]>;
 
@@ -195,6 +196,8 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
             </FormItem>
           )}
         />
+        {/* Ingredients */}
+        <IngredientSelect />
         {/* Instructions (as textarea, one per line) */}
         <FormField
           control={form.control}
