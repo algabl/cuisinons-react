@@ -13,6 +13,7 @@ import {
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { RecipeCard } from "~/app/_components/recipes/card";
+import { Plus } from "lucide-react";
 
 export default async function GroupPage(props: {
   params: Promise<{ id: string }>;
@@ -34,7 +35,7 @@ export default async function GroupPage(props: {
 
   return (
     <div className="flex justify-center px-2 py-8">
-      <Card className="w-full max-w-2xl rounded-lg shadow-xl">
+      <Card hover={false} className="w-full max-w-2xl rounded-lg shadow-xl">
         <CardHeader className="flex flex-col items-center gap-2">
           <CardTitle className="text-center text-2xl font-bold text-gray-800 sm:text-3xl">
             {group.name}
@@ -47,6 +48,7 @@ export default async function GroupPage(props: {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="mt-2 sm:mt-0">
+                    <Plus />
                     Add Member
                   </Button>
                 </DialogTrigger>

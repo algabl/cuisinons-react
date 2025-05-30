@@ -13,16 +13,16 @@ export async function List() {
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="grid gap-6 sm:grid-cols-2">
         {groups.length === 0 ? (
-          <div className="col-span-full text-center text-muted-foreground py-12">
+          <div className="text-muted-foreground col-span-full py-12 text-center">
             No groups found.
           </div>
         ) : (
           groups.map((group) => (
             <div
               key={group.id}
-              className="flex flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm"
+              className="bg-card flex flex-col gap-4 rounded-xl p-6 shadow-sm"
             >
-              <h2 className="text-xl font-semibold truncate">{group.name}</h2>
+              <h2 className="truncate text-xl font-semibold">{group.name}</h2>
               <Button asChild>
                 <Link href={`/app/groups/${group.id}`}>View Group</Link>
               </Button>

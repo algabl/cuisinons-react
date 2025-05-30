@@ -133,7 +133,8 @@ export async function LoginForm({
                       <Button
                         type="submit"
                         variant="outline"
-                        className="w-full"
+                        size="icon"
+                        // className="w-full"
                       >
                         {Icon && <Icon />}
                         <span className="sr-only">

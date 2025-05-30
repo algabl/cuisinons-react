@@ -19,11 +19,11 @@ type Recipe = RouterOutputs["recipe"]["getAll"][number];
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/app/recipes/${recipe.id}`}>
-      <Card className="overflow-hidden pt-0 duration-200 hover:shadow-lg">
+      <Card className="overflow-hidden pt-0">
         <div className="relative aspect-[5/3] w-full bg-gray-200">
           {recipe.image && (
             <Image
-              className="h-full w-full rounded-t-xl object-cover"
+              className="h-full w-full object-cover"
               src={recipe.image}
               alt={recipe.name}
               fill
@@ -33,7 +33,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
           )}
           <div className="absolute top-2 right-2">
             <Dropdown id={recipe.id}>
-              <Button variant="secondary">
+              <Button variant="secondary" size="icon">
                 <MoreHorizontalIcon />
               </Button>
             </Dropdown>
