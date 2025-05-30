@@ -2,8 +2,6 @@
 
 import { useRef, useEffect, useState } from "react";
 import { api } from "~/trpc/react";
-import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "~/server/api/root";
 import { Spinner } from "~/components/ui/spinner";
 import {
   Select,
@@ -14,10 +12,7 @@ import {
   SelectItem,
 } from "~/components/ui/select";
 
-type User = NonNullable<
-  inferRouterOutputs<AppRouter>["group"]["getMemberById"]
->;
-type Group = NonNullable<inferRouterOutputs<AppRouter>["group"]["getById"]>;
+import { type Group, type User } from "~/server/api/types";
 
 export function RoleSelect(props: { member: User; group: Group }) {
   const { member, group } = props;

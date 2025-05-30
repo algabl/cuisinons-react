@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { recipes, recipeSharings } from "~/server/db/schema";
+import { recipeIngredients, recipes, recipeSharings } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export const createValidation = z.object({
@@ -19,6 +19,13 @@ export const createValidation = z.object({
   calories: z.coerce.number().int().positive().optional(),
   instructions: z.string().array().optional(),
   isPrivate: z.boolean().optional(),
+});
+
+const ingredientValidation = z.object({
+  recipeId: z.string().uuid("Recipe ID must be a valid UUID"),
+  ingredientId: z.string().uuid("Ingredient ID must be a valid UUID"),
+  quantity: z.coerce.number().positive("Quantity must be positive"),
+  unit: z.string().optional(),
 });
 
 export const recipeRouter = createTRPCRouter({
@@ -99,6 +106,11 @@ export const recipeRouter = createTRPCRouter({
         where: (recipes, { eq }) => eq(recipes.id, input.id),
         with: {
           recipeSharings: true,
+          recipeIngredients: {
+            with: {
+              ingredient: true,
+            },
+          },
         },
       });
 
@@ -123,5 +135,51 @@ export const recipeRouter = createTRPCRouter({
         recipeId: input.recipeId,
         groupId: input.groupId,
       });
+    }),
+  addIngredient: protectedProcedure
+    .input(ingredientValidation)
+    .mutation(async ({ ctx, input }) => {
+      // check that the recipe exists and belongs to the user
+      const recipe = await ctx.db.query.recipes.findFirst({
+        where: (recipes, { eq }) =>
+          and(
+            eq(recipes.id, input.recipeId),
+            eq(recipes.createdById, ctx.session.user.id),
+          ),
+      });
+      if (!recipe) {
+        throw new Error(
+          "Recipe not found or you do not have permission to edit it.",
+        );
+      }
+
+      // Check if the ingredient is global or created by the user
+      const ingredient = await ctx.db.query.ingredients.findFirst({
+        where: (ingredients, { eq, or }) =>
+          or(
+            eq(ingredients.type, "global"),
+            eq(ingredients.createdById, ctx.session.user.id),
+          ),
+      });
+
+      if (!ingredient) {
+        throw new Error("Ingredient not found or you do not have permission.");
+      }
+
+      const response = await ctx.db
+        .insert(recipeIngredients)
+        .values({
+          recipeId: input.recipeId,
+          ingredientId: input.ingredientId,
+          quantity: input.quantity,
+          unit: input.unit,
+          userId: ctx.session.user.id,
+        })
+        .returning();
+      return {
+        success: true,
+        message: "Ingredient added to recipe successfully",
+        data: response[0],
+      };
     }),
 });

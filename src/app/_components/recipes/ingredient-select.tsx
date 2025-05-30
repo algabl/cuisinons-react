@@ -1,6 +1,5 @@
 "use client";
 
-import type { inferRouterOutputs } from "@trpc/server";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -24,25 +23,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import type { AppRouter } from "~/server/api/root";
 import { api } from "~/trpc/react";
 import CreateForm from "../ingredients/create-form";
-
-type Ingredient = NonNullable<
-  inferRouterOutputs<AppRouter>["ingredient"]["getById"]
->;
+import { type Ingredient, type Recipe } from "~/server/api/types";
+import { IngredientForm } from "./ingredient-form";
 
 interface IngredientSelectProps {
   value: Ingredient | null;
-  onChange: (ingredient: Ingredient | null) => void;
-  userId?: string;
+  recipe: Recipe;
 }
 
-export function IngredientSelect({
-  value,
-  onChange,
-  userId,
-}: IngredientSelectProps) {
+export function IngredientSelect({ value, recipe }: IngredientSelectProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -58,10 +49,10 @@ export function IngredientSelect({
   const ingredientSearch = api.ingredient.search.useQuery(debouncedSearch);
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex flex-col space-x-2">
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-start">
+          <Button variant="outline" className="mb-4 w-full justify-start">
             <Plus />
             Add Ingredient
           </Button>
@@ -111,14 +102,21 @@ export function IngredientSelect({
         </PopoverContent>
       </Popover>
       {selectedIngredient && (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setSelectedIngredient(null);
+        <Dialog
+          open={selectedIngredient != null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedIngredient(null);
+            }
           }}
         >
-          Remove Ingredient
-        </Button>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{selectedIngredient.name}</DialogTitle>
+            </DialogHeader>
+            <IngredientForm recipe={recipe} ingredient={selectedIngredient} />
+          </DialogContent>
+        </Dialog>
       )}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
