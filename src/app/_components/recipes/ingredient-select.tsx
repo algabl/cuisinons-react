@@ -29,7 +29,7 @@ import { type Ingredient, type Recipe } from "~/server/api/types";
 import { IngredientForm } from "./ingredient-form";
 
 interface IngredientSelectProps {
-  value: Ingredient | null;
+  value?: Ingredient;
   recipe: Recipe;
 }
 
@@ -39,7 +39,7 @@ export function IngredientSelect({ value, recipe }: IngredientSelectProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIngredient, setSelectedIngredient] =
-    useState<Ingredient | null>(value);
+    useState<Ingredient | null>(value ?? null);
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(handler);

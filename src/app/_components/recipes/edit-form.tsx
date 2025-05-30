@@ -201,7 +201,7 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
               <span className="font-semibold">
                 {ingredient.ingredient.name}
               </span>
-              {ingredient.quantity > 0 && (
+              {(ingredient?.quantity ?? 0) > 0 && (
                 <span className="text-muted-foreground ml-2 text-sm">
                   {ingredient.quantity}{" "}
                   {ingredient.unit != "none" && ingredient.unit}
