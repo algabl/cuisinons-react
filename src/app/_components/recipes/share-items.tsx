@@ -231,7 +231,7 @@ export function ShareItems({ recipeId }: { recipeId: string }) {
     <>
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="ml-1">
+          <Button variant="outline" size="icon" className="ml-1">
             <Share className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>

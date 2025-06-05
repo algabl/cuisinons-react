@@ -12,13 +12,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { Share2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "~/components/ui/dropdown-menu";
 import { ShareItems } from "~/app/_components/recipes/share-items";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -47,75 +40,86 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <div className="flex justify-center px-2 py-10">
-      <Card hover={false} className="w-full max-w-2xl shadow-lg">
-        <CardHeader className="flex flex-col items-center gap-2">
+    <div className="bg-card flex min-h-[80vh] justify-center px-2 py-10">
+      <Card
+        hover={false}
+        className="bg-card w-full max-w-3xl rounded-3xl border border-black shadow-lg"
+      >
+        <CardHeader className="flex flex-col items-center gap-6 pb-0">
           {recipe.image && (
             <Image
-              width={128}
-              height={128}
+              width={256}
+              height={256}
               src={recipe.image}
               alt={recipe.name}
-              className="mb-2 h-32 w-32 rounded-lg border object-cover"
+              className="mb-4 h-56 w-full rounded-2xl border border-black object-cover shadow"
+              priority
             />
           )}
-          <CardTitle className="text-center text-3xl font-bold">
+          <CardTitle className="text-foreground text-center text-5xl leading-tight font-extrabold tracking-tight">
             {recipe.name}
           </CardTitle>
-          <CardDescription className="text-muted-foreground text-center">
+          <CardDescription className="text-muted-foreground bg-card w-full rounded-md border border-black px-4 py-2 text-start font-semibold">
             {recipe.description ?? "No description provided."}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="text-muted-foreground flex flex-wrap justify-center gap-4 text-sm">
+        <CardContent className="space-y-10 pt-2">
+          <div className="text-muted-foreground grid grid-cols-1 justify-items-center gap-4 text-lg sm:grid-cols-1 md:grid-cols-2">
             {recipe.cookingTime && (
-              <span className="bg-muted rounded px-3 py-1">
-                Cooking: {recipe.cookingTime} min
+              <span className="w-full rounded-md border border-black px-6 py-2 text-center font-bold break-words shadow">
+                🍳 Cooking: {recipe.cookingTime} min
               </span>
             )}
             {recipe.preparationTime && (
-              <span className="bg-muted rounded px-3 py-1">
-                Prep: {recipe.preparationTime} min
+              <span className="w-full rounded-md border border-black px-6 py-2 text-center font-bold break-words shadow">
+                🥄 Prep: {recipe.preparationTime} min
               </span>
             )}
             {recipe.servings && (
-              <span className="bg-muted rounded px-3 py-1">
-                Servings: {recipe.servings}
+              <span className="w-full rounded-md border border-black px-6 py-2 text-center font-bold break-words shadow">
+                🍽️ Servings: {recipe.servings}
               </span>
             )}
             {recipe.calories && (
-              <span className="bg-muted rounded px-3 py-1">
-                Calories: {recipe.calories}
+              <span className="w-full rounded-md border border-black px-6 py-2 text-center font-bold break-words shadow">
+                🔥 Calories: {recipe.calories}
               </span>
             )}
           </div>
           <div>
-            <h2 className="mb-2 text-lg font-semibold">Instructions</h2>
+            <h2 className="text-foreground mb-4 text-3xl font-extrabold tracking-tight">
+              Instructions
+            </h2>
             {Array.isArray(recipe.instructions) &&
             recipe.instructions.length > 0 ? (
-              <ol className="list-inside list-decimal space-y-2">
+              <ol className="list-inside list-decimal space-y-6 text-lg">
                 {recipe.instructions.map((step: string, idx: number) => (
-                  <li key={idx} className="bg-muted rounded px-3 py-2">
+                  <li
+                    key={idx}
+                    className="bg-muted text-foreground rounded-md border border-black px-6 py-4 font-semibold shadow"
+                  >
                     {step}
                   </li>
                 ))}
               </ol>
             ) : (
-              <p className="text-muted-foreground italic">
+              <p className="text-muted-foreground rounded-md border border-black px-4 py-2 text-lg italic shadow">
                 No instructions provided.
               </p>
             )}
           </div>
-          <div className="mt-6 flex items-center gap-3">
-            <Avatar>
+          <div className="mt-10 flex flex-col items-start gap-8 border-t border-black pt-8 sm:flex-row sm:items-center">
+            <Avatar className="h-16 w-16 border-2 border-black">
               <AvatarImage
                 src={session.user.image ?? undefined}
                 alt={session.user.name ?? "User"}
               />
-              <AvatarFallback>{session.user.name?.[0] ?? "U"}</AvatarFallback>
+              <AvatarFallback className="text-foreground bg-muted text-3xl">
+                {session.user.name?.[0] ?? "U"}
+              </AvatarFallback>
             </Avatar>
-            <div>
-              <div className="font-medium">
+            <div className="flex flex-col gap-1">
+              <div className="text-foreground text-xl font-extrabold">
                 {session.user.name ?? "Unknown User"}
               </div>
               <div className="text-muted-foreground text-xs">
@@ -127,14 +131,17 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                 </div>
               )}
             </div>
-            <div className="ml-auto flex items-center gap-2">
-              <Link href={`/app/recipes/${id}/edit`}>
-                <Button variant="outline" size="sm">
-                  Edit
-                </Button>
-              </Link>
-
-              <ShareItems recipeId={id} />
+            <div className="flex items-center gap-4 sm:ml-auto">
+              {isOwner && (
+                <>
+                  <Link href={`/app/recipes/${id}/edit`}>
+                    <Button variant="outline" size="default" className="">
+                      Edit
+                    </Button>
+                  </Link>
+                  <ShareItems recipeId={id} />
+                </>
+              )}
             </div>
           </div>
         </CardContent>
