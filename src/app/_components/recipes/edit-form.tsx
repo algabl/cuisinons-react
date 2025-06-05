@@ -1,9 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { inferRouterOutputs } from "@trpc/server";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { AppRouter } from "~/server/api/root";
 import {
   Form,
   FormControl,
@@ -18,8 +16,8 @@ import { redirect } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
-
-type Recipe = NonNullable<inferRouterOutputs<AppRouter>["recipe"]["getById"]>;
+import { IngredientSelect } from "./ingredient-select";
+import { type Recipe } from "~/server/api/types";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -195,6 +193,23 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
             </FormItem>
           )}
         />
+        {/* Ingredients */}
+        <IngredientSelect recipe={recipe} />
+        {recipe.recipeIngredients.map((ingredient) => {
+          return (
+            <div key={ingredient.ingredientId} className="mt-2">
+              <span className="font-semibold">
+                {ingredient.ingredient.name}
+              </span>
+              {(ingredient?.quantity ?? 0) > 0 && (
+                <span className="text-muted-foreground ml-2 text-sm">
+                  {ingredient.quantity}{" "}
+                  {ingredient.unit != "none" && ingredient.unit}
+                </span>
+              )}
+            </div>
+          );
+        })}
         {/* Instructions (as textarea, one per line) */}
         <FormField
           control={form.control}
