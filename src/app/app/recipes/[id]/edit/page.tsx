@@ -18,13 +18,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const recipe = await api.recipe.getById({ id });
   const isOwner = session?.user?.id === recipe?.createdById;
 
+  if (!recipe) {
+    return notFound();
+  }
+
   if (!isOwner) {
     unauthorized();
   }
 
-  if (!recipe) {
-    return notFound();
-  }
   return (
     <div className="bg-card border-border mx-auto mt-4 w-full max-w-lg space-y-8 rounded-2xl border p-8 shadow">
       <h1 className="text-center text-3xl font-bold">Edit Recipe</h1>

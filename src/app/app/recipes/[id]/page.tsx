@@ -61,7 +61,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     ),
   );
 
-  if (!session?.user?.id || (!isOwner && recipe.isPrivate && !isInGroup)) {
+  if (recipe.isPrivate && !isOwner && !isInGroup) {
     unauthorized();
   }
 
