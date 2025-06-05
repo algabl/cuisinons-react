@@ -18,10 +18,10 @@ type Recipe = RouterOutputs["recipe"]["getAll"][number];
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
-    <Link href={`/app/recipes/${recipe.id}`}>
-      <Card className="overflow-hidden pt-0">
-        <div className="relative aspect-[5/3] w-full bg-gray-200">
-          {recipe.image && (
+    <Card className="overflow-hidden pt-0">
+      <div className="relative aspect-[5/3] w-full bg-gray-200">
+        {recipe.image && (
+          <Link href={`/app/recipes/${recipe.id}`}>
             <Image
               className="h-full w-full object-cover"
               src={recipe.image}
@@ -30,24 +30,26 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
               sizes="(max-width: 600px) 100vw, 500px"
               priority={false}
             />
-          )}
-          <div className="absolute top-2 right-2">
-            <Dropdown id={recipe.id}>
-              <Button variant="secondary" size="icon">
-                <MoreHorizontalIcon />
-              </Button>
-            </Dropdown>
-          </div>
+          </Link>
+        )}
+        <div className="absolute top-2 right-2">
+          <Dropdown id={recipe.id}>
+            <Button variant="secondary" size="icon">
+              <MoreHorizontalIcon />
+            </Button>
+          </Dropdown>
         </div>
-        <CardHeader className="flex items-center justify-between">
+      </div>
+      <CardHeader className="flex items-center justify-between">
+        <Link href={`/app/recipes/${recipe.id}`}>
           <CardTitle className="truncate">{recipe.name}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CardDescription className="truncate">
-            {recipe.description}
-          </CardDescription>
-        </CardContent>
-      </Card>
-    </Link>
+        </Link>
+      </CardHeader>
+      <CardContent>
+        <CardDescription className="truncate">
+          {recipe.description}
+        </CardDescription>
+      </CardContent>
+    </Card>
   );
 }
