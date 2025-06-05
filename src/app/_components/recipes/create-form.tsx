@@ -13,9 +13,9 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
 import { redirect } from "next/navigation";
+import { SpinnerButton } from "~/components/spinner-button";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -44,7 +44,7 @@ export function CreateForm() {
       preparationTime: undefined,
       servings: undefined,
       calories: undefined,
-      instructions: [""],
+      instructions: [],
     },
   });
   const recipeCreate = api.recipe.create.useMutation();
@@ -206,7 +206,9 @@ export function CreateForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <SpinnerButton type="submit" loading={recipeCreate.isPending}>
+          Submit Recipe
+        </SpinnerButton>
       </form>
     </Form>
   );

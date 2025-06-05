@@ -18,6 +18,7 @@ import { redirect } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
+import { SpinnerButton } from "~/components/spinner-button";
 
 type Recipe = NonNullable<inferRouterOutputs<AppRouter>["recipe"]["getById"]>;
 
@@ -49,7 +50,7 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
       preparationTime: recipe.preparationTime ?? undefined,
       servings: recipe.servings ?? undefined,
       calories: recipe.calories ?? undefined,
-      instructions: recipe.instructions ?? [""],
+      instructions: recipe.instructions ?? [],
       isPrivate: recipe.isPrivate ?? true,
     },
   });
@@ -237,7 +238,9 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <SpinnerButton type="submit" loading={recipeUpdate.isPending}>
+          Submit Recipe
+        </SpinnerButton>
       </form>
     </Form>
   );
