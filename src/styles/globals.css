@@ -4,7 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
@@ -47,17 +48,25 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
+  --primary: oklch(0.5261 0.1327 248.81);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
+  --secondary: oklch(0.9609 0.1051 121.96);
   --secondary-foreground: oklch(0.21 0.006 285.885);
+  --mouse: oklch(0.7 0.08 35);
+  --mouse-ears: oklch(0.85 0.12 350);
+  --bowl: oklch(0.65 0.18 230);
+  --grass: oklch(0.7 0.15 130);
+  --sunset: oklch(0.75 0.15 50);
+  --lavender: oklch(0.8 0.1 280);
+  --coral: oklch(0.75 0.15 25);
+  --mint: oklch(0.8 0.12 160);
   --muted: oklch(0.967 0.001 286.375);
   --muted-foreground: oklch(0.552 0.016 285.938);
   --accent: oklch(0.967 0.001 286.375);
@@ -66,11 +75,11 @@
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: var(--primary);
+  --chart-2: var(--secondary);
+  --chart-3: var(--bowl);
+  --chart-4: var(--mouse);
+  --chart-5: var(--mouse-ears);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
@@ -79,6 +88,26 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+
+  --cartoon-border-width: 3px;
+  --cartoon-border-color: #000;
+  --cartoon-shadow-color: #000;
+  --cartoon-shadow-opacity: 0.2;
+
+  --cartoon-button-shadow-depth: 6px;
+  --cartoon-button-shadow-blur: 8px;
+
+  --cartoon-card-shadow-depth: 8px;
+  --cartoon-card-shadow-blur: 12px;
+
+  --cartoon-input-shadow-depth: 4px;
+  --cartoon-input-shadow-blur: 6px;
+
+  --cartoon-checkbox-shadow-depth: 3px;
+  --cartoon-checkbox-shadow-blur: 4px;
+
+  --cartoon-select-shadow-depth: 4px;
+  --cartoon-select-shadow-blur: 6px;
 }
 
 .dark {
@@ -113,6 +142,25 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
+
+  --cartoon-border-color: #fff;
+  --cartoon-shadow-color: #fff;
+  --cartoon-shadow-opacity: 0.3;
+
+  --cartoon-button-shadow-depth: 4px;
+  --cartoon-button-shadow-blur: 6px;
+
+  --cartoon-card-shadow-depth: 6px;
+  --cartoon-card-shadow-blur: 10px;
+
+  --cartoon-input-shadow-depth: 3px;
+  --cartoon-input-shadow-blur: 4px;
+
+  --cartoon-checkbox-shadow-depth: 2px;
+  --cartoon-checkbox-shadow-blur: 3px;
+
+  --cartoon-select-shadow-depth: 3px;
+  --cartoon-select-shadow-blur: 4px;
 }
 
 @layer base {
@@ -121,5 +169,160 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .cartoon-button {
+    position: relative;
+    border: var(--cartoon-border-width) solid var(--cartoon-border-color);
+    border-radius: var(--radius);
+    transform: translateY(0);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+    box-shadow:
+      0 var(--cartoon-button-shadow-depth) 0 var(--cartoon-shadow-color),
+      0 var(--cartoon-button-shadow-depth) var(--cartoon-button-shadow-blur) 0
+        rgba(0, 0, 0, var(--cartoon-shadow-opacity));
+  }
+
+  .cartoon-button:hover {
+    transform: translateY(calc(var(--cartoon-button-shadow-depth) / 2));
+    box-shadow:
+      0 calc(var(--cartoon-button-shadow-depth) / 2) 0
+        var(--cartoon-shadow-color),
+      0 calc(var(--cartoon-button-shadow-depth) / 2)
+        calc(var(--cartoon-button-shadow-blur) / 2) 0
+        rgba(0, 0, 0, var(--cartoon-shadow-opacity));
+  }
+
+  .cartoon-button:active {
+    transform: translateY(var(--cartoon-button-shadow-depth));
+    box-shadow:
+      0 0px 0 var(--cartoon-shadow-color),
+      0 0px 2px rgba(0, 0, 0, var(--cartoon-shadow-opacity));
+  }
+
+  /* Add CSS-only bounce animation on focus */
+  /* .cartoon-button:focus {
+    animation: button-bounce 0.3s ease-out;
+  }
+
+  @keyframes button-bounce {
+    0% {
+      transform: translateY(0) scale(0.98);
+    }
+    50% {
+      transform: translateY(0) scale(1.02);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+    }
+  } */
+
+  .cartoon-card {
+    position: relative;
+    border: var(--cartoon-border-width) solid var(--cartoon-border-color);
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow:
+      0 var(--cartoon-card-shadow-depth) 0 var(--cartoon-shadow-color),
+      0 var(--cartoon-card-shadow-depth) var(--cartoon-card-shadow-blur) 0
+        rgba(0, 0, 0, calc(var(--cartoon-shadow-opacity) + 0.05)); /* Slightly more opaque shadow for cards */
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .cartoon-card:not(.no-hover):hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 calc(var(--cartoon-card-shadow-depth) + 2px) 0
+        var(--cartoon-shadow-color),
+      0 calc(var(--cartoon-card-shadow-depth) + 2px)
+        calc(var(--cartoon-card-shadow-blur) + 4px) 0
+        rgba(0, 0, 0, calc(var(--cartoon-shadow-opacity) + 0.1));
+  }
+
+  /* CSS-only animations */
+  .wiggle-subtle {
+    animation: wiggle-subtle 3s ease-in-out infinite;
+  }
+
+  @keyframes wiggle-subtle {
+    0%,
+    100% {
+      transform: rotate(-0.5deg);
+    }
+    50% {
+      transform: rotate(0.5deg);
+    }
+  }
+
+  /* Input styling */
+  .cartoon-input {
+    position: relative;
+    border: var(--cartoon-border-width) solid var(--cartoon-border-color);
+    border-radius: var(--radius);
+    background-color: white; /* Consider using a background variable here */
+    box-shadow:
+      0 var(--cartoon-input-shadow-depth) 0 var(--cartoon-shadow-color),
+      0 var(--cartoon-input-shadow-depth) var(--cartoon-input-shadow-blur) 0
+        rgba(0, 0, 0, var(--cartoon-shadow-opacity));
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .cartoon-input:focus-within {
+    transform: translateY(calc(var(--cartoon-input-shadow-depth) / 2));
+    box-shadow:
+      0 calc(var(--cartoon-input-shadow-depth) / 2) 0
+        var(--cartoon-shadow-color),
+      0 calc(var(--cartoon-input-shadow-depth) / 2)
+        calc(var(--cartoon-input-shadow-blur) / 2) 0
+        rgba(0, 0, 0, var(--cartoon-shadow-opacity));
+  }
+
+  /* Checkbox styling */
+  .cartoon-checkbox {
+    position: relative;
+    border: var(--cartoon-border-width) solid var(--cartoon-border-color);
+    border-radius: calc(var(--radius) - 2px);
+    background-color: white; /* Consider using a background variable here */
+    box-shadow:
+      0 var(--cartoon-checkbox-shadow-depth) 0 var(--cartoon-shadow-color),
+      0 var(--cartoon-checkbox-shadow-depth) var(--cartoon-checkbox-shadow-blur)
+        0 rgba(0, 0, 0, var(--cartoon-shadow-opacity));
+    transition: all 0.15s ease;
+  }
+
+  .cartoon-checkbox:checked {
+    background-color: var(--primary); /* Using the primary color variable */
+  }
+
+  /* Select styling */
+  .cartoon-select {
+    position: relative;
+    border: var(--cartoon-border-width) solid var(--cartoon-border-color);
+    border-radius: var(--radius);
+    background-color: white; /* Consider using a background variable here */
+    box-shadow:
+      0 var(--cartoon-select-shadow-depth) 0 var(--cartoon-shadow-color),
+      0 var(--cartoon-select-shadow-depth) var(--cartoon-select-shadow-blur) 0
+        rgba(0, 0, 0, var(--cartoon-shadow-opacity));
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .cartoon-select:focus {
+    transform: translateY(calc(var(--cartoon-select-shadow-depth) / 2));
+    box-shadow:
+      0 calc(var(--cartoon-select-shadow-depth) / 2) 0
+        var(--cartoon-shadow-color),
+      0 calc(var(--cartoon-select-shadow-depth) / 2)
+        calc(var(--cartoon-select-shadow-blur) / 2) 0
+        rgba(0, 0, 0, var(--cartoon-shadow-opacity));
   }
 }

@@ -15,6 +15,7 @@ const config = {
     return config;
   },
   images: {
+    domains: ["*"],
     remotePatterns: [
       {
         protocol: "https",

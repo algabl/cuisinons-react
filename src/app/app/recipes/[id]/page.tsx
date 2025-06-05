@@ -12,26 +12,48 @@ import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { Share2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "~/components/ui/dropdown-menu";
+import { ShareItems } from "~/app/_components/recipes/share-items";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const session = await auth();
   const recipe = await api.recipe.getById({ id });
 
+  if (!session?.user?.id) {
+    unauthorized();
+  }
+
+  const user = await api.user.getById(session.user.id);
   if (!recipe) {
     notFound();
   }
 
-  if (!session?.user?.id || recipe.createdById !== session.user.id) {
+  const isOwner = session?.user?.id === recipe.createdById;
+  const isInGroup = recipe.recipeSharings.some((sharing) =>
+    user?.groupMembers.some(
+      (groupMember) => sharing.groupId === groupMember.groupId,
+    ),
+  );
+
+  if (!session?.user?.id || (!isOwner && recipe.isPrivate && !isInGroup)) {
     unauthorized();
   }
 
   return (
     <div className="flex justify-center px-2 py-10">
-      <Card className="w-full max-w-2xl shadow-lg">
+      <Card hover={false} className="w-full max-w-2xl shadow-lg">
         <CardHeader className="flex flex-col items-center gap-2">
           {recipe.image && (
             <Image
+              width={128}
+              height={128}
               src={recipe.image}
               alt={recipe.name}
               className="mb-2 h-32 w-32 rounded-lg border object-cover"
@@ -105,12 +127,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                 </div>
               )}
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
               <Link href={`/app/recipes/${id}/edit`}>
                 <Button variant="outline" size="sm">
                   Edit
                 </Button>
               </Link>
+
+              <ShareItems recipeId={id} />
             </div>
           </div>
         </CardContent>

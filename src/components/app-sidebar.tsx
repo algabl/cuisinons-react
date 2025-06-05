@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Hamburger, Home, Settings } from "lucide-react";
+import { Hamburger, Home, Settings, Users } from "lucide-react";
 
 // import { NavDocuments } from "~/components/nav-documents";
 import { NavMain } from "~/components/nav-main";
@@ -30,6 +30,7 @@ const data = {
       url: "/app/recipes",
       icon: Hamburger,
     },
+    { title: "Groups", url: "/app/groups", icon: Users },
   ],
   // navClouds: [
   //   {

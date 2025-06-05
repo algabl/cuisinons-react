@@ -1,5 +1,5 @@
 import { HydrateClient } from "~/trpc/server";
-import { Recipes } from "~/app/_components/recipes";
+import { List } from "~/app/_components/recipes/list";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -22,7 +22,7 @@ export default async function RecipesPage() {
           </Link>
         </Button>
         <Suspense fallback={<Skeleton />}>
-          <Recipes />
+          <List />
         </Suspense>
       </main>
     </HydrateClient>
