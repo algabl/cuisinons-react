@@ -18,12 +18,22 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "~/components/ui/dropdown-menu";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import {
+  CopyLinkButton,
+  GroupDialog,
+  ShareWithGroupButton,
+} from "./share-items";
 
 export function Dropdown(props: { id: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [groupOpen, setGroupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const recipeDelete = api.recipe.delete.useMutation();
   const router = useRouter();
@@ -64,10 +74,23 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
               <Trash />
               Delete
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Share />
-              Share
-            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Share />
+                Share
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <CopyLinkButton />
+                  <ShareWithGroupButton
+                    onClick={() => {
+                      setGroupOpen(true);
+                      setMenuOpen(false);
+                    }}
+                  />
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -99,6 +122,13 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {groupOpen && (
+        <GroupDialog
+          open={groupOpen}
+          onOpenChange={setGroupOpen}
+          recipeId={props.id}
+        />
+      )}
     </>
   );
 }
