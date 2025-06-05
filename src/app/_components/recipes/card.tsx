@@ -42,7 +42,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
       </div>
       <CardHeader className="flex items-center justify-between">
         <Link href={`/app/recipes/${recipe.id}`}>
-          <CardTitle className="truncate">{recipe.name}</CardTitle>
+          <CardTitle className="truncate py-1">{recipe.name}</CardTitle>
         </Link>
       </CardHeader>
       <CardContent>
