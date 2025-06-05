@@ -25,8 +25,12 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const session = await auth();
   const recipe = await api.recipe.getById({ id });
-  const user = await api.user.getById(session?.user?.id ?? "");
 
+  if (!session?.user?.id) {
+    unauthorized();
+  }
+
+  const user = await api.user.getById(session.user.id);
   if (!recipe) {
     notFound();
   }
