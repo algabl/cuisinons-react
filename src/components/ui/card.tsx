@@ -16,7 +16,7 @@ function Card({
       data-slot="card"
       className={cn(
         "bg-card text-card-foreground cartoon-card flex flex-col gap-6 py-6",
-        !hover && "no-hover",
+        hover && "hover",
         className,
       )}
       {...props}
