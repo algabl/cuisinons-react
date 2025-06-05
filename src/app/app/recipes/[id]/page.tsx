@@ -14,6 +14,32 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShareItems } from "~/app/_components/recipes/share-items";
 
+type Props = {
+  params: Promise<{ id: string }>;
+};
+
+export async function generateMetadata({ params }: Props) {
+  const { id } = await params;
+  const recipe = await api.recipe.getById({ id });
+
+  if (!recipe) {
+    return {
+      title: "Recipe Not Found",
+      description: "The requested recipe does not exist.",
+    };
+  }
+
+  return {
+    title: recipe.name,
+    description: recipe.description ?? "No description provided.",
+    openGraph: {
+      title: recipe.name,
+      description: recipe.description ?? "No description provided.",
+      images: recipe.image ? [recipe.image] : [],
+    },
+  };
+}
+
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   const session = await auth();
