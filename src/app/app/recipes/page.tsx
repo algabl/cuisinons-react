@@ -1,17 +1,23 @@
-import { HydrateClient } from "~/trpc/server";
+import { api, HydrateClient } from "~/trpc/server";
 import { List } from "~/app/_components/recipes/list";
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { Skeleton } from "~/components/ui/skeleton";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { unauthorized } from "next/navigation";
+import { auth } from "~/server/auth";
 
 export const metadata: Metadata = {
   title: "Your Recipes",
 };
 
 export default async function RecipesPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    unauthorized();
+  }
+
+  const recipes = await api.recipe.getByUserId({ userId: session.user.id });
   return (
     <HydrateClient>
       <main className="flex min-h-full flex-col">
@@ -21,9 +27,8 @@ export default async function RecipesPage() {
             Create Recipe
           </Link>
         </Button>
-        <Suspense fallback={<Skeleton />}>
-          <List />
-        </Suspense>
+
+        <List recipes={recipes} />
       </main>
     </HydrateClient>
   );

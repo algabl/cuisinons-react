@@ -15,8 +15,10 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground cartoon-card flex flex-col gap-6 py-6",
-        !hover && "no-hover",
+        // Tailwind equivalents for cartoon-card:
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-4 border-black py-6 shadow-[0_8px_0_#000,0_8px_12px_0_rgba(0,0,0,0.25)] transition-[transform,box-shadow] duration-100 ease-in-out",
+        hover &&
+          "hover:-translate-y-0.5 hover:shadow-[0_10px_0_#000,0_14px_16px_0_rgba(0,0,0,0.3)]",
         className,
       )}
       {...props}

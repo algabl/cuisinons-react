@@ -3,6 +3,7 @@ import { recipeRouter } from "./routers/recipe";
 import { groupRouter } from "./routers/group";
 import { userRouter } from "./routers/user";
 import { sharingRouter } from "./routers/sharing";
+import { ingredientRouter } from "./routers/ingredient";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   group: groupRouter,
   user: userRouter,
   sharing: sharingRouter,
+  ingredient: ingredientRouter,
 });
 
 // export type definition of API

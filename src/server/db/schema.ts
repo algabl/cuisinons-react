@@ -170,10 +170,12 @@ export const recipeIngredients = createTable(
       .references(() => ingredients.id),
     quantity: d.real(), // Null meaning no quantity
     unit: d.varchar({ length: 255 }), // Null meaning no unit
+    userId: d.varchar({ length: 255 }).references(() => users.id),
   }),
   (t) => {
     return {
       primaryKey: primaryKey({ columns: [t.recipeId, t.ingredientId] }),
+      userIdIndex: index("recipe_ingredient_user_id_index").on(t.userId),
     };
   },
 );
@@ -188,6 +190,10 @@ export const recipeIngredientsRelations = relations(
     ingredient: one(ingredients, {
       fields: [recipeIngredients.ingredientId],
       references: [ingredients.id],
+    }),
+    user: one(users, {
+      fields: [recipeIngredients.userId],
+      references: [users.id],
     }),
   }),
 );
