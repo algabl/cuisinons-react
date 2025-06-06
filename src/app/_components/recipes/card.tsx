@@ -20,8 +20,8 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Card className="overflow-hidden pt-0">
       <div className="relative aspect-[5/3] w-full bg-gray-200">
-        {recipe.image && (
-          <Link href={`/app/recipes/${recipe.id}`}>
+        <Link href={`/app/recipes/${recipe.id}`}>
+          {recipe.image ? (
             <Image
               className="h-full w-full object-cover"
               src={recipe.image}
@@ -30,8 +30,12 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
               sizes="(max-width: 600px) 100vw, 500px"
               priority={false}
             />
-          </Link>
-        )}
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-300">
+              <span className="text-gray-500">No Image</span>
+            </div>
+          )}
+        </Link>
         <div className="absolute top-2 right-2">
           <Dropdown id={recipe.id}>
             <Button variant="secondary" size="icon">

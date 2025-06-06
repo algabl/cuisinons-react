@@ -86,7 +86,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
             {recipe.name}
           </CardTitle>
           <CardDescription className="text-muted-foreground bg-card w-full rounded-md border border-black px-4 py-2 text-start font-semibold">
-            {recipe.description ?? "No description provided."}
+            {recipe.description && recipe.description.length > 0
+              ? recipe.description
+              : "No description provided."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-10 pt-2">

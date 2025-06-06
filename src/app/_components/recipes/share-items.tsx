@@ -199,15 +199,12 @@ export function GroupDialog({
                         className="flex items-center gap-1"
                       >
                         <span>{group.name}</span>
-                        <Check className="h-3 w-3 text-green-500" />
-                        <Button
-                          variant="ghost"
-                          size="icon"
+                        <div
                           className="h-3 w-3 cursor-pointer p-0 text-red-400"
                           onClick={() => handleRemoveSharedGroup(group.id)}
                         >
-                          <X className="h-3 w-3" />
-                        </Button>
+                          <X className="h-full w-full" />
+                        </div>
                       </Badge>
                       {removeSharedGroupMutation.isPending &&
                         removingId === group.id && <Spinner />}
