@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { recipeIngredients, recipes, recipeSharings } from "~/server/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 export const createValidation = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -17,6 +17,15 @@ export const createValidation = z.object({
   preparationTime: z.coerce.number().int().positive().optional(),
   servings: z.coerce.number().int().positive().optional(),
   calories: z.coerce.number().int().positive().optional(),
+  recipeIngredients: z
+    .array(
+      z.object({
+        ingredientId: z.string().uuid("Ingredient ID must be a valid UUID"),
+        quantity: z.coerce.number().positive("Quantity must be positive"),
+        unit: z.string().optional(),
+      }),
+    )
+    .optional(),
   instructions: z.string().array().optional(),
   isPrivate: z.boolean().optional(),
 });
@@ -32,18 +41,42 @@ export const recipeRouter = createTRPCRouter({
   create: protectedProcedure
     .input(createValidation)
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(recipes).values({
-        name: input.name,
-        description: input.description,
-        image: input.image,
-        createdById: ctx.session.user.id,
-        cookingTime: input.cookingTime,
-        preparationTime: input.preparationTime,
-        servings: input.servings,
-        calories: input.calories,
-        instructions: input.instructions,
-      });
-      return { success: true, message: "Recipe created successfully" };
+      const created = await ctx.db
+        .insert(recipes)
+        .values({
+          name: input.name,
+          description: input.description,
+          image: input.image,
+          createdById: ctx.session.user.id,
+          cookingTime: input.cookingTime,
+          preparationTime: input.preparationTime,
+          servings: input.servings,
+          calories: input.calories,
+          instructions: input.instructions,
+        })
+        .returning();
+
+      if (!created[0]) {
+        throw new Error("Failed to create recipe");
+      }
+
+      if (input.recipeIngredients) {
+        for (const ingredient of input.recipeIngredients) {
+          // Insert new ingredient
+          await ctx.db.insert(recipeIngredients).values({
+            recipeId: created[0].id,
+            ingredientId: ingredient.ingredientId,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            userId: ctx.session.user.id,
+          });
+        }
+      }
+      return {
+        success: true,
+        message: "Recipe created successfully",
+        data: created[0]?.id,
+      };
     }),
   update: protectedProcedure
     .input(
@@ -52,6 +85,84 @@ export const recipeRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Get existing recipe to check ownership
+      const existingRecipe = await ctx.db.query.recipes.findFirst({
+        where: (recipes, { eq }) =>
+          and(
+            eq(recipes.id, input.id),
+            eq(recipes.createdById, ctx.session.user.id),
+          ),
+        with: {
+          recipeIngredients: true,
+        },
+      });
+
+      if (!existingRecipe) {
+        throw new Error(
+          "Recipe not found or you do not have permission to edit it.",
+        );
+      }
+
+      // Update recipeIngredients.
+      // First, check for existing ingredients and update them
+      const existingIngredients = existingRecipe.recipeIngredients.map(
+        (ri) => ri.ingredientId,
+      );
+
+      const newIngredients =
+        input.recipeIngredients?.map((ingredient) => ingredient.ingredientId) ??
+        [];
+
+      // Remove ingredients that are no longer in the recipe
+      const ingredientsToRemove = existingIngredients.filter(
+        (ingredientId) => !newIngredients.includes(ingredientId),
+      );
+
+      if (ingredientsToRemove.length > 0) {
+        await ctx.db
+          .delete(recipeIngredients)
+          .where(
+            and(
+              eq(recipeIngredients.recipeId, input.id),
+              inArray(recipeIngredients.ingredientId, ingredientsToRemove),
+            ),
+          );
+      }
+
+      // Add or update ingredients
+      if (input.recipeIngredients) {
+        for (const ingredient of input.recipeIngredients) {
+          const existingIngredient = existingRecipe.recipeIngredients.find(
+            (ri) => ri.ingredientId === ingredient.ingredientId,
+          );
+
+          if (existingIngredient) {
+            // Update existing ingredient
+            await ctx.db
+              .update(recipeIngredients)
+              .set({
+                quantity: ingredient.quantity,
+                unit: ingredient.unit,
+              })
+              .where(
+                and(
+                  eq(recipeIngredients.recipeId, input.id),
+                  eq(recipeIngredients.ingredientId, ingredient.ingredientId),
+                ),
+              );
+          } else {
+            // Insert new ingredient
+            await ctx.db.insert(recipeIngredients).values({
+              recipeId: input.id,
+              ingredientId: ingredient.ingredientId,
+              quantity: ingredient.quantity,
+              unit: ingredient.unit,
+              userId: ctx.session.user.id,
+            });
+          }
+        }
+      }
+
       await ctx.db
         .update(recipes)
         .set({
@@ -75,6 +186,15 @@ export const recipeRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      // Delete recipe ingredients
+      await ctx.db
+        .delete(recipeIngredients)
+        .where(
+          and(
+            eq(recipeIngredients.recipeId, input.id),
+            eq(recipeIngredients.userId, ctx.session.user.id),
+          ),
+        );
       await ctx.db
         .delete(recipes)
         .where(

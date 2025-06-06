@@ -116,6 +116,30 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           </div>
           <div>
             <h2 className="text-foreground mb-4 text-3xl font-extrabold tracking-tight">
+              Ingredients
+            </h2>
+            {Array.isArray(recipe.recipeIngredients) &&
+            recipe.recipeIngredients.length > 0 ? (
+              <ul className="list-inside list-disc space-y-6 text-lg">
+                {recipe.recipeIngredients.map((ingredient, idx: number) => (
+                  <li
+                    key={idx}
+                    className="bg-muted text-foreground rounded-md border border-black px-6 py-4 font-semibold shadow"
+                  >
+                    {ingredient.quantity}{" "}
+                    {ingredient.unit != "none" ? `${ingredient.unit} ` : ""}
+                    {ingredient.ingredient.name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground rounded-md border border-black px-4 py-2 text-lg italic shadow">
+                No ingredients provided.
+              </p>
+            )}
+          </div>
+          <div>
+            <h2 className="text-foreground mb-4 text-3xl font-extrabold tracking-tight">
               Instructions
             </h2>
             {Array.isArray(recipe.instructions) &&

@@ -27,14 +27,16 @@ type Ingredient = NonNullable<
 >;
 export default function CreateForm({
   onSubmit,
+  prefill,
 }: {
   onSubmit?: (ingredient: Ingredient) => void;
+  prefill?: Partial<z.infer<typeof formSchema>>;
 }) {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      description: "",
+      name: prefill?.name ?? "",
+      description: prefill?.description ?? "",
     },
   });
 
@@ -54,7 +56,7 @@ export default function CreateForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <div className="space-y-4">
         {/* Name */}
         <FormField
           control={form.control}
@@ -63,9 +65,11 @@ export default function CreateForm({
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="Recipe name" {...field} />
+                <Input placeholder="Ingredient name" {...field} />
               </FormControl>
-              <FormDescription>This is the recipe&apos;s name.</FormDescription>
+              <FormDescription>
+                This is the ingredient&apos;s name.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -78,17 +82,19 @@ export default function CreateForm({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input placeholder="A recipe for..." {...field} />
+                <Input placeholder="An ingredient for..." {...field} />
               </FormControl>
               <FormDescription>
-                This is the recipe&apos;s description.
+                This is the ingredient&apos;s description.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
-      </form>
+        <Button type="button" onClick={form.handleSubmit(handleSubmit)}>
+          Submit
+        </Button>
+      </div>
     </Form>
   );
 }
