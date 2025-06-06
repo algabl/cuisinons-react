@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "~/components/ui/dialog";
 import {
   Popover,
@@ -39,7 +38,7 @@ export function IngredientSelect({ value, recipe }: IngredientSelectProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIngredient, setSelectedIngredient] =
-    useState<Ingredient | null>(value ?? null);
+    useState<Ingredient | null>(value !== undefined ? value : null);
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(handler);
@@ -47,6 +46,15 @@ export function IngredientSelect({ value, recipe }: IngredientSelectProps) {
 
   // Optionally filter by userId if provided
   const ingredientSearch = api.ingredient.search.useQuery(debouncedSearch);
+
+  const filteredIngredients: Ingredient[] = ingredientSearch.data
+    ? ingredientSearch.data.filter(
+        (ingredient) =>
+          !recipe.recipeIngredients.some(
+            (i) => i.ingredientId === ingredient.id,
+          ),
+      )
+    : [];
 
   return (
     <div className="flex flex-col space-x-2">
@@ -66,7 +74,7 @@ export function IngredientSelect({ value, recipe }: IngredientSelectProps) {
               className="flex-grow"
             />
             <CommandList>
-              {ingredientSearch.data?.length === 0 && (
+              {filteredIngredients.length === 0 && (
                 <CommandEmpty>
                   No ingredients found.
                   <Button
@@ -83,7 +91,7 @@ export function IngredientSelect({ value, recipe }: IngredientSelectProps) {
                 </CommandEmpty>
               )}
               <CommandGroup>
-                {ingredientSearch.data?.map((ingredient) => (
+                {filteredIngredients.map((ingredient) => (
                   <CommandItem
                     key={ingredient.id}
                     value={ingredient.name}

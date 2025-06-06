@@ -195,6 +195,11 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
         />
         {/* Ingredients */}
         <IngredientSelect recipe={recipe} />
+        {recipe.recipeIngredients.length > 0 && (
+          <h2 className="text-foreground mb-4 text-3xl font-extrabold tracking-tight">
+            Ingredients
+          </h2>
+        )}
         {recipe.recipeIngredients.map((ingredient) => {
           return (
             <div key={ingredient.ingredientId} className="mt-2">
