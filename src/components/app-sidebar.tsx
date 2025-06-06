@@ -81,11 +81,11 @@ const data = {
   //   },
   // ],
   navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
+    // {
+    //   title: "Settings",
+    //   url: "#",
+    //   icon: Settings,
+    // },
     // {
     //   title: "Get Help",
     //   url: "#",

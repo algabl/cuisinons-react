@@ -16,6 +16,7 @@ import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
 import { redirect } from "next/navigation";
 import { SpinnerButton } from "~/components/spinner-button";
+import { Switch } from "~/components/ui/switch";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -31,6 +32,7 @@ const formSchema = z.object({
   servings: z.coerce.number().int().positive().optional(),
   calories: z.coerce.number().int().positive().optional(),
   instructions: z.string().array().optional(),
+  isPrivate: z.boolean().optional(),
 });
 
 export function CreateForm() {
@@ -40,11 +42,12 @@ export function CreateForm() {
       name: "",
       description: "",
       image: "",
-      cookingTime: undefined,
-      preparationTime: undefined,
-      servings: undefined,
-      calories: undefined,
+      cookingTime: "", // always string for input
+      preparationTime: "", // always string for input
+      servings: "", // always string for input
+      calories: "", // always string for input
       instructions: [],
+      isPrivate: true,
     },
   });
   const recipeCreate = api.recipe.create.useMutation();
@@ -59,6 +62,7 @@ export function CreateForm() {
       servings: values.servings,
       calories: values.calories,
       instructions: values.instructions,
+      isPrivate: values.isPrivate,
     });
     redirect("/app/recipes");
   }
@@ -123,7 +127,13 @@ export function CreateForm() {
             <FormItem>
               <FormLabel>Cooking Time (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="e.g. 30" {...field} />
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 30"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </FormControl>
               <FormDescription>How long does it take to cook?</FormDescription>
               <FormMessage />
@@ -138,7 +148,13 @@ export function CreateForm() {
             <FormItem>
               <FormLabel>Preparation Time (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="e.g. 15" {...field} />
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 15"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </FormControl>
               <FormDescription>
                 How long does it take to prepare?
@@ -155,7 +171,13 @@ export function CreateForm() {
             <FormItem>
               <FormLabel>Servings</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="e.g. 4" {...field} />
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 4"
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </FormControl>
               <FormDescription>
                 How many servings does this recipe make?
@@ -177,6 +199,7 @@ export function CreateForm() {
                   min={1}
                   placeholder="e.g. 250"
                   {...field}
+                  value={field.value ?? ""}
                 />
               </FormControl>
               <FormDescription>
@@ -202,6 +225,28 @@ export function CreateForm() {
                 />
               </FormControl>
               <FormDescription>Enter each step on a new line.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {/* Is Private */}
+        <FormField
+          control={form.control}
+          name="isPrivate"
+          render={({ field }) => (
+            <FormItem className="flex items-center space-x-2">
+              <FormControl>
+                <Switch
+                  id="isPrivate"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel>Private Recipe</FormLabel>
+              <FormDescription>
+                Check this if you want to keep this recipe private. Sharing this
+                recipe to a group will still make it visible to that group.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
