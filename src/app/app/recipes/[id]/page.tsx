@@ -13,6 +13,7 @@ import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { ShareItems } from "~/app/_components/recipes/share-items";
+import { CookingMode } from "~/components/cooking-mode";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -92,6 +93,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-10 pt-2">
+          <CookingMode />
           <div className="text-muted-foreground grid grid-cols-1 justify-items-center gap-4 text-lg sm:grid-cols-1 md:grid-cols-2">
             {recipe.cookingTime && (
               <span className="w-full rounded-md border border-black px-6 py-2 text-center font-bold break-words shadow">

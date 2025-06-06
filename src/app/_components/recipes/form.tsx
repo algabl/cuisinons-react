@@ -29,18 +29,13 @@ import { Trash2 } from "lucide-react";
 export const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().optional(),
-  image: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.string().url().safeParse(val).success, {
-      message: "Must be a valid URL",
-    }),
-  cookingTime: z.coerce.number().int().positive().optional(),
-  preparationTime: z.coerce.number().int().positive().optional(),
-  servings: z.coerce.number().int().positive().optional(),
-  calories: z.coerce.number().int().positive().optional(),
-  instructions: z.string().array().optional(),
-  isPrivate: z.boolean().optional(),
+  image: z.string().optional(),
+  cookingTime: z.union([z.number(), z.string()]).optional(),
+  preparationTime: z.union([z.number(), z.string()]).optional(),
+  servings: z.union([z.number(), z.string()]).optional(),
+  calories: z.union([z.number(), z.string()]).optional(),
+  instructions: z.array(z.string()).default([]),
+  isPrivate: z.boolean().default(true),
   recipeIngredients: z
     .array(
       z.object({
@@ -50,10 +45,16 @@ export const formSchema = z.object({
         name: z.string().optional(),
       }),
     )
-    .optional(),
+    .default([]),
 });
 
-export default function RecipeForm({ recipe, onSubmit }: { recipe?: Recipe, onSubmit: (values: z.infer<typeof formSchema>) => void }) {
+export default function RecipeForm({
+  recipe,
+  onSubmit,
+}: {
+  recipe?: Recipe;
+  onSubmit: (values: z.infer<typeof formSchema>) => void;
+}) {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {

@@ -26,7 +26,7 @@ import { api } from "~/trpc/react";
 import CreateForm from "../ingredients/create-form";
 import { type Ingredient } from "~/server/api/types";
 import type { z } from "zod";
-import type { formSchema } from "./edit-form";
+import type { formSchema } from "./form";
 import { createPortal } from "react-dom";
 
 interface IngredientSelectProps {
