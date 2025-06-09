@@ -14,9 +14,6 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-
-import { api } from "~/trpc/server";
-import { redirect } from "next/navigation";
 import { createGroup } from "~/app/actions";
 
 const formSchema = z.object({

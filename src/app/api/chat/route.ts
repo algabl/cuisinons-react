@@ -1,12 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import {
-  generateText,
-  streamText,
-  tool,
-  type CoreMessage,
-  type LanguageModel,
-  type ToolSet,
-} from "ai";
+import { streamText, tool, type ToolSet } from "ai";
 import { z } from "zod";
 import { env } from "~/env";
 import { api } from "~/trpc/server";
@@ -15,29 +9,10 @@ import { api } from "~/trpc/server";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages: rawMessages } = await req.json();
+  const { messages: userMessages } = await req.json();
 
-  // Coerce rawMessages into the correct format
-  const userMessages: CoreMessage[] = Array.isArray(rawMessages)
-    ? rawMessages
-        .filter(
-          (msg) =>
-            msg &&
-            typeof msg === "object" &&
-            typeof msg.role === "string" &&
-            typeof msg.content === "string",
-        )
-        .map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }))
-    : [];
-
-  if (userMessages.length === 0) {
-    return new Response("Invalid messages format", { status: 400 });
-  }
   const openRouter = createOpenRouter({
-    apiKey: env.OPENROUTER_API_KEY as string,
+    apiKey: env.OPENROUTER_API_KEY,
   });
 
   const systemPrompt = {
@@ -68,6 +43,7 @@ export async function POST(req: Request) {
   const messages = [systemPrompt, ...userMessages];
 
   const tools = {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     recipes: tool({
       description: "Get a list of all of the user's recipes",
       parameters: z.object({}),
@@ -85,18 +61,13 @@ export async function POST(req: Request) {
     }),
   } as ToolSet;
 
-  try {
-    const result = await streamText({
-      model,
-      messages,
-      tools,
-      maxSteps: 5,
-    });
-    return result.toDataStreamResponse();
-  } catch (error) {
-    console.error("AI API Error:", error);
-    return new Response(JSON.stringify({ error: error.message || error }), {
-      status: 500,
-    });
-  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const result = streamText({
+    model,
+    messages,
+    tools,
+    maxSteps: 5,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  return result.toDataStreamResponse();
 }

@@ -56,6 +56,7 @@ export async function updateMember(formData: FormData) {
 
 export async function deleteMember(formData: FormData) {
   const session = await auth();
+  console.log(formData);
   if (!session?.user?.id) {
     redirect("/login");
   }
