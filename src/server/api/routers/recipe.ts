@@ -205,10 +205,12 @@ export const recipeRouter = createTRPCRouter({
         );
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const allRecipes = await ctx.db.query.recipes.findMany({
+    const userId = ctx.session.user.id;
+    const recipes = await ctx.db.query.recipes.findMany({
+      where: (recipes, { eq }) => eq(recipes.createdById, userId),
       orderBy: (recipes, { desc }) => [desc(recipes.createdAt)],
     });
-    return allRecipes;
+    return recipes;
   }),
   getByUserId: protectedProcedure
     .input(z.object({ userId: z.string() }))

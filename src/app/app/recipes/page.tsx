@@ -17,7 +17,7 @@ export default async function RecipesPage() {
     unauthorized();
   }
 
-  const recipes = await api.recipe.getByUserId({ userId: session.user.id });
+  const recipes = await api.recipe.getAll();
   return (
     <HydrateClient>
       <main className="flex min-h-full flex-col">
