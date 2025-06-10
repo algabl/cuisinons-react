@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -176,7 +177,6 @@
 }
 
 @layer components {
-
   /* Input styling */
   .cartoon-input {
     position: relative;
