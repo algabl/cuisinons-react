@@ -15,7 +15,11 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  if (!isAuthenticated && req.nextUrl.pathname !== "/login") {
+  if (
+    !isAuthenticated &&
+    req.nextUrl.pathname !== "/login" &&
+    req.nextUrl.pathname.includes("/app")
+  ) {
     const url = req.nextUrl.clone();
     url.search = "callbackUrl=" + url.pathname;
     url.pathname = "/login";

@@ -68,10 +68,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   return (
     <div className="bg-card flex min-h-[80vh] justify-center px-2 py-10">
-      <Card
-        hover={false}
-        className="bg-card w-full max-w-3xl rounded-3xl border border-black shadow-lg"
-      >
+      <Card className="bg-card w-full max-w-3xl rounded-3xl border border-black shadow-lg">
         <CardHeader className="flex flex-col items-center gap-6 pb-0">
           {recipe.image && (
             <Image
