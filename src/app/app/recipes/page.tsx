@@ -20,7 +20,7 @@ export default async function RecipesPage() {
   const recipes = await api.recipe.getAll();
   return (
     <HydrateClient>
-      <main className="container mx-auto py-8">
+      <main className="container mx-auto">
         <List recipes={recipes} />
       </main>
     </HydrateClient>
