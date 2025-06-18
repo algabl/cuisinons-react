@@ -20,14 +20,7 @@ export default async function RecipesPage() {
   const recipes = await api.recipe.getAll();
   return (
     <HydrateClient>
-      <main className="flex min-h-full flex-col">
-        <Button asChild variant="outline">
-          <Link href={"/app/recipes/create"}>
-            <Plus />
-            Create Recipe
-          </Link>
-        </Button>
-
+      <main className="container mx-auto py-8">
         <List recipes={recipes} />
       </main>
     </HydrateClient>

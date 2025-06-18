@@ -174,6 +174,7 @@ export const recipeRouter = createTRPCRouter({
           servings: input.servings,
           calories: input.calories,
           instructions: input.instructions,
+          isPrivate: input.isPrivate ?? true,
         })
         .where(
           and(
