@@ -1,5 +1,5 @@
 "use client";
-import { Pencil, Share, Trash } from "lucide-react";
+import { Pencil, Share2, Trash } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -75,10 +75,7 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
               Delete
             </DropdownMenuItem>
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Share />
-                Share
-              </DropdownMenuSubTrigger>
+              <DropdownMenuSubTrigger>Share</DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
                   <CopyLinkButton />

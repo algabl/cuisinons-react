@@ -1,13 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 import { api } from "~/trpc/server";
 
 export async function createGroup(formData: FormData) {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
+  if (!session.userId) {
+    redirect("/sign-in");
   }
   const id = await api.group.create({
     name: formData.get("name") as string,
@@ -17,8 +17,8 @@ export async function createGroup(formData: FormData) {
 
 export async function addMember(formData: FormData) {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
+  if (!session.userId) {
+    redirect("/sign-in");
   }
   const groupId = formData.get("groupId") as string;
   console.log("groupId", groupId);
@@ -38,8 +38,8 @@ export async function addMember(formData: FormData) {
 
 export async function updateMember(formData: FormData) {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
+  if (!session.userId) {
+    redirect("/sign-in");
   }
   const groupId = formData.get("groupId") as string;
   const userId = formData.get("userId") as string;
@@ -57,7 +57,7 @@ export async function updateMember(formData: FormData) {
 export async function deleteMember(formData: FormData) {
   const session = await auth();
   console.log(formData);
-  if (!session?.user?.id) {
-    redirect("/login");
+  if (!session.userId) {
+    redirect("/sign-in");
   }
 }

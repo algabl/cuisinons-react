@@ -24,12 +24,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
-import { useSession, signOut } from "next-auth/react";
+// import { useSession, signOut } from "next-auth/react";
+import { SignOutButton, useUser } from "@clerk/nextjs";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const { data } = useSession();
-
+  const { user } = useUser();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -40,18 +40,15 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                {data?.user.image && (
-                  <AvatarImage
-                    src={data?.user.image}
-                    alt={data.user.name ?? ""}
-                  />
+                {user?.hasImage && (
+                  <AvatarImage src={user.imageUrl} alt={user.fullName ?? ""} />
                 )}
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{data?.user.name}</span>
+                <span className="truncate font-medium">{user?.fullName}</span>
                 <span className="text-muted-foreground truncate text-xs">
-                  {data?.user.email}
+                  {user?.emailAddresses[0]?.emailAddress ?? "No email"}
                 </span>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
@@ -66,20 +63,20 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  {data?.user.image && (
+                  {user?.hasImage && (
                     <AvatarImage
-                      src={data.user.image}
-                      alt={data.user.name ?? ""}
+                      src={user.imageUrl}
+                      alt={user.fullName ?? ""}
                     />
                   )}
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
-                    {data?.user.name}
+                    {user?.fullName ?? "No Name"}
                   </span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {data?.user.email}
+                    {user?.emailAddresses[0]?.emailAddress ?? "No email"}
                   </span>
                 </div>
               </div>
@@ -100,9 +97,13 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator /> */}
-            <DropdownMenuItem onClick={() => signOut()}>
-              <IconLogout />
-              Log out
+            <DropdownMenuItem>
+              <SignOutButton>
+                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <IconLogout />
+                  Log out
+                </span>
+              </SignOutButton>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

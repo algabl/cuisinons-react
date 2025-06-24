@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { AppSidebar } from "~/components/app-sidebar";
 import { SiteHeader } from "~/components/site-header";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export const metadata: Metadata = {
   title: {
@@ -19,8 +19,8 @@ export default async function Layout({
 }) {
   const session = await auth();
 
-  if (!session) {
-    redirect("/login");
+  if (!session.userId) {
+    redirect("/sign-in");
   }
   return (
     <SidebarProvider

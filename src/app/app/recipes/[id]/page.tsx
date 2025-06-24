@@ -1,6 +1,6 @@
 import { notFound, unauthorized } from "next/navigation";
 import { api } from "~/trpc/server";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 import {
   Card,
   CardContent,
@@ -46,16 +46,16 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const recipe = await api.recipe.getById({ id });
 
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     unauthorized();
   }
 
-  const user = await api.user.getById(session.user.id);
+  const user = await api.user.getById(session.userId);
   if (!recipe) {
     notFound();
   }
 
-  const isOwner = session?.user?.id === recipe.createdById;
+  const isOwner = session?.userId === recipe.createdById;
   const isInGroup = recipe.recipeSharings.some((sharing) =>
     user?.groupMembers.some(
       (groupMember) => sharing.groupId === groupMember.groupId,
@@ -68,10 +68,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   return (
     <div className="bg-card flex min-h-[80vh] justify-center px-2 py-10">
-      <Card
-        hover={false}
-        className="bg-card w-full max-w-3xl rounded-3xl border border-black shadow-lg"
-      >
+      <Card className="bg-card w-full max-w-3xl rounded-3xl border border-black shadow-lg">
         <CardHeader className="flex flex-col items-center gap-6 pb-0">
           {recipe.image && (
             <Image
@@ -163,7 +160,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
             )}
           </div>
           <div className="mt-10 flex flex-col items-start gap-8 border-t border-black pt-8 sm:flex-row sm:items-center">
-            <Avatar className="h-16 w-16 border-2 border-black">
+            {/* <Avatar className="h-16 w-16 border-2 border-black">
               <AvatarImage
                 src={session.user.image ?? undefined}
                 alt={session.user.name ?? "User"}
@@ -184,7 +181,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                   Updated at: {recipe.updatedAt.toLocaleString()}
                 </div>
               )}
-            </div>
+            </div> */}
             <div className="flex items-center gap-4 sm:ml-auto">
               {isOwner && (
                 <>

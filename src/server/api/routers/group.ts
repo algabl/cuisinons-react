@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { groupMembers, groups } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
+import { clerkClient } from "@clerk/nextjs/server";
 
 export const createValidation = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -25,7 +26,7 @@ export const groupRouter = createTRPCRouter({
       }
       await ctx.db.insert(groupMembers).values({
         groupId: createdGroup.id,
-        userId: ctx.session.user.id,
+        userId: ctx.session.userId,
         role: "owner",
       });
       return createdGroup.id;
@@ -61,11 +62,7 @@ export const groupRouter = createTRPCRouter({
       const group = await ctx.db.query.groups.findFirst({
         where: (groups, { eq }) => eq(groups.id, input),
         with: {
-          groupMembers: {
-            with: {
-              user: true,
-            },
-          },
+          groupMembers: true,
           recipeSharings: {
             with: {
               recipe: true,
@@ -84,9 +81,11 @@ export const groupRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const user = await ctx.db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.email, input.email),
+      const client = await clerkClient();
+      const users = await client.users.getUserList({
+        emailAddress: [input.email],
       });
+      const user = users.data[0];
       if (!user) {
         throw new Error("User not found");
       }
@@ -149,9 +148,6 @@ export const groupRouter = createTRPCRouter({
             eq(groupMembers.groupId, input.groupId),
             eq(groupMembers.userId, input.userId),
           ),
-        with: {
-          user: true,
-        },
       });
       if (!groupMember) {
         throw new Error("User not in group");

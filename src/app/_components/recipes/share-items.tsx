@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, Copy, Share, Users, X } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
@@ -28,6 +27,7 @@ import { Separator } from "~/components/ui/separator";
 import { api } from "~/trpc/react";
 import { Badge } from "~/components/ui/badge";
 import { Spinner } from "~/components/ui/spinner";
+import { useAuth } from "@clerk/nextjs";
 
 export function CopyLinkButton() {
   return (
@@ -64,8 +64,7 @@ export function GroupDialog({
   onOpenChange: (open: boolean) => void;
   recipeId: string;
 }) {
-  const session = useSession();
-  const userId = session.data?.user.id ?? "";
+  const { userId } = useAuth() ?? {};
   const [shareSuccess, setShareSuccess] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string | undefined>(
     undefined,
@@ -73,7 +72,7 @@ export function GroupDialog({
   const [removingId, setRemovingId] = useState<string | undefined>(undefined);
 
   const { data: groupsData, refetch: refetchGroups } =
-    api.group.getByUserId.useQuery(userId, {
+    api.group.getByUserId.useQuery(userId ?? "", {
       enabled: !!userId && open, // Only fetch when dialog is open
     });
 

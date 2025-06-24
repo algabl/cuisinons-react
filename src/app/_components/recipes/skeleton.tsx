@@ -9,7 +9,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 
 export function CardSkeleton() {
   return (
-    <Card hover={false} className="animate-pulse overflow-hidden pt-0">
+    <Card className="animate-pulse overflow-hidden pt-0">
       <div className="relative aspect-[5/3] w-full bg-gray-200">
         <Skeleton className="absolute inset-0 h-full w-full" />
         <div className="absolute top-2 right-2">

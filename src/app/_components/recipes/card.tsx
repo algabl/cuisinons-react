@@ -21,13 +21,13 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
     <Card className="overflow-hidden pt-0">
       <div className="relative aspect-[5/3] w-full bg-gray-200">
         <Link href={`/app/recipes/${recipe.id}`}>
-          {recipe.image ? (
+          {recipe.image && recipe.image.length > 0 ? (
             <Image
               className="h-full w-full object-cover"
               src={recipe.image}
               alt={recipe.name}
               fill
-              sizes="(max-width: 600px) 100vw, 500px"
+              sizes="100vw, 500px"
               priority={false}
             />
           ) : (

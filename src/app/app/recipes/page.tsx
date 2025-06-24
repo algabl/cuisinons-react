@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { unauthorized } from "next/navigation";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export const metadata: Metadata = {
   title: "Your Recipes",
@@ -13,21 +13,14 @@ export const metadata: Metadata = {
 
 export default async function RecipesPage() {
   const session = await auth();
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     unauthorized();
   }
 
   const recipes = await api.recipe.getAll();
   return (
     <HydrateClient>
-      <main className="flex min-h-full flex-col">
-        <Button asChild variant="outline">
-          <Link href={"/app/recipes/create"}>
-            <Plus />
-            Create Recipe
-          </Link>
-        </Button>
-
+      <main className="container mx-auto">
         <List recipes={recipes} />
       </main>
     </HydrateClient>
