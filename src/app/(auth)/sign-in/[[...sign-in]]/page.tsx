@@ -1,5 +1,4 @@
 import { SignIn } from "@clerk/nextjs";
-import { LoginForm } from "~/components/login-form";
 
 export default async function LoginPage(props: {
   searchParams?: Promise<{ callbackUrl?: string }>;
