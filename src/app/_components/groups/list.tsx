@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 import { api } from "~/trpc/server";
 import { Button } from "~/components/ui/button";
 
 export async function List() {
   const session = await auth();
-  const groups = session?.user.id
-    ? await api.group.getByUserId(session.user.id)
+  const groups = session?.userId
+    ? await api.group.getByUserId(session.userId)
     : [];
 
   return (

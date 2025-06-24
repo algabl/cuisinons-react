@@ -59,7 +59,6 @@ export function UserSearch(props: { groupId: string }) {
 
   const userSearch = api.user.searchByEmail.useQuery({
     email: debouncedSearch,
-    groupId: props.groupId,
   });
 
   return (
@@ -113,24 +112,24 @@ export function UserSearch(props: { groupId: string }) {
                                 {userSearch.data?.map((user) => (
                                   <CommandItem
                                     key={user.id}
-                                    value={user.email}
+                                    value={user.emailAddress}
                                     onSelect={() => {
-                                      form.setValue(`email`, user.email);
+                                      form.setValue(`email`, user.emailAddress);
                                       setSearch(""); // close popover
                                     }}
                                   >
                                     <Image
-                                      src={user.image ?? ""}
-                                      alt={user.name ?? ""}
+                                      src={user.imageUrl ?? ""}
+                                      alt={user.fullName ?? ""}
                                       className="mb-2 h-10 w-10 rounded-full"
                                       width={40}
                                       height={40}
                                     />
                                     <span className="font-medium">
-                                      {user.name}
+                                      {user.fullName}
                                     </span>
                                     <span className="text-muted-foreground ml-2 text-xs">
-                                      {user.email}
+                                      {user.emailAddress}
                                     </span>
                                   </CommandItem>
                                 ))}

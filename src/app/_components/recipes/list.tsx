@@ -53,7 +53,7 @@ export function List({ recipes }: { recipes: Recipe[] }) {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto">
       {/* Controls */}
       <div className="bg-background/80 sticky top-0 z-10 mb-6 flex flex-col gap-4 backdrop-blur sm:flex-row sm:items-center">
         <div className="flex flex-1 items-center gap-2">

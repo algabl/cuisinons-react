@@ -4,6 +4,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import Image from "next/image";
 import { providerMap } from "~/server/auth/config";
 import { signIn } from "~/server/auth";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
 function DiscordIcon() {
   return (
@@ -48,7 +49,7 @@ export async function LoginForm({
                   Login to Cuisinons
                 </p>
               </div>
-              <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+              {/* <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
                 <span className="bg-card text-muted-foreground relative z-10 px-2">
                   Continue with
                 </span>
@@ -89,7 +90,13 @@ export async function LoginForm({
                     </form>
                   );
                 })}
-              </div>
+              </div> */}
+              <SignInButton />
+              <SignUpButton>
+                <Button variant="outline" size="default" className="w-full">
+                  Sign Up
+                </Button>
+              </SignUpButton>
             </div>
           </div>
           <div className="bg-muted relative hidden h-full flex-1 md:block">

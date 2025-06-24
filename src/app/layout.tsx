@@ -5,6 +5,7 @@ import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { SessionProvider } from "next-auth/react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -21,12 +22,20 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body>
-        <TRPCReactProvider>
-          <SessionProvider>{children}</SessionProvider>
-        </TRPCReactProvider>
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        cssLayerName: "clerk",
+      }}
+    >
+      <html lang="en" className={`${geist.variable}`}>
+        <body>
+          <TRPCReactProvider>
+            {/* <SessionProvider> */}
+            {children}
+            {/* </SessionProvider> */}
+          </TRPCReactProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

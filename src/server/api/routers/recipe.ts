@@ -47,7 +47,7 @@ export const recipeRouter = createTRPCRouter({
           name: input.name,
           description: input.description,
           image: input.image,
-          createdById: ctx.session.user.id,
+          createdById: ctx.session.userId,
           cookingTime: input.cookingTime,
           preparationTime: input.preparationTime,
           servings: input.servings,
@@ -68,7 +68,7 @@ export const recipeRouter = createTRPCRouter({
             ingredientId: ingredient.ingredientId,
             quantity: ingredient.quantity,
             unit: ingredient.unit,
-            userId: ctx.session.user.id,
+            userId: ctx.session.userId,
           });
         }
       }
@@ -90,7 +90,7 @@ export const recipeRouter = createTRPCRouter({
         where: (recipes, { eq }) =>
           and(
             eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.session.user.id),
+            eq(recipes.createdById, ctx.session.userId),
           ),
         with: {
           recipeIngredients: true,
@@ -157,7 +157,7 @@ export const recipeRouter = createTRPCRouter({
               ingredientId: ingredient.ingredientId,
               quantity: ingredient.quantity,
               unit: ingredient.unit,
-              userId: ctx.session.user.id,
+              userId: ctx.session.userId,
             });
           }
         }
@@ -179,7 +179,7 @@ export const recipeRouter = createTRPCRouter({
         .where(
           and(
             eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.session.user.id),
+            eq(recipes.createdById, ctx.session.userId),
           ),
         );
       return { success: true, message: "Recipe updated successfully" };
@@ -193,7 +193,7 @@ export const recipeRouter = createTRPCRouter({
         .where(
           and(
             eq(recipeIngredients.recipeId, input.id),
-            eq(recipeIngredients.userId, ctx.session.user.id),
+            eq(recipeIngredients.userId, ctx.session.userId),
           ),
         );
       await ctx.db
@@ -201,12 +201,12 @@ export const recipeRouter = createTRPCRouter({
         .where(
           and(
             eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.session.user.id),
+            eq(recipes.createdById, ctx.session.userId),
           ),
         );
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+    const userId = ctx.session.userId;
     const recipes = await ctx.db.query.recipes.findMany({
       where: (recipes, { eq }) => eq(recipes.createdById, userId),
       orderBy: (recipes, { desc }) => [desc(recipes.createdAt)],
@@ -267,7 +267,7 @@ export const recipeRouter = createTRPCRouter({
         where: (recipes, { eq }) =>
           and(
             eq(recipes.id, input.recipeId),
-            eq(recipes.createdById, ctx.session.user.id),
+            eq(recipes.createdById, ctx.session.userId),
           ),
       });
       if (!recipe) {
@@ -281,7 +281,7 @@ export const recipeRouter = createTRPCRouter({
         where: (ingredients, { eq, or }) =>
           or(
             eq(ingredients.type, "global"),
-            eq(ingredients.createdById, ctx.session.user.id),
+            eq(ingredients.createdById, ctx.session.userId),
           ),
       });
 
@@ -296,7 +296,7 @@ export const recipeRouter = createTRPCRouter({
           ingredientId: input.ingredientId,
           quantity: input.quantity,
           unit: input.unit,
-          userId: ctx.session.user.id,
+          userId: ctx.session.userId,
         })
         .returning();
       return {

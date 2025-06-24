@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { unauthorized } from "next/navigation";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export const metadata: Metadata = {
   title: "Your Recipes",
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function RecipesPage() {
   const session = await auth();
-  if (!session?.user?.id) {
+  if (!session?.userId) {
     unauthorized();
   }
 

@@ -10,7 +10,7 @@ import {
   DialogTrigger,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 import { api } from "~/trpc/server";
 import { RecipeCard } from "~/app/_components/recipes/card";
 import { Plus } from "lucide-react";
@@ -22,14 +22,14 @@ export default async function GroupPage(props: {
   const session = await auth();
   const group = await api.group.getById(id);
   const groupMember = group?.groupMembers.find(
-    (member) => member.userId === session?.user.id,
+    (member) => member.userId === session?.userId,
   );
 
   if (!group) {
     notFound();
   }
 
-  if (!session?.user?.id || groupMember === undefined) {
+  if (!session?.userId || groupMember === undefined) {
     unauthorized();
   }
 
@@ -58,7 +58,7 @@ export default async function GroupPage(props: {
                 </DialogContent>
               </Dialog>
             </div>
-            {Array.isArray(group.groupMembers) &&
+            {/* {Array.isArray(group.groupMembers) &&
             group.groupMembers.length > 0 ? (
               <ul className="grid gap-4 sm:grid-cols-2">
                 {group.groupMembers.map((member) => (
@@ -97,7 +97,7 @@ export default async function GroupPage(props: {
               <p className="py-4 text-center text-gray-500">
                 No members in this group.
               </p>
-            )}
+            )} */}
           </div>
           <div>
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
