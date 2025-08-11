@@ -1,6 +1,9 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-
+import { neon } from "@neondatabase/serverless";
+import { drizzle as neonDrizzle } from "drizzle-orm/neon-http";
+import type { NeonHttpDatabase } from "drizzle-orm/neon-http";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { env } from "~/env";
 import * as schema from "./schema";
 
@@ -12,7 +15,16 @@ const globalForDb = globalThis as unknown as {
   conn: postgres.Sql | undefined;
 };
 
-const conn = globalForDb.conn ?? postgres(env.DATABASE_URL);
-if (env.NODE_ENV !== "production") globalForDb.conn = conn;
+let db: NeonHttpDatabase<typeof schema> | PostgresJsDatabase<typeof schema>;
+let conn;
 
-export const db = drizzle(conn, { schema });
+if (env.NODE_ENV === "production") {
+  conn = neon(env.NEON_DATABASE_URL);
+  db = neonDrizzle(conn, { schema });
+} else {
+  conn = globalForDb.conn ?? postgres(env.NEON_DATABASE_URL, { max: 1 });
+  globalForDb.conn = conn;
+  db = drizzle(conn, { schema });
+}
+
+export { db };
