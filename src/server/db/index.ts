@@ -19,10 +19,10 @@ let db: NeonHttpDatabase<typeof schema> | PostgresJsDatabase<typeof schema>;
 let conn;
 
 if (env.NODE_ENV === "production") {
-  conn = neon(env.DATABASE_URL);
+  conn = neon(env.NEON_DATABASE_URL);
   db = neonDrizzle(conn, { schema });
 } else {
-  conn = globalForDb.conn ?? postgres(env.DATABASE_URL, { max: 1 });
+  conn = globalForDb.conn ?? postgres(env.NEON_DATABASE_URL, { max: 1 });
   globalForDb.conn = conn;
   db = drizzle(conn, { schema });
 }
