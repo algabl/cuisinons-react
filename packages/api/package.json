@@ -1,0 +1,25 @@
+{
+  "name": "@cuisinons/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^3.24.4",
+    "@trpc/server": "^11.0.0",
+    "superjson": "^2.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "@clerk/nextjs": "^6.23.0",
+    "drizzle-orm": "^0.41.0"
+  }
+}
