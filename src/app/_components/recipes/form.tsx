@@ -25,46 +25,60 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Trash2 } from "lucide-react";
+import { recipeFormSchema, type RecipeFormData } from "~/lib/validations";
 
-export const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  description: z.string().optional(),
-  image: z.string().optional(),
-  cookingTime: z.union([z.number(), z.string()]).optional(),
-  preparationTime: z.union([z.number(), z.string()]).optional(),
-  servings: z.union([z.number(), z.string()]).optional(),
-  calories: z.union([z.number(), z.string()]).optional(),
-  instructions: z.array(z.string()).default([]),
-  isPrivate: z.boolean().default(true),
-  recipeIngredients: z
-    .array(
-      z.object({
-        ingredientId: z.string(),
-        quantity: z.number().positive("Quantity must be positive"),
-        unit: z.string(),
-        name: z.string().optional(),
-      }),
-    )
-    .default([]),
-});
+export { recipeFormSchema as formSchema };
 
 export default function RecipeForm({
   recipe,
   onSubmit,
 }: {
   recipe?: Recipe;
-  onSubmit: (values: z.infer<typeof formSchema>) => void;
+  onSubmit: (values: RecipeFormData) => void;
 }) {
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(recipeFormSchema),
     defaultValues: {
       name: recipe?.name ?? "",
       description: recipe?.description ?? "",
       image: recipe?.image ?? "",
-      cookingTime: recipe?.cookingTime ?? "",
-      preparationTime: recipe?.preparationTime ?? "",
-      servings: recipe?.servings ?? "",
-      calories: recipe?.calories ?? "",
+
+      // Time fields
+      cookingTime: recipe?.cookingTime ?? undefined,
+      preparationTime: recipe?.preparationTime ?? undefined,
+      totalTime: recipe?.totalTime ?? undefined,
+
+      // Yield
+      servings: recipe?.servings ?? undefined,
+
+      // Nutrition
+      calories: recipe?.calories ?? undefined,
+      fat: recipe?.fat ?? undefined,
+      protein: recipe?.protein ?? undefined,
+      carbohydrates: recipe?.carbohydrates ?? undefined,
+      fiber: recipe?.fiber ?? undefined,
+      sugar: recipe?.sugar ?? undefined,
+      sodium: recipe?.sodium ?? undefined,
+
+      // Categories
+      recipeCategory: recipe?.recipeCategory ?? undefined,
+      recipeCuisine: recipe?.recipeCuisine ?? undefined,
+      keywords: recipe?.keywords ?? [],
+
+      // Difficulty
+      difficulty: recipe?.difficulty ?? undefined,
+      skillLevel: recipe?.skillLevel ?? undefined,
+
+      // Dietary
+      suitableForDiet: recipe?.suitableForDiet ?? [],
+
+      // Equipment
+      recipeEquipment: recipe?.recipeEquipment ?? [],
+
+      // Cost
+      estimatedCost: recipe?.estimatedCost ?? undefined,
+
+      // Existing fields
       instructions: recipe?.instructions ?? [],
       isPrivate: recipe?.isPrivate ?? true,
       recipeIngredients:
@@ -78,6 +92,7 @@ export default function RecipeForm({
         }) ?? [],
     },
   });
+
 
   const recipeUpdate = api.recipe?.update.useMutation();
 
@@ -113,7 +128,7 @@ export default function RecipeForm({
                 <Input placeholder="Recipe name" {...field} />
               </FormControl>
               <FormDescription>This is the recipe&apos;s name.</FormDescription>
-              <FormMessage />
+              {form.formState.errors.name && <FormMessage>{form.formState.errors.name.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -130,7 +145,7 @@ export default function RecipeForm({
               <FormDescription>
                 This is the recipe&apos;s description.
               </FormDescription>
-              <FormMessage />
+              {form.formState.errors.description && <FormMessage>{form.formState.errors.description.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -145,9 +160,9 @@ export default function RecipeForm({
                 <Input placeholder="https://example.com/image.jpg" {...field} />
               </FormControl>
               <FormDescription>
-                Optional: Add a link to an image for this recipe?.
+                Optional: Add a link to an image for this recipe.
               </FormDescription>
-              <FormMessage />
+              {form.formState.errors.image && <FormMessage>{form.formState.errors.image.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -162,7 +177,7 @@ export default function RecipeForm({
                 <Input type="number" min={1} placeholder="e.g. 30" {...field} />
               </FormControl>
               <FormDescription>How long does it take to cook?</FormDescription>
-              <FormMessage />
+              {form.formState.errors.cookingTime && <FormMessage>{form.formState.errors.cookingTime.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -179,7 +194,24 @@ export default function RecipeForm({
               <FormDescription>
                 How long does it take to prepare?
               </FormDescription>
-              <FormMessage />
+              {form.formState.errors.preparationTime && <FormMessage>{form.formState.errors.preparationTime.message}</FormMessage>}
+            </FormItem>
+          )}
+        />
+        {/* Total Time */}
+        <FormField
+          control={form.control}
+          name="totalTime"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Total Time (minutes)</FormLabel>
+              <FormControl>
+                <Input type="number" min={1} placeholder="e.g. 45" {...field} />
+              </FormControl>
+              <FormDescription>
+                Total time from start to finish (prep + cook time)
+              </FormDescription>
+              {form.formState.errors.totalTime && <FormMessage>{form.formState.errors.totalTime.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -196,7 +228,7 @@ export default function RecipeForm({
               <FormDescription>
                 How many servings does this recipe make?
               </FormDescription>
-              <FormMessage />
+              {form.formState.errors.servings && <FormMessage>{form.formState.errors.servings.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -219,6 +251,370 @@ export default function RecipeForm({
                 Calories per serving (optional).
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Additional Nutrition Fields */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="fat"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fat (grams)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    placeholder="e.g. 12.5"
+                    {...field}
+                  />
+                </FormControl>
+                {form.formState.errors.fat && <FormMessage>{form.formState.errors.fat.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="protein"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Protein (grams)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    placeholder="e.g. 15.2"
+                    {...field}
+                  />
+                </FormControl>
+                {form.formState.errors.protein && <FormMessage>{form.formState.errors.protein.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="carbohydrates"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Carbohydrates (grams)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    placeholder="e.g. 30.5"
+                    {...field}
+                  />
+                </FormControl>
+                {form.formState.errors.carbohydrates && <FormMessage>{form.formState.errors.carbohydrates.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="fiber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fiber (grams)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    placeholder="e.g. 5.2"
+                    {...field}
+                  />
+                </FormControl>
+                {form.formState.errors.fiber && <FormMessage>{form.formState.errors.fiber.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="sugar"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sugar (grams)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    placeholder="e.g. 8.3"
+                    {...field}
+                  />
+                </FormControl>
+                {form.formState.errors.sugar && <FormMessage>{form.formState.errors.sugar.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="sodium"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sodium (grams)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    placeholder="e.g. 1.2"
+                    {...field}
+                  />
+                </FormControl>
+                {form.formState.errors.sodium && <FormMessage>{form.formState.errors.sodium.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Recipe Category and Cuisine */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="recipeCategory"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="appetizer">Appetizer</SelectItem>
+                      <SelectItem value="main-course">Main Course</SelectItem>
+                      <SelectItem value="dessert">Dessert</SelectItem>
+                      <SelectItem value="snack">Snack</SelectItem>
+                      <SelectItem value="beverage">Beverage</SelectItem>
+                      <SelectItem value="breakfast">Breakfast</SelectItem>
+                      <SelectItem value="lunch">Lunch</SelectItem>
+                      <SelectItem value="dinner">Dinner</SelectItem>
+                      <SelectItem value="side-dish">Side Dish</SelectItem>
+                      <SelectItem value="soup">Soup</SelectItem>
+                      <SelectItem value="salad">Salad</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription>What type of dish is this?</FormDescription>
+                {form.formState.errors.recipeCategory && <FormMessage>{form.formState.errors.recipeCategory.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="recipeCuisine"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cuisine</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select cuisine" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="american">American</SelectItem>
+                      <SelectItem value="chinese">Chinese</SelectItem>
+                      <SelectItem value="french">French</SelectItem>
+                      <SelectItem value="italian">Italian</SelectItem>
+                      <SelectItem value="japanese">Japanese</SelectItem>
+                      <SelectItem value="mexican">Mexican</SelectItem>
+                      <SelectItem value="indian">Indian</SelectItem>
+                      <SelectItem value="thai">Thai</SelectItem>
+                      <SelectItem value="mediterranean">
+                        Mediterranean
+                      </SelectItem>
+                      <SelectItem value="korean">Korean</SelectItem>
+                      <SelectItem value="greek">Greek</SelectItem>
+                      <SelectItem value="spanish">Spanish</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription>
+                  What cuisine style is this recipe?
+                </FormDescription>
+                {form.formState.errors.recipeCuisine && <FormMessage>{form.formState.errors.recipeCuisine.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Difficulty and Skill Level */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="difficulty"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Difficulty</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="easy">Easy</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="hard">Hard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                {form.formState.errors.difficulty && <FormMessage>{form.formState.errors.difficulty.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="skillLevel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Skill Level</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select skill level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                {form.formState.errors.skillLevel && <FormMessage>{form.formState.errors.skillLevel.message}</FormMessage>}
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Cost */}
+        <FormField
+          control={form.control}
+          name="estimatedCost"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Estimated Cost ($)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  placeholder="e.g. 15.50"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Estimated cost to make this recipe (optional)
+              </FormDescription>
+              {form.formState.errors.estimatedCost && <FormMessage>{form.formState.errors.estimatedCost.message}</FormMessage>}
+            </FormItem>
+          )}
+        />
+
+        {/* Keywords */}
+        <FormField
+          control={form.control}
+          name="keywords"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Keywords/Tags</FormLabel>
+              <FormControl>
+                <textarea
+                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                  placeholder="quick, healthy, gluten-free, vegan"
+                  value={field.value?.join(", ") ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value
+                        .split(",")
+                        .map((k) => k.trim())
+                        .filter((k) => k),
+                    )
+                  }
+                />
+              </FormControl>
+              <FormDescription>
+                Enter keywords separated by commas
+              </FormDescription>
+              {form.formState.errors.keywords && <FormMessage>{form.formState.errors.keywords.message}</FormMessage>}
+            </FormItem>
+          )}
+        />
+
+        {/* Dietary Restrictions */}
+        <FormField
+          control={form.control}
+          name="suitableForDiet"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Suitable For Diet</FormLabel>
+              <FormControl>
+                <textarea
+                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                  placeholder="vegan, gluten-free, keto, dairy-free"
+                  value={field.value?.join(", ") ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value
+                        .split(",")
+                        .map((d) => d.trim())
+                        .filter((d) => d),
+                    )
+                  }
+                />
+              </FormControl>
+              <FormDescription>
+                Enter dietary restrictions separated by commas
+              </FormDescription>
+              {form.formState.errors.suitableForDiet && <FormMessage>{form.formState.errors.suitableForDiet.message}</FormMessage>}
+            </FormItem>
+          )}
+        />
+
+        {/* Equipment */}
+        <FormField
+          control={form.control}
+          name="recipeEquipment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Required Equipment</FormLabel>
+              <FormControl>
+                <textarea
+                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                  placeholder="oven, mixing bowl, whisk, baking sheet"
+                  value={field.value?.join(", ") ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value
+                        .split(",")
+                        .map((eq) => eq.trim())
+                        .filter((eq) => eq),
+                    )
+                  }
+                />
+              </FormControl>
+              <FormDescription>
+                Enter required equipment separated by commas
+              </FormDescription>
+              {form.formState.errors.recipeEquipment && <FormMessage>{form.formState.errors.recipeEquipment.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -349,7 +745,7 @@ export default function RecipeForm({
                 />
               </FormControl>
               <FormDescription>Enter each step on a new line.</FormDescription>
-              <FormMessage />
+              {form.formState.errors.instructions && <FormMessage>{form.formState.errors.instructions.message}</FormMessage>}
             </FormItem>
           )}
         />
@@ -371,7 +767,7 @@ export default function RecipeForm({
                 Check this if you want to keep this recipe private. Sharing this
                 recipe to a group will still make it visible to that group.
               </FormDescription>
-              <FormMessage />
+              {form.formState.errors.isPrivate && <FormMessage>{form.formState.errors.isPrivate.message}</FormMessage>}
             </FormItem>
           )}
         />

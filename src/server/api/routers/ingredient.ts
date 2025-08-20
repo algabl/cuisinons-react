@@ -1,11 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { ingredients } from "~/server/db/schema";
-
-export const createValidation = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  description: z.string().optional(),
-});
+import { ingredientSchema } from "~/lib/validations";
 
 export const ingredientRouter = createTRPCRouter({
   getByUserId: protectedProcedure
@@ -17,7 +13,7 @@ export const ingredientRouter = createTRPCRouter({
       return ingredients;
     }),
   create: protectedProcedure
-    .input(createValidation)
+    .input(ingredientSchema)
     .mutation(async ({ ctx, input }) => {
       const newIngredient = await ctx.db
         .insert(ingredients)

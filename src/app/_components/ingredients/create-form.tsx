@@ -16,11 +16,7 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import type { AppRouter } from "~/server/api/root";
 import type { inferRouterOutputs } from "@trpc/server";
-
-export const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  description: z.string().optional(),
-});
+import { ingredientFormSchema } from "~/lib/validations";
 
 type Ingredient = NonNullable<
   inferRouterOutputs<AppRouter>["ingredient"]["getById"]
@@ -30,10 +26,10 @@ export default function CreateForm({
   prefill,
 }: {
   onSubmit?: (ingredient: Ingredient) => void;
-  prefill?: Partial<z.infer<typeof formSchema>>;
+  prefill?: Partial<z.infer<typeof ingredientFormSchema>>;
 }) {
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(ingredientFormSchema),
     defaultValues: {
       name: prefill?.name ?? "",
       description: prefill?.description ?? "",
@@ -42,7 +38,7 @@ export default function CreateForm({
 
   const ingredientCreate = api.ingredient.create.useMutation();
 
-  async function handleSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(values: z.infer<typeof ingredientFormSchema>) {
     const response = await ingredientCreate.mutateAsync({
       name: values.name,
       description: values.description,

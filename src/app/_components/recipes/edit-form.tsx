@@ -1,14 +1,15 @@
 "use client";
-import { type z } from "zod";
 
 import { redirect } from "next/navigation";
 import { type Recipe } from "~/server/api/types";
-import RecipeForm, { type formSchema } from "./form";
+import RecipeForm from "./form";
 import { api } from "~/trpc/react";
+import { type RecipeFormData } from "~/lib/validations";
 
 export default function EditForm({ recipe }: { recipe: Recipe }) {
   const recipeUpdate = api.recipe.update.useMutation();
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: RecipeFormData) {
+    console.log("what is going one");
     await recipeUpdate.mutateAsync({
       id: recipe.id,
       name: values.name,
@@ -16,9 +17,25 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
       image: values.image,
       cookingTime: Number(values.cookingTime),
       preparationTime: Number(values.preparationTime),
+      totalTime: Number(values.totalTime),
       servings: Number(values.servings),
-      calories: Number(values.calories),
       instructions: values.instructions,
+      calories: Number(values.calories),
+      fat: Number(values.fat),
+      protein: Number(values.protein),
+      carbohydrates: Number(values.carbohydrates),
+      fiber: Number(values.fiber),
+      sugar: Number(values.sugar),
+      sodium: Number(values.sodium),
+
+      recipeCategory: values.recipeCategory,
+      recipeCuisine: values.recipeCuisine,
+      keywords: values.keywords,
+      difficulty: values.difficulty,
+      skillLevel: values.skillLevel,
+      suitableForDiet: values.suitableForDiet,
+      recipeEquipment: values.recipeEquipment,
+      estimatedCost: Number(values.estimatedCost),
       isPrivate: values.isPrivate ?? true,
       recipeIngredients: values.recipeIngredients?.map((ingredient) => ({
         ingredientId: ingredient.ingredientId,

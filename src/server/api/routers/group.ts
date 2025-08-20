@@ -4,9 +4,9 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { groupMembers, groups } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
+import { groupSchema } from "~/lib/validations";
 
-export const createValidation = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
+const groupCreateValidation = groupSchema.extend({
   emails: z
     .array(z.string().email({ message: "Invalid email address" }))
     .optional(),
@@ -14,7 +14,7 @@ export const createValidation = z.object({
 
 export const groupRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(createValidation)
+    .input(groupCreateValidation)
     .mutation(async ({ ctx, input }) => {
       const [createdGroup] = await ctx.db
         .insert(groups)

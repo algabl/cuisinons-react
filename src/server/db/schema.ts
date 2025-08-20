@@ -9,10 +9,6 @@ import { index, pgEnum, pgTableCreator, primaryKey } from "drizzle-orm/pg-core";
  */
 export const createTable = pgTableCreator((name) => `cuisinons_${name}`);
 
-
-
-
-
 export const recipes = createTable(
   "recipe",
   (d) => ({
@@ -21,22 +17,60 @@ export const recipes = createTable(
       .notNull()
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    name: d.varchar({ length: 255 }).notNull(),
-    description: d.text(),
-    image: d.varchar({ length: 255 }),
-    createdById: d
-      .varchar({ length: 255 })
-      .notNull(),
+    // Basic Recipe Info (schema.org compatible)
+    name: d.varchar({ length: 255 }).notNull(), // schema.org: name
+    description: d.text(), // schema.org: description
+    image: d.varchar({ length: 255 }), // schema.org: image
+
+    // Timing (schema.org compatible)
+    cookingTime: d.integer(), // schema.org: cookTime (in minutes)
+    preparationTime: d.integer(), // schema.org: prepTime (in minutes)
+    totalTime: d.integer(), // schema.org: totalTime (in minutes)
+
+    // Yield and Servings (schema.org compatible)
+    servings: d.integer(), // schema.org: recipeYield
+
+    // Instructions (schema.org compatible)
+    instructions: d.text().array(), // schema.org: recipeInstructions
+
+    // Nutrition (schema.org compatible)
+    calories: d.integer(), // schema.org: nutrition.calories
+    fat: d.real(), // schema.org: nutrition.fatContent (in grams)
+    protein: d.real(), // schema.org: nutrition.proteinContent (in grams)
+    carbohydrates: d.real(), // schema.org: nutrition.carbohydrateContent (in grams)
+    fiber: d.real(), // schema.org: nutrition.fiberContent (in grams)
+    sugar: d.real(), // schema.org: nutrition.sugarContent (in grams)
+    sodium: d.real(), // schema.org: nutrition.sodiumContent (in grams)
+
+    // Category and Classification (schema.org compatible)
+    recipeCategory: d.varchar({ length: 255 }), // schema.org: recipeCategory (e.g., "appetizer", "entree", "dessert")
+    recipeCuisine: d.varchar({ length: 255 }), // schema.org: recipeCuisine (e.g., "French", "Italian", "Thai")
+    keywords: d.text().array(), // schema.org: keywords
+
+    // Difficulty and Skill Level
+    difficulty: d.varchar({ length: 50 }), // "easy", "medium", "hard"
+    skillLevel: d.varchar({ length: 50 }), // "beginner", "intermediate", "advanced"
+
+    // Dietary Information (schema.org compatible)
+    suitableForDiet: d.text().array(), // schema.org: suitableForDiet (e.g., ["vegan", "gluten-free"])
+
+    // Equipment and Tools
+    recipeEquipment: d.text().array(), // schema.org: tool (cooking equipment needed)
+
+    // Rating and Reviews
+    aggregateRating: d.real(), // schema.org: aggregateRating.ratingValue
+    ratingCount: d.integer(), // schema.org: aggregateRating.ratingCount
+
+    // Cost and Budget
+    estimatedCost: d.real(), // schema.org: estimatedCost (in dollars)
+
+    // System fields
+    createdById: d.varchar({ length: 255 }).notNull(),
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-    cookingTime: d.integer(),
-    preparationTime: d.integer(),
-    servings: d.integer(),
-    calories: d.integer(),
-    instructions: d.text().array(),
     isPrivate: d.boolean().default(true),
   }),
   (t) => {
@@ -143,9 +177,7 @@ export const groupMembers = createTable(
         .varchar({ length: 255 })
         .notNull()
         .references(() => groups.id),
-      userId: d
-        .varchar({ length: 255 })
-        .notNull(),
+      userId: d.varchar({ length: 255 }).notNull(),
       role: roleEnum(),
     };
   },
