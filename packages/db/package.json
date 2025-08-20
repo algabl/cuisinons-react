@@ -1,0 +1,56 @@
+{
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
+    "@t3-oss/env-nextjs": "^0.13.6",
+    "@vercel/postgres": "^0.10.0",
+    "drizzle-orm": "^0.44.1",
+    "drizzle-zod": "^0.8.2",
+    "postgres": "^3.4.4",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cuisinons/eslint-config": "workspace:*",
+    "@cuisinons/prettier-config": "workspace:*",
+    "@cuisinons/tsconfig": "workspace:*",
+    "dotenv-cli": "^8.0.0",
+    "drizzle-kit": "^0.31.1",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "default": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./env": {
+      "default": "./dist/env.js",
+      "types": "./dist/env.d.ts"
+    },
+    "./schema": {
+      "default": "./dist/schema.js",
+      "types": "./dist/schema.d.ts"
+    }
+  },
+  "license": "MIT",
+  "name": "@cuisinons/db",
+  "prettier": "@cuisinons/prettier-config",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "dev": "tsc",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "push": "pnpm with-env drizzle-kit push",
+    "studio": "pnpm with-env drizzle-kit studio",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}

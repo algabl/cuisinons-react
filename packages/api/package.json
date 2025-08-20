@@ -1,25 +1,48 @@
 {
-  "name": "@cuisinons/api",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "clean": "rm -rf dist"
-  },
   "dependencies": {
-    "zod": "^3.24.4",
-    "@trpc/server": "^11.0.0",
-    "superjson": "^2.2.1"
+    "@cuisinons/auth": "workspace:*",
+    "@cuisinons/db": "workspace:*",
+    "@trpc/server": "catalog:",
+    "superjson": "^2.2.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.8.2"
+    "@cuisinons/eslint-config": "workspace:*",
+    "@cuisinons/prettier-config": "workspace:*",
+    "@cuisinons/tsconfig": "workspace:*",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
   },
-  "peerDependencies": {
-    "@clerk/nextjs": "^6.23.0",
-    "drizzle-orm": "^0.41.0"
-  }
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./root": {
+      "default": "./dist/root.js",
+      "types": "./dist/root.d.ts"
+    },
+    "./trpc": {
+      "default": "./dist/trpc.js",
+      "types": "./dist/trpc.d.ts"
+    },
+    "./types": {
+      "default": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "name": "@cuisinons/api",
+  "prettier": "@cuisinons/prettier-config",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "dev": "tsc",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "type": "module",
+  "version": "0.1.0"
 }
