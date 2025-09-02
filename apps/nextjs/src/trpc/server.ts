@@ -1,11 +1,14 @@
 import "server-only";
 
-import { createHydrationHelpers } from "@trpc/react-query/rsc";
-import { headers } from "next/headers";
 import { cache } from "react";
+import { headers } from "next/headers";
+import { createHydrationHelpers } from "@trpc/react-query/rsc";
 
-import { createCaller, type AppRouter } from "@cuisinons/api/root";
+import type { AppRouter } from "@cuisinons/api/root";
+import { createCaller } from "@cuisinons/api/root";
 import { createTRPCContext } from "@cuisinons/api/trpc";
+import { auth } from "@cuisinons/auth";
+
 import { createQueryClient } from "./query-client";
 
 /**
@@ -18,6 +21,7 @@ const createContext = cache(async () => {
 
   return createTRPCContext({
     headers: heads,
+    auth: auth,
   });
 });
 
