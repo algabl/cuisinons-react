@@ -1,4 +1,10 @@
+import path from "path";
 import type { ConfigContext, ExpoConfig } from "expo/config";
+import dotenv from "dotenv";
+
+const MONOREPO_ROOT = path.resolve(__dirname, "../../");
+
+dotenv.config({ path: path.resolve(MONOREPO_ROOT, ".env") });
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -9,6 +15,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: "portrait",
   icon: "./assets/icon-light.png",
   userInterfaceStyle: "automatic",
+  extra: {
+    clerkPublishableKey: process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  },
   updates: {
     fallbackToCacheTimeout: 0,
   },
