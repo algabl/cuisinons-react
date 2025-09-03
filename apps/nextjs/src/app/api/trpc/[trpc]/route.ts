@@ -3,7 +3,6 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
 import { appRouter } from "@cuisinons/api/root";
 import { createTRPCContext } from "@cuisinons/api/trpc";
-import { createContext } from "@cuisinons/auth/server";
 
 import { env } from "~/env";
 
@@ -23,7 +22,11 @@ const handler = (req: NextRequest) =>
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    createContext,
+    createContext: async () => {
+      return createTRPCContext({
+        headers: req.headers,
+      });
+    },
     onError:
       env.NODE_ENV === "development"
         ? ({ path, error }) => {

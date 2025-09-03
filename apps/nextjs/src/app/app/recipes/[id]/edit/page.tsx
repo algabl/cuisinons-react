@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, unauthorized } from "next/navigation";
 import EditForm from "~/app/_components/recipes/edit-form";
-import { getSessionData } from "@cuisinons/auth/server";
+import { auth } from "@cuisinons/auth/server";
 import { api } from "~/trpc/server";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
-  const session = await getSessionData();
+  const session = await auth();
 
   if (!session?.userId) {
     unauthorized();

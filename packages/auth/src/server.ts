@@ -1,7 +1,7 @@
 import "server-only";
 
 import {
-  auth,
+  auth as clerkAuth,
   clerkClient,
   currentUser,
 } from "@clerk/nextjs/server";
@@ -46,8 +46,8 @@ export { clerkClient };
 // Server components
 export { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
 
-export const createContext = async () => {
-  return { auth: await auth() }
+export const auth = async () => {
+  return await clerkAuth();
 }
 
-export type Context = Awaited<ReturnType<typeof createContext>>;
+export type Context = Awaited<ReturnType<typeof auth>>;

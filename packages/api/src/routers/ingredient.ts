@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { ingredients } from "@cuisinons/db/schema";
 import { ingredientSchema } from "../schemas";
