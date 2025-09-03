@@ -50,4 +50,6 @@ export const auth = async () => {
   return await clerkAuth();
 }
 
+export { getAuth } from "@clerk/nextjs/server";
+
 export type Context = Awaited<ReturnType<typeof auth>>;

@@ -1,18 +1,10 @@
-import * as SecureStore from "expo-secure-store";
-import { expoClient } from "@better-auth/expo/client";
-import { createAuthClient } from "better-auth/react";
+import { useAuth } from "@clerk/clerk-expo";
 
-import { getBaseUrl } from "./base-url";
+// Re-export Clerk hooks for easy access throughout the app
+export { useAuth, useUser } from "@clerk/clerk-expo";
 
-console.log("getBaseUrl", getBaseUrl());
-
-export const authClient = createAuthClient({
-  baseURL: getBaseUrl(),
-  plugins: [
-    expoClient({
-      scheme: "expo",
-      storagePrefix: "expo",
-      storage: SecureStore,
-    }),
-  ],
-});
+// Helper function to check if user is authenticated
+export const useIsAuthenticated = () => {
+  const { isSignedIn } = useAuth();
+  return isSignedIn;
+};

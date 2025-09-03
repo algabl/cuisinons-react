@@ -1,15 +1,35 @@
+import { useEffect } from "react";
 import Constants from "expo-constants";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useAuth } from "@clerk/clerk-expo";
 import { useColorScheme } from "nativewind";
 
-import { queryClient } from "~/utils/api";
+import { queryClient, setAuthTokenGetter } from "~/utils/api";
 
 import "../styles.css";
 
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { QueryClientProvider } from "@tanstack/react-query";
+
+function AuthSetup() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    // Set up the auth token getter for tRPC
+    setAuthTokenGetter(async () => {
+      try {
+        return await getToken();
+      } catch (error) {
+        console.error("Error getting token in AuthSetup:", error);
+        return null;
+      }
+    });
+  }, [getToken]);
+
+  return null;
+}
 
 // This is the main layout of the app
 // It wraps your pages with the providers they need
@@ -28,6 +48,7 @@ export default function RootLayout() {
   return (
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <QueryClientProvider client={queryClient}>
+        <AuthSetup />
         {/*
           The Stack component displays the current page.
           It also allows you to configure your screens 

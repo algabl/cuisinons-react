@@ -11,7 +11,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { z, ZodError } from "zod/v4";
 
-import { auth } from "@cuisinons/auth/server";
+import { auth, getAuth } from "@cuisinons/auth/server";
 import { db } from "@cuisinons/db/client";
 
 /**
@@ -27,11 +27,7 @@ import { db } from "@cuisinons/db/client";
  * @see https://trpc.io/docs/server/context
  */
 
-
-
-export const createTRPCContext = async (_opts: {
-  headers: Headers;
-}) => {
+export const createTRPCContext = async (opts: { headers: Headers }) => {
   return {
     auth: await auth(),
     db,

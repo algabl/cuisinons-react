@@ -29,28 +29,25 @@ export default function Page() {
   const onPress = useCallback(async () => {
     try {
       // Start the authentication process by calling `startSSOFlow()`
-      const { createdSessionId, setActive, signIn, signUp } =
-        await startSSOFlow({
-          strategy: "oauth_discord",
-          // For web, defaults to current path
-          // For native, you must pass a scheme, like AuthSession.makeRedirectUri({ scheme, path })
-          // For more info, see https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions
-          redirectUrl: AuthSession.makeRedirectUri(),
-        });
+      const { createdSessionId, setActive } = await startSSOFlow({
+        strategy: "oauth_discord",
+        // For web, defaults to current path
+        // For native, you must pass a scheme, like AuthSession.makeRedirectUri({ scheme, path })
+        // For more info, see https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions
+        redirectUrl: AuthSession.makeRedirectUri(),
+      });
 
       // If sign in was successful, set the active session
-      if (createdSessionId) {
-        await setActive?.({
+      if (createdSessionId && setActive) {
+        await setActive({
           session: createdSessionId,
-          navigate: async ({ session }) => {
-            if (session && session.currentTask) {
-              // Check for tasks and navigate to custom UI to help users resolve them
-              // See https://clerk.com/docs/custom-flows/overview#session-tasks
+          navigate: ({ session }) => {
+            if (session.currentTask) {
               console.log(session.currentTask);
               return;
             }
 
-            await router.push("/");
+            router.push("/");
           },
         });
       } else {
