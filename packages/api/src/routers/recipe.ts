@@ -1,91 +1,101 @@
-import { z } from "zod";
+import { and, eq, inArray } from "drizzle-orm";
+import { z } from "zod/v4";
 
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { recipeIngredients, recipes, recipeSharings } from "@cuisinons/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import {
+  recipeIngredients,
+  recipes,
+  recipeSharings,
+} from "@cuisinons/db/schema";
 
-import { 
-  recipeApiSchema, 
-  recipeUpdateSchema,
+import {
+  ingredientSchema,
+  recipeApiSchema,
   recipeIngredientRelationSchema,
-  ingredientSchema
+  recipeUpdateSchema,
 } from "../schemas";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const recipeRouter = createTRPCRouter({
   create: protectedProcedure
     .input(recipeApiSchema)
     .mutation(async ({ ctx, input }) => {
       console.log(input);
-      const created = await ctx.db
-        .insert(recipes)
-        .values({
-          name: input.name,
-          description: input.description,
-          image: input.image,
-          createdById: ctx.session.userId,
+      return await ctx.db.transaction(async (tx) => {
+        const created = await ctx.db
+          .insert(recipes)
+          .values({
+            name: input.name,
+            description: input.description,
+            image: input.image,
+            createdById: ctx.auth.userId,
 
-          // Time fields
-          cookingTime: input.cookingTime,
-          preparationTime: input.preparationTime,
-          totalTime: input.totalTime,
+            // Time fields
+            cookingTime: input.cookingTime,
+            preparationTime: input.preparationTime,
+            totalTime: input.totalTime,
 
-          // Yield
-          servings: input.servings,
+            // Yield
+            servings: input.servings,
 
-          // Nutrition
-          calories: input.calories,
-          fat: input.fat,
-          protein: input.protein,
-          carbohydrates: input.carbohydrates,
-          fiber: input.fiber,
-          sugar: input.sugar,
-          sodium: input.sodium,
+            // Nutrition
+            calories: input.calories,
+            fat: input.fat,
+            protein: input.protein,
+            carbohydrates: input.carbohydrates,
+            fiber: input.fiber,
+            sugar: input.sugar,
+            sodium: input.sodium,
 
-          // Categories
-          recipeCategory: input.recipeCategory,
-          recipeCuisine: input.recipeCuisine,
-          keywords: input.keywords,
+            // Categories
+            recipeCategory: input.recipeCategory,
+            recipeCuisine: input.recipeCuisine,
+            keywords: input.keywords,
 
-          // Difficulty
-          difficulty: input.difficulty,
-          skillLevel: input.skillLevel,
+            // Difficulty
+            difficulty: input.difficulty,
+            skillLevel: input.skillLevel,
 
-          // Dietary
-          suitableForDiet: input.suitableForDiet,
+            // Dietary
+            suitableForDiet: input.suitableForDiet,
 
-          // Equipment
-          recipeEquipment: input.recipeEquipment,
+            // Equipment
+            recipeEquipment: input.recipeEquipment,
 
-          // Cost
-          estimatedCost: input.estimatedCost,
+            // Cost
+            estimatedCost: input.estimatedCost,
 
-          // Existing fields
-          instructions: input.instructions,
-          isPrivate: input.isPrivate,
-        })
-        .returning();
+            // Existing fields
+            instructions: input.instructions,
+            isPrivate: input.isPrivate,
+          })
+          .returning();
 
-      if (!created[0]) {
-        throw new Error("Failed to create recipe");
-      }
-
-      if (input.recipeIngredients) {
-        for (const ingredient of input.recipeIngredients) {
-          // Insert new ingredient
-          await ctx.db.insert(recipeIngredients).values({
-            recipeId: created[0].id,
-            ingredientId: ingredient.ingredientId,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            userId: ctx.session.userId,
-          });
+        if (!created[0]) {
+          throw new Error("Failed to create recipe");
         }
-      }
-      return {
-        success: true,
-        message: "Recipe created successfully",
-        data: created[0]?.id,
-      };
+
+        const recipeId = created[0].id;
+
+        if (input.recipeIngredients && recipeId) {
+          // Use Promise.all for better performance
+          await Promise.all(
+            input.recipeIngredients.map(ingredient =>
+              tx.insert(recipeIngredients).values({
+                recipeId: recipeId,
+                ingredientId: ingredient.ingredientId,
+                quantity: ingredient.quantity,
+                unit: ingredient.unit,
+                userId: ctx.auth.userId,
+              })
+            )
+          );
+        }
+        return {
+          success: true,
+          message: "Recipe created successfully",
+          data: created[0].id,
+        };
+      });
     }),
   update: protectedProcedure
     .input(recipeUpdateSchema)
@@ -95,7 +105,7 @@ export const recipeRouter = createTRPCRouter({
         where: (recipes, { eq }) =>
           and(
             eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.session.userId),
+            eq(recipes.createdById, ctx.auth.userId),
           ),
         with: {
           recipeIngredients: true,
@@ -162,7 +172,7 @@ export const recipeRouter = createTRPCRouter({
               ingredientId: ingredient.ingredientId,
               quantity: ingredient.quantity,
               unit: ingredient.unit,
-              userId: ctx.session.userId,
+              userId: ctx.auth.userId,
             });
           }
         }
@@ -212,12 +222,12 @@ export const recipeRouter = createTRPCRouter({
 
           // Existing fields
           instructions: input.instructions,
-          isPrivate: input.isPrivate ?? true,
+          isPrivate: input.isPrivate,
         })
         .where(
           and(
             eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.session.userId),
+            eq(recipes.createdById, ctx.auth.userId),
           ),
         );
       return { success: true, message: "Recipe updated successfully" };
@@ -231,7 +241,7 @@ export const recipeRouter = createTRPCRouter({
         .where(
           and(
             eq(recipeIngredients.recipeId, input.id),
-            eq(recipeIngredients.userId, ctx.session.userId),
+            eq(recipeIngredients.userId, ctx.auth.userId),
           ),
         );
       await ctx.db
@@ -239,12 +249,12 @@ export const recipeRouter = createTRPCRouter({
         .where(
           and(
             eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.session.userId),
+            eq(recipes.createdById, ctx.auth.userId),
           ),
         );
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.userId;
+    const userId = ctx.auth.userId;
     const recipes = await ctx.db.query.recipes.findMany({
       where: (recipes, { eq }) => eq(recipes.createdById, userId),
       orderBy: (recipes, { desc }) => [desc(recipes.createdAt)],
@@ -300,12 +310,14 @@ export const recipeRouter = createTRPCRouter({
   addIngredient: protectedProcedure
     .input(recipeIngredientRelationSchema)
     .mutation(async ({ ctx, input }) => {
+      // Ensure ctx.auth has a type with userId as string
+
       // check that the recipe exists and belongs to the user
       const recipe = await ctx.db.query.recipes.findFirst({
         where: (recipes, { eq }) =>
           and(
             eq(recipes.id, input.recipeId),
-            eq(recipes.createdById, ctx.session.userId),
+            eq(recipes.createdById, ctx.auth.userId),
           ),
       });
       if (!recipe) {
@@ -319,7 +331,7 @@ export const recipeRouter = createTRPCRouter({
         where: (ingredients, { eq, or }) =>
           or(
             eq(ingredients.type, "global"),
-            eq(ingredients.createdById, ctx.session.userId),
+            eq(ingredients.createdById, ctx.auth.userId),
           ),
       });
 
@@ -334,7 +346,7 @@ export const recipeRouter = createTRPCRouter({
           ingredientId: input.ingredientId,
           quantity: input.quantity,
           unit: input.unit,
-          userId: ctx.session.userId,
+          userId: ctx.auth.userId,
         })
         .returning();
       return {
@@ -344,3 +356,5 @@ export const recipeRouter = createTRPCRouter({
       };
     }),
 });
+
+type DebugRecipeRouter = typeof recipeRouter;

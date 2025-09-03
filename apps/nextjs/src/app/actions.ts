@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { api } from "~/trpc/server";
+import { api } from "../trpc/server";
 
 export async function createGroup(formData: FormData) {
   const session = await auth();

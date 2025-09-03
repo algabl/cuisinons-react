@@ -11,7 +11,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { z, ZodError } from "zod/v4";
 
-import type { auth } from "@cuisinons/auth";
+import { createContext } from "@cuisinons/auth/server";
 import { db } from "@cuisinons/db/client";
 
 /**
@@ -26,13 +26,14 @@ import { db } from "@cuisinons/db/client";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: {
+
+
+
+export const createTRPCContext = async (_opts: {
   headers: Headers;
-  auth: typeof auth;
 }) => {
-  const session = await opts.auth();
   return {
-    session,
+    session: await createContext(),
     db,
   };
 };
@@ -124,13 +125,13 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
-    if (!ctx.session.userId) {
+    if (!ctx.session.auth.userId) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     return next({
       ctx: {
         // infers the `session` as non-nullable
-        session: { ...ctx.session, session: ctx.session },
+        auth: ctx.session.auth,
       },
     });
   });

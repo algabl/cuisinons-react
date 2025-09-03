@@ -10,7 +10,7 @@ import { ingredientRouter } from "./routers/ingredient";
  *
  * All routers added in /api/routers should be manually added here.
  */
-export const appRouter: ReturnType<typeof createTRPCRouter> = createTRPCRouter({
+export const appRouter = createTRPCRouter({
   recipe: recipeRouter,
   group: groupRouter,
   user: userRouter,

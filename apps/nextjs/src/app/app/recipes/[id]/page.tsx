@@ -16,13 +16,13 @@ import { ShareItems } from "~/app/_components/recipes/share-items";
 import { CookingMode } from "~/components/cooking-mode";
 import { recipeToSchemaOrg, generateRecipeJsonLd } from "@cuisinons/validators";
 
-type Props = {
+interface Props {
   params: Promise<{ id: string }>;
-};
+}
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
-  const recipe = await api.recipe.getById({ id });
+  const recipe = await api.recipe?.getById({ id });
 
   if (!recipe) {
     return {

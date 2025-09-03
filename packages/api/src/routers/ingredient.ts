@@ -21,7 +21,7 @@ export const ingredientRouter = createTRPCRouter({
           name: input.name,
           description: input.description,
           type: "user",
-          createdById: ctx.session.userId,
+          createdById: ctx.auth.userId,
         })
         .returning();
       return {
@@ -39,7 +39,7 @@ export const ingredientRouter = createTRPCRouter({
       // check to make sure the ingredient type is global or the createdById is the same as the user's ID
       if (
         ingredient?.type == "user" &&
-        ingredient?.createdById !== ctx.session.userId
+        ingredient?.createdById !== ctx.auth.userId
       ) {
         return null;
       }
@@ -56,7 +56,7 @@ export const ingredientRouter = createTRPCRouter({
           ),
           or(
             eq(ingredients.type, "global"),
-            eq(ingredients.createdById, ctx.session.userId),
+            eq(ingredients.createdById, ctx.auth.userId),
           ),
         ),
       limit: 10,

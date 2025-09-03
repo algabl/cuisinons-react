@@ -1,7 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -16,7 +15,7 @@ import { api } from "~/trpc/react";
 import { Switch } from "~/components/ui/switch";
 import { SpinnerButton } from "~/components/spinner-button";
 import { IngredientSelect } from "./ingredient-select";
-import { type Ingredient, type Recipe } from "@cuisinons/api/types";
+import type {Ingredient, Recipe, RecipeFormData} from "@cuisinons/api/types";
 import {
   Select,
   SelectContent,
@@ -25,7 +24,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Trash2 } from "lucide-react";
-import { recipeFormSchema, type RecipeFormData } from "~/lib/validations";
+import { recipeFormSchema } from "@cuisinons/api/types";
 
 export { recipeFormSchema as formSchema };
 
@@ -84,22 +83,27 @@ export default function RecipeForm({
       recipeIngredients:
         recipe?.recipeIngredients.map((recipe) => {
           return {
-            ingredientId: recipe?.ingredientId,
-            quantity: recipe?.quantity ?? 0,
-            unit: recipe?.unit ?? "none",
-            name: recipe?.ingredient.name ?? "",
+            ingredientId: recipe.ingredientId,
+            quantity: recipe.quantity ?? 0,
+            unit: recipe.unit ?? "none",
+            name: recipe.ingredient.name,
           };
         }) ?? [],
     },
   });
 
 
-  const recipeUpdate = api.recipe?.update.useMutation();
+  const recipeUpdate = api.recipe.update.useMutation();
 
   // Helper to add ingredient to form state
   function handleAddIngredient(ingredient: Ingredient) {
     console.log("Adding ingredient:", ingredient);
-    const current = form.getValues("recipeIngredients") ?? [];
+    const current = (form.getValues("recipeIngredients") as {
+      ingredientId: string;
+      quantity: number;
+      unit: string;
+      name: string;
+    }[]);
     console.log("Current ingredients:", current);
     if (!current.some((i) => i.ingredientId === ingredient.id)) {
       form.setValue("recipeIngredients", [
@@ -108,7 +112,7 @@ export default function RecipeForm({
           ingredientId: ingredient.id,
           quantity: 0,
           unit: "none",
-          name: ingredient.name ?? "",
+          name: ingredient.name,
         },
       ]);
     }

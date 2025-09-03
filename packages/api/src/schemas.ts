@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 // Base recipe validation schema that can be used both on client and server
 export const baseRecipeSchema = z.object({

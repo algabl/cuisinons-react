@@ -1,22 +1,13 @@
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "./root";
+
 // Re-export all validation schemas for shared use
 export * from "./schemas";
 
-// For now, use a generic type until we can properly reference the AppRouter
-// This will be updated once the shared package dependency is properly resolved
-export type AppRouter = {
-  recipe: {
-    getAll: any;
-    getById: any;
-    create: any;
-    update: any;
-    delete: any;
-    getByUserId: any;
-    getLatest: any;
-    shareWithGroup: any;
-    addIngredient: any;
-  };
-  group: any;
-  user: any;
-  sharing: any;
-  ingredient: any;
-};
+// Export the actual router and types
+export { appRouter, createCaller } from "./root";
+export type { AppRouter } from "./root";
+
+// Export tRPC input/output types
+export type RouterInputs = inferRouterInputs<AppRouter>;
+export type RouterOutputs = inferRouterOutputs<AppRouter>;

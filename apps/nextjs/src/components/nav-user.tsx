@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 // import { useSession, signOut } from "next-auth/react";
-import { SignOutButton, useUser } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@cuisinons/auth/client";
 import {
   IconCreditCard,
   IconDotsVertical,

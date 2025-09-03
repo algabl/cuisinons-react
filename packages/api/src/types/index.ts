@@ -16,3 +16,5 @@ export type Ingredient = NonNullable<
 export type Recipe = NonNullable<
   inferRouterOutputs<AppRouter>["recipe"]["getById"]
 >;
+
+export * from "../schemas";

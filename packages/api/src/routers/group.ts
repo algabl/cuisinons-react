@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { groupMembers, groups } from "@cuisinons/db/schema";
 import { eq, and } from "drizzle-orm";
-import { clerkClient } from "@cuisinons/auth";
+import { clerkClient } from "@cuisinons/auth/server";
 import { groupSchema } from "../schemas";
 
 const groupCreateValidation = groupSchema.extend({
@@ -12,7 +12,7 @@ const groupCreateValidation = groupSchema.extend({
     .optional(),
 });
 
-export const groupRouter = createTRPCRouter({
+export const groupRouter = {
   create: protectedProcedure
     .input(groupCreateValidation)
     .mutation(async ({ ctx, input }) => {
@@ -26,7 +26,7 @@ export const groupRouter = createTRPCRouter({
       }
       await ctx.db.insert(groupMembers).values({
         groupId: createdGroup.id,
-        userId: ctx.session.userId,
+        userId: ctx.auth.userId,
         role: "owner",
       });
       return createdGroup.id;
@@ -154,4 +154,4 @@ export const groupRouter = createTRPCRouter({
       }
       return groupMember;
     }),
-});
+};
