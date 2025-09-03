@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+// import { useSession, signOut } from "next-auth/react";
+import { SignOutButton, useUser } from "@clerk/nextjs";
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -24,8 +27,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
-// import { useSession, signOut } from "next-auth/react";
-import { SignOutButton, useUser } from "@clerk/nextjs";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -41,12 +42,12 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 {user?.hasImage && (
-                  <AvatarImage src={user.imageUrl} alt={user.fullName ?? ""} />
+                  <AvatarImage src={user.imageUrl} alt={user.firstName ?? ""} />
                 )}
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.fullName}</span>
+                <span className="truncate font-medium">{user?.firstName}</span>
                 <span className="text-muted-foreground truncate text-xs">
                   {user?.emailAddresses[0]?.emailAddress ?? "No email"}
                 </span>
@@ -60,8 +61,12 @@ export function NavUser() {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <DropdownMenuItem className="p-0 font-normal">
+              <Link
+                href="https://accounts.cuisinons.imalexblack.dev/user"
+                target="_blank"
+                className="flex items-center gap-2 px-1 py-1.5 text-left text-sm"
+              >
                 <Avatar className="h-8 w-8 rounded-lg">
                   {user?.hasImage && (
                     <AvatarImage
@@ -79,8 +84,8 @@ export function NavUser() {
                     {user?.emailAddresses[0]?.emailAddress ?? "No email"}
                   </span>
                 </div>
-              </div>
-            </DropdownMenuLabel>
+              </Link>
+            </DropdownMenuItem>
             {/* <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
@@ -99,7 +104,13 @@ export function NavUser() {
             <DropdownMenuSeparator /> */}
             <DropdownMenuItem>
               <SignOutButton>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
                   <IconLogout />
                   Log out
                 </span>
