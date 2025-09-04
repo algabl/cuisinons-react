@@ -26,7 +26,7 @@ export const groupRouter = {
       }
       await ctx.db.insert(groupMembers).values({
         groupId: createdGroup.id,
-        userId: ctx.auth.userId,
+        userId: ctx.auth.userId ?? "",
         role: "owner",
       });
       return createdGroup.id;

@@ -56,7 +56,7 @@ export const ingredientRouter = createTRPCRouter({
           ),
           or(
             eq(ingredients.type, "global"),
-            eq(ingredients.createdById, ctx.auth.userId),
+            eq(ingredients.createdById, ctx.auth.userId ?? ""),
           ),
         ),
       limit: 10,
