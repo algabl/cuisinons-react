@@ -5,7 +5,7 @@ if (!process.env.NEON_DATABASE_URL) {
 }
 
 export default {
-  schema: "./src/server/db/schema.ts",
+  schema: "./src/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.NEON_DATABASE_URL,
