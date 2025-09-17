@@ -8,12 +8,11 @@ import {
 } from "@cuisinons/db/schema";
 
 import {
-  ingredientSchema,
   recipeApiSchema,
   recipeIngredientRelationSchema,
   recipeUpdateSchema,
 } from "../schemas";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const recipeRouter = createTRPCRouter({
   create: protectedProcedure
@@ -21,7 +20,7 @@ export const recipeRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       console.log(input);
       return await ctx.db.transaction(async (tx) => {
-        const created = await ctx.db
+        const created = await tx
           .insert(recipes)
           .values({
             name: input.name,
@@ -69,7 +68,7 @@ export const recipeRouter = createTRPCRouter({
             isPrivate: input.isPrivate,
           })
           .returning();
-
+        console.log(created);
         if (!created[0]) {
           throw new Error("Failed to create recipe");
         }
@@ -79,15 +78,15 @@ export const recipeRouter = createTRPCRouter({
         if (input.recipeIngredients && recipeId) {
           // Use Promise.all for better performance
           await Promise.all(
-            input.recipeIngredients.map(ingredient =>
+            input.recipeIngredients.map((ingredient) =>
               tx.insert(recipeIngredients).values({
                 recipeId: recipeId,
                 ingredientId: ingredient.ingredientId,
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
                 userId: ctx.auth.userId,
-              })
-            )
+              }),
+            ),
           );
         }
         return {
@@ -118,140 +117,146 @@ export const recipeRouter = createTRPCRouter({
         );
       }
 
-      // Update recipeIngredients.
-      // First, check for existing ingredients and update them
-      const existingIngredients = existingRecipe.recipeIngredients.map(
-        (ri) => ri.ingredientId,
-      );
+      return await ctx.db.transaction(async (tx) => {
+        // Update recipeIngredients.
+        // First, check for existing ingredients and update them
+        const existingIngredients = existingRecipe.recipeIngredients.map(
+          (ri) => ri.ingredientId,
+        );
 
-      const newIngredients =
-        input.recipeIngredients?.map((ingredient) => ingredient.ingredientId) ??
-        [];
+        const newIngredients =
+          input.recipeIngredients?.map(
+            (ingredient) => ingredient.ingredientId,
+          ) ?? [];
 
-      // Remove ingredients that are no longer in the recipe
-      const ingredientsToRemove = existingIngredients.filter(
-        (ingredientId) => !newIngredients.includes(ingredientId),
-      );
+        // Remove ingredients that are no longer in the recipe
+        const ingredientsToRemove = existingIngredients.filter(
+          (ingredientId) => !newIngredients.includes(ingredientId),
+        );
 
-      if (ingredientsToRemove.length > 0) {
-        await ctx.db
-          .delete(recipeIngredients)
-          .where(
-            and(
-              eq(recipeIngredients.recipeId, input.id),
-              inArray(recipeIngredients.ingredientId, ingredientsToRemove),
-            ),
-          );
-      }
+        if (ingredientsToRemove.length > 0) {
+          await tx
+            .delete(recipeIngredients)
+            .where(
+              and(
+                eq(recipeIngredients.recipeId, input.id),
+                inArray(recipeIngredients.ingredientId, ingredientsToRemove),
+              ),
+            );
+        }
 
-      // Add or update ingredients
-      if (input.recipeIngredients) {
-        for (const ingredient of input.recipeIngredients) {
-          const existingIngredient = existingRecipe.recipeIngredients.find(
-            (ri) => ri.ingredientId === ingredient.ingredientId,
-          );
+        // Add or update ingredients
+        if (input.recipeIngredients) {
+          for (const ingredient of input.recipeIngredients) {
+            const existingIngredient = existingRecipe.recipeIngredients.find(
+              (ri) => ri.ingredientId === ingredient.ingredientId,
+            );
 
-          if (existingIngredient) {
-            // Update existing ingredient
-            await ctx.db
-              .update(recipeIngredients)
-              .set({
+            if (existingIngredient) {
+              // Update existing ingredient
+              await tx
+                .update(recipeIngredients)
+                .set({
+                  quantity: ingredient.quantity,
+                  unit: ingredient.unit,
+                })
+                .where(
+                  and(
+                    eq(recipeIngredients.recipeId, input.id),
+                    eq(recipeIngredients.ingredientId, ingredient.ingredientId),
+                  ),
+                );
+            } else {
+              // Insert new ingredient
+              await tx.insert(recipeIngredients).values({
+                recipeId: input.id,
+                ingredientId: ingredient.ingredientId,
                 quantity: ingredient.quantity,
                 unit: ingredient.unit,
-              })
-              .where(
-                and(
-                  eq(recipeIngredients.recipeId, input.id),
-                  eq(recipeIngredients.ingredientId, ingredient.ingredientId),
-                ),
-              );
-          } else {
-            // Insert new ingredient
-            await ctx.db.insert(recipeIngredients).values({
-              recipeId: input.id,
-              ingredientId: ingredient.ingredientId,
-              quantity: ingredient.quantity,
-              unit: ingredient.unit,
-              userId: ctx.auth.userId,
-            });
+                userId: ctx.auth.userId,
+              });
+            }
           }
         }
-      }
 
-      await ctx.db
-        .update(recipes)
-        .set({
-          name: input.name,
-          description: input.description,
-          image: input.image,
+        await tx
+          .update(recipes)
+          .set({
+            name: input.name,
+            description: input.description,
+            image: input.image,
 
-          // Time fields
-          cookingTime: input.cookingTime,
-          preparationTime: input.preparationTime,
-          totalTime: input.totalTime,
+            // Time fields
+            cookingTime: input.cookingTime,
+            preparationTime: input.preparationTime,
+            totalTime: input.totalTime,
 
-          // Yield
-          servings: input.servings,
+            // Yield
+            servings: input.servings,
 
-          // Nutrition
-          calories: input.calories,
-          fat: input.fat,
-          protein: input.protein,
-          carbohydrates: input.carbohydrates,
-          fiber: input.fiber,
-          sugar: input.sugar,
-          sodium: input.sodium,
+            // Nutrition
+            calories: input.calories,
+            fat: input.fat,
+            protein: input.protein,
+            carbohydrates: input.carbohydrates,
+            fiber: input.fiber,
+            sugar: input.sugar,
+            sodium: input.sodium,
 
-          // Categories
-          recipeCategory: input.recipeCategory,
-          recipeCuisine: input.recipeCuisine,
-          keywords: input.keywords,
+            // Categories
+            recipeCategory: input.recipeCategory,
+            recipeCuisine: input.recipeCuisine,
+            keywords: input.keywords,
 
-          // Difficulty
-          difficulty: input.difficulty,
-          skillLevel: input.skillLevel,
+            // Difficulty
+            difficulty: input.difficulty,
+            skillLevel: input.skillLevel,
 
-          // Dietary
-          suitableForDiet: input.suitableForDiet,
+            // Dietary
+            suitableForDiet: input.suitableForDiet,
 
-          // Equipment
-          recipeEquipment: input.recipeEquipment,
+            // Equipment
+            recipeEquipment: input.recipeEquipment,
 
-          // Cost
-          estimatedCost: input.estimatedCost,
+            // Cost
+            estimatedCost: input.estimatedCost,
 
-          // Existing fields
-          instructions: input.instructions,
-          isPrivate: input.isPrivate,
-        })
-        .where(
-          and(
-            eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.auth.userId ?? ""),
-          ),
-        );
-      return { success: true, message: "Recipe updated successfully" };
+            // Existing fields
+            instructions: input.instructions,
+            isPrivate: input.isPrivate,
+          })
+          .where(
+            and(
+              eq(recipes.id, input.id),
+              eq(recipes.createdById, ctx.auth.userId ?? ""),
+            ),
+          );
+        return { success: true, message: "Recipe updated successfully" };
+      });
     }),
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Delete recipe ingredients
-      await ctx.db
-        .delete(recipeIngredients)
-        .where(
-          and(
-            eq(recipeIngredients.recipeId, input.id),
-            eq(recipeIngredients.userId, ctx.auth.userId ?? ""),
-          ),
-        );
-      await ctx.db
-        .delete(recipes)
-        .where(
-          and(
-            eq(recipes.id, input.id),
-            eq(recipes.createdById, ctx.auth.userId ?? ""),
-          ),
-        );
+      return await ctx.db.transaction(async (tx) => {
+        await tx
+          .delete(recipeIngredients)
+          .where(
+            and(
+              eq(recipeIngredients.recipeId, input.id),
+              eq(recipeIngredients.userId, ctx.auth.userId ?? ""),
+            ),
+          );
+        await tx
+          .delete(recipes)
+          .where(
+            and(
+              eq(recipes.id, input.id),
+              eq(recipes.createdById, ctx.auth.userId ?? ""),
+            ),
+          );
+        return { success: true, message: "Recipe deleted successfully" };
+      });
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.auth.userId;
@@ -270,7 +275,7 @@ export const recipeRouter = createTRPCRouter({
       });
       return recipes;
     }),
-  getById: protectedProcedure
+  getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const recipe = await ctx.db.query.recipes.findFirst({
@@ -284,6 +289,20 @@ export const recipeRouter = createTRPCRouter({
           },
         },
       });
+
+      if (recipe?.isPrivate && recipe.createdById !== ctx.auth.userId) {
+        // Check if shared with a group the user is in
+        const shared = await ctx.db.query.recipeSharings.findFirst({
+          where: (rs, { eq }) =>
+            and(
+              eq(rs.recipeId, recipe.id),
+              eq(rs.groupId, ctx.auth.userId ?? ""),
+            ),
+        });
+        if (!shared) {
+          return null;
+        }
+      }
 
       return recipe ?? null;
     }),
@@ -356,5 +375,3 @@ export const recipeRouter = createTRPCRouter({
       };
     }),
 });
-
-type DebugRecipeRouter = typeof recipeRouter;

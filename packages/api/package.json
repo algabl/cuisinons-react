@@ -30,6 +30,10 @@
     "./types": {
       "default": "./dist/types/index.js",
       "types": "./dist/types/index.d.ts"
+    },
+    "./units": {
+      "default": "./dist/units/index.js",
+      "types": "./dist/units/index.d.ts"
     }
   },
   "name": "@cuisinons/api",

@@ -1,7 +1,6 @@
 import type {
   recipes,
   ingredients,
-  recipeIngredients,
 } from "@cuisinons/db/schema";
 
 // Types for schema.org Recipe structured data
@@ -24,10 +23,10 @@ export interface SchemaOrgRecipe {
   keywords?: string[];
   suitableForDiet?: string[];
   recipeIngredient?: string[];
-  recipeInstructions?: Array<{
+  recipeInstructions?: {
     "@type": "HowToStep";
     text: string;
-  }>;
+  }[];
   nutrition?: {
     "@type": "NutritionInformation";
     calories?: string;
@@ -64,11 +63,11 @@ function minutesToISO8601(minutes: number): string {
 // Convert your database recipe to schema.org Recipe
 export function recipeToSchemaOrg(
   recipe: typeof recipes.$inferSelect,
-  recipeIngredients: Array<{
+  recipeIngredients: {
     ingredient: typeof ingredients.$inferSelect;
     quantity?: number | null;
     unit?: string | null;
-  }>,
+  }[],
   authorName?: string,
 ): SchemaOrgRecipe {
   const schemaRecipe: SchemaOrgRecipe = {
