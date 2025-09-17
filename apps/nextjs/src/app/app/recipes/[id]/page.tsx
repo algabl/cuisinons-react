@@ -1,20 +1,22 @@
+import Image from "next/image";
+import Link from "next/link";
 import { notFound, unauthorized } from "next/navigation";
-import { api } from "~/trpc/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+
+import { generateRecipeJsonLd, recipeToSchemaOrg } from "@cuisinons/validators";
+
+import { ShareItems } from "~/app/_components/recipes/share-items";
+import { CookingMode } from "~/components/cooking-mode";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "~/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
-import Link from "next/link";
-import Image from "next/image";
-import { ShareItems } from "~/app/_components/recipes/share-items";
-import { CookingMode } from "~/components/cooking-mode";
-import { recipeToSchemaOrg, generateRecipeJsonLd } from "@cuisinons/validators";
+import { api } from "~/trpc/server";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -22,7 +24,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
-  const recipe = await api.recipe?.getById({ id });
+  const recipe = await api.recipe.getById({ id });
 
   if (!recipe) {
     return {
@@ -47,25 +49,35 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const recipe = await api.recipe.getById({ id });
 
-  if (!session?.userId) {
-    unauthorized();
-  }
-
-  const user = await api.user.getById(session.userId);
   if (!recipe) {
     notFound();
   }
 
-  const isOwner = session?.userId === recipe.createdById;
-  const isInGroup = recipe.recipeSharings.some((sharing) =>
-    user?.groupMembers.some(
-      (groupMember) => sharing.groupId === groupMember.groupId,
-    ),
-  );
+  const isPublicRecipe = recipe.isPrivate === false;
+  const isOwner = session.userId === recipe.createdById;
 
-  if (recipe.isPrivate && !isOwner && !isInGroup) {
-    unauthorized();
+  if (!isPublicRecipe && !isOwner) {
+    let user = null;
+    if (session.userId) {
+      user = await api.user.getById(session.userId);
+    }
+    if (!user) {
+      unauthorized();
+    }
+    const isInGroup = recipe.recipeSharings.some((sharing) =>
+      user.groupMembers.some(
+        (groupMember) => sharing.groupId === groupMember.groupId,
+      ),
+    );
+    if (!isInGroup) {
+      unauthorized();
+    }
   }
+  const client = await clerkClient();
+
+  const recipeOwner = await client.users
+    .getUser(recipe.createdById)
+    .catch(() => null);
 
   // Generate schema.org structured data
   const schemaOrgRecipe = recipeToSchemaOrg(
@@ -327,28 +339,28 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
               )}
             </div>
             <div className="mt-10 flex flex-col items-start gap-8 border-t border-black pt-8 sm:flex-row sm:items-center">
-              {/* <Avatar className="h-16 w-16 border-2 border-black">
-              <AvatarImage
-                src={session.user.image ?? undefined}
-                alt={session.user.name ?? "User"}
-              />
-              <AvatarFallback className="text-foreground bg-muted text-3xl">
-                {session.user.name?.[0] ?? "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col gap-1">
-              <div className="text-foreground text-xl font-extrabold">
-                {session.user.name ?? "Unknown User"}
-              </div>
-              <div className="text-muted-foreground text-xs">
-                Created at: {recipe.createdAt.toLocaleString()}
-              </div>
-              {recipe.updatedAt && (
-                <div className="text-muted-foreground text-xs">
-                  Updated at: {recipe.updatedAt.toLocaleString()}
+              <Avatar className="h-16 w-16 border-2 border-black">
+                <AvatarImage
+                  src={recipeOwner?.imageUrl ?? undefined}
+                  alt={recipeOwner?.fullName ?? "User"}
+                />
+                <AvatarFallback className="text-foreground bg-muted text-3xl">
+                  {recipeOwner?.fullName?.[0] ?? "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-1">
+                <div className="text-foreground text-xl font-extrabold">
+                  {recipeOwner?.fullName ?? "Unknown User"}
                 </div>
-              )}
-            </div> */}
+                <div className="text-muted-foreground text-xs">
+                  Created at: {recipe.createdAt.toLocaleString()}
+                </div>
+                {recipe.updatedAt && (
+                  <div className="text-muted-foreground text-xs">
+                    Updated at: {recipe.updatedAt.toLocaleString()}
+                  </div>
+                )}
+              </div>
               <div className="flex items-center gap-4 sm:ml-auto">
                 {isOwner && (
                   <>

@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { type RouterOutputs } from "~/trpc/react";
 import { RecipeCard } from "./card";
 import { RecipeListItem } from "./list-item";
 import {
@@ -15,8 +14,7 @@ import { Button } from "~/components/ui/button";
 import { List as ListIcon, LayoutGrid, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
-
-type Recipe = RouterOutputs["recipe"]["getAll"][number];
+import type { Recipe } from "@cuisinons/api/types";
 type ViewMode = "grid" | "list";
 type SortField = "name" | "cookingTime" | "createdAt";
 type SortDirection = "asc" | "desc";
