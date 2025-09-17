@@ -1,13 +1,16 @@
 "use client";
 
-import { redirect } from "next/navigation";
-import { type Recipe } from "@cuisionons/api/types";
-import RecipeForm from "./form";
+import { useRouter } from "next/navigation";
+
+import type { Recipe } from "@cuisinons/api/types";
+
+import type { RecipeFormData } from "~/lib/validations";
 import { api } from "~/trpc/react";
-import { type RecipeFormData } from "~/lib/validations";
+import RecipeForm from "./form";
 
 export default function EditForm({ recipe }: { recipe: Recipe }) {
   const recipeUpdate = api.recipe.update.useMutation();
+  const router = useRouter();
   async function onSubmit(values: RecipeFormData) {
     console.log("what is going one");
     await recipeUpdate.mutateAsync({
@@ -15,18 +18,18 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
       name: values.name,
       description: values.description,
       image: values.image,
-      cookingTime: Number(values.cookingTime),
-      preparationTime: Number(values.preparationTime),
-      totalTime: Number(values.totalTime),
-      servings: Number(values.servings),
+      cookingTime: values.cookingTime,
+      preparationTime: values.preparationTime,
+      totalTime: values.totalTime,
+      servings: values.servings,
       instructions: values.instructions,
-      calories: Number(values.calories),
-      fat: Number(values.fat),
-      protein: Number(values.protein),
-      carbohydrates: Number(values.carbohydrates),
-      fiber: Number(values.fiber),
-      sugar: Number(values.sugar),
-      sodium: Number(values.sodium),
+      calories: values.calories,
+      fat: values.fat,
+      protein: values.protein,
+      carbohydrates: values.carbohydrates,
+      fiber: values.fiber,
+      sugar: values.sugar,
+      sodium: values.sodium,
 
       recipeCategory: values.recipeCategory,
       recipeCuisine: values.recipeCuisine,
@@ -35,16 +38,23 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
       skillLevel: values.skillLevel,
       suitableForDiet: values.suitableForDiet,
       recipeEquipment: values.recipeEquipment,
-      estimatedCost: Number(values.estimatedCost),
-      isPrivate: values.isPrivate ?? true,
-      recipeIngredients: values.recipeIngredients?.map((ingredient) => ({
+      estimatedCost: values.estimatedCost,
+      isPrivate: values.isPrivate,
+      recipeIngredients: values.recipeIngredients.map((ingredient) => ({
         ingredientId: ingredient.ingredientId,
         quantity: ingredient.quantity,
         unit: ingredient.unit,
       })),
     });
-    redirect(`/app/recipes/${recipe.id}`);
+    router.push(`/app/recipes/${recipe.id}`);
+    // redirect(`/app/recipes/${recipe.id}`);
   }
 
-  return <RecipeForm recipe={recipe} onSubmit={onSubmit} />;
+  return (
+    <RecipeForm
+      recipe={recipe}
+      onSubmit={onSubmit}
+      isLoading={recipeUpdate.isPending}
+    />
+  );
 }

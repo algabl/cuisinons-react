@@ -19,7 +19,6 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@cuisinons/api": "workspace:*",
     "@cuisinons/db": "workspace:*",
     "zod": "catalog:"
   },

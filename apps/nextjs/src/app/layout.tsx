@@ -2,9 +2,10 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
-
-import { TRPCReactProvider } from "~/trpc/react";
 import { ClerkProvider } from "@clerk/nextjs";
+
+import { Toaster } from "~/components/ui/sonner";
+import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -32,6 +33,7 @@ export default function RootLayout({
             {/* <SessionProvider> */}
             {children}
             {/* </SessionProvider> */}
+            <Toaster />
           </TRPCReactProvider>
         </body>
       </html>

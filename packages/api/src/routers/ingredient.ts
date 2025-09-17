@@ -1,8 +1,8 @@
 import { z } from "zod/v4";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { ingredients } from "@cuisinons/db/schema";
-import { ingredientSchema } from "../schemas";
-
+import { ingredientSchema, ingredientUpdateSchema } from "../schemas";
+import { and, eq } from "drizzle-orm";
 export const ingredientRouter = createTRPCRouter({
   getByUserId: protectedProcedure
     .input(z.string())
@@ -30,6 +30,41 @@ export const ingredientRouter = createTRPCRouter({
         data: newIngredient[0],
       };
     }),
+  update: protectedProcedure
+    .input(ingredientUpdateSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Ensure the ingredient exists and belongs to the user
+      const existingIngredient = await ctx.db.query.ingredients.findFirst({
+        where: (ingredients, { and, eq }) =>
+          and(
+            eq(ingredients.id, input.id),
+            eq(ingredients.createdById, ctx.auth.userId ?? ""),
+          ),
+      });
+
+      if (!existingIngredient) {
+        throw new Error("Ingredient not found or access denied");
+      }
+
+      const updatedIngredient = await ctx.db
+        .update(ingredients)
+        .set({
+          name: input.name,
+          description: input.description,
+        })
+        .where(
+          and(
+            eq(ingredients.id, input.id),
+            eq(ingredients.createdById, ctx.auth.userId ?? "")
+          )
+        )
+        .returning();
+      return {
+        success: true,
+        message: "Ingredient updated successfully",
+        data: updatedIngredient[0],
+      };
+    }),
   getById: protectedProcedure
     .input(z.string().uuid({ message: "ID must be a UUID" }))
     .query(async ({ ctx, input }) => {
@@ -39,7 +74,7 @@ export const ingredientRouter = createTRPCRouter({
       // check to make sure the ingredient type is global or the createdById is the same as the user's ID
       if (
         ingredient?.type == "user" &&
-        ingredient?.createdById !== ctx.auth.userId
+        ingredient.createdById !== ctx.auth.userId
       ) {
         return null;
       }
