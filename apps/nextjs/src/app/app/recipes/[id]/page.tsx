@@ -1,20 +1,22 @@
+import Image from "next/image";
+import Link from "next/link";
 import { notFound, unauthorized } from "next/navigation";
-import { api } from "~/trpc/server";
 import { auth } from "@clerk/nextjs/server";
+
+import { generateRecipeJsonLd, recipeToSchemaOrg } from "@cuisinons/validators";
+
+import { ShareItems } from "~/app/_components/recipes/share-items";
+import { CookingMode } from "~/components/cooking-mode";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "~/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
-import Link from "next/link";
-import Image from "next/image";
-import { ShareItems } from "~/app/_components/recipes/share-items";
-import { CookingMode } from "~/components/cooking-mode";
-import { recipeToSchemaOrg, generateRecipeJsonLd } from "@cuisinons/validators";
+import { api } from "~/trpc/server";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -22,7 +24,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
-  const recipe = await api.recipe?.getById({ id });
+  const recipe = await api.recipe.getById({ id });
 
   if (!recipe) {
     return {
@@ -47,24 +49,27 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const recipe = await api.recipe.getById({ id });
 
-  if (!session?.userId) {
-    unauthorized();
-  }
-
-  const user = await api.user.getById(session.userId);
   if (!recipe) {
     notFound();
   }
 
-  const isOwner = session?.userId === recipe.createdById;
-  const isInGroup = recipe.recipeSharings.some((sharing) =>
-    user?.groupMembers.some(
-      (groupMember) => sharing.groupId === groupMember.groupId,
-    ),
-  );
+  const isPublicRecipe = recipe.isPrivate === false;
+  const isOwner = session.userId === recipe.createdById;
 
-  if (recipe.isPrivate && !isOwner && !isInGroup) {
-    unauthorized();
+  if (!isPublicRecipe && !isOwner) {
+    let user = null;
+    if (session.userId) {
+      user = await api.user.getById(session.userId);
+    }
+    if (!user) {
+      unauthorized();
+    }
+    const isInGroup = recipe.recipeSharings.some((sharing) =>
+      user.groupMembers.some(
+        (groupMember) => sharing.groupId === groupMember.groupId,
+      ),
+    );
+    if (!isInGroup) { unauthorized(); }
   }
 
   // Generate schema.org structured data
