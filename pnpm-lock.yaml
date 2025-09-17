@@ -527,9 +527,6 @@ importers:
 
   packages/validators:
     dependencies:
-      '@cuisinons/api':
-        specifier: workspace:*
-        version: link:../api
       '@cuisinons/db':
         specifier: workspace:*
         version: link:../db
