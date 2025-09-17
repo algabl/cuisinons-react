@@ -24,7 +24,7 @@ import {
 } from "~/components/ui/popover";
 import { api } from "~/trpc/react";
 import CreateForm from "../ingredients/create-form";
-import { type Ingredient } from "@cuisinons/api/types";
+import type {Ingredient} from "@cuisinons/api/types";
 import type { z } from "zod";
 import type { formSchema } from "./form";
 import { createPortal } from "react-dom";
@@ -42,6 +42,7 @@ export function IngredientSelect({
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(handler);

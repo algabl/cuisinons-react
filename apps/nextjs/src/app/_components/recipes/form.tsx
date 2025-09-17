@@ -26,7 +26,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
-import { api } from "~/trpc/react";
 import { IngredientSelect } from "./ingredient-select";
 
 export { recipeFormSchema as formSchema };
@@ -34,9 +33,11 @@ export { recipeFormSchema as formSchema };
 export default function RecipeForm({
   recipe,
   onSubmit,
+  isLoading = false,
 }: {
   recipe?: Recipe;
   onSubmit: (values: RecipeFormData) => void;
+  isLoading?: boolean;
 }) {
   const form = useForm({
     resolver: zodResolver(recipeFormSchema),
@@ -95,7 +96,6 @@ export default function RecipeForm({
     },
   });
 
-  const recipeUpdate = api.recipe.update.useMutation();
 
   // Helper to add ingredient to form state
   function handleAddIngredient(ingredient: Ingredient) {
@@ -831,16 +831,17 @@ export default function RecipeForm({
           )}
         />
         {/* Ingredients */}
+        <h2 className="text-foreground mb-4 text-3xl font-extrabold tracking-tight">
+          Ingredients
+        </h2>
 
-        {(form.watch("recipeIngredients") ?? []).length > 0 && (
+        {(form.watch("recipeIngredients") ?? []).length > 0 ? (
           <>
-            <h2 className="text-foreground mb-4 text-3xl font-extrabold tracking-tight">
-              Ingredients
-            </h2>
             <div className="text-muted-foreground mb-2 grid grid-cols-12 items-end gap-2 font-semibold">
-              <div className="col-span-6">Name</div>
+              <div className="col-span-5">Name</div>
               <div className="col-span-3">Quantity</div>
               <div className="col-span-3">Unit</div>
+              <div className="col-span-1"></div>
             </div>
             <div className="space-y-2">
               {(form.watch("recipeIngredients") ?? []).map(
@@ -849,7 +850,7 @@ export default function RecipeForm({
                     key={ingredient.ingredientId}
                     className="grid grid-cols-12 items-end gap-2"
                   >
-                    <span className="col-span-5 truncate font-semibold">
+                    <span className="col-span-5 my-auto truncate font-semibold">
                       {ingredient.name}
                     </span>
                     <div className="col-span-3">
@@ -895,10 +896,13 @@ export default function RecipeForm({
                                 onValueChange={field.onChange}
                                 value={field.value ?? ""}
                               >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select unit" />
+                                <SelectTrigger className="w-full overflow-hidden">
+                                  <SelectValue
+                                    placeholder="Unit"
+                                    className="min-w-0 truncate"
+                                  />
                                 </SelectTrigger>
-                                <SelectContent className="w-full">
+                                <SelectContent>
                                   <SelectItem value={"none"}>None</SelectItem>
                                   <SelectItem value="g">grams</SelectItem>
                                   <SelectItem value="kg">kilograms</SelectItem>
@@ -939,6 +943,10 @@ export default function RecipeForm({
               )}
             </div>
           </>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            No ingredients added yet.
+          </p>
         )}
         <IngredientSelect
           onSelect={handleAddIngredient}
@@ -1002,7 +1010,7 @@ export default function RecipeForm({
             </FormItem>
           )}
         />
-        <SpinnerButton type="submit" loading={recipeUpdate.isPending}>
+        <SpinnerButton type="submit" loading={isLoading}>
           Submit Recipe
         </SpinnerButton>
       </form>
