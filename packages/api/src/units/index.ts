@@ -181,7 +181,7 @@ export const UNIT_DEFINITIONS: Record<string, UnitDefinition> = {
   none: {
     id: "none",
     name: "none",
-    abbreviation: "",
+    abbreviation: "none",
     category: UnitCategory.COUNT,
     baseConversionFactor: 1,
   },

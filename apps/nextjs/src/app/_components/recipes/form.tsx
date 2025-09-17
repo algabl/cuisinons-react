@@ -6,6 +6,13 @@ import { useForm } from "react-hook-form";
 
 import type { Ingredient, Recipe, RecipeFormData } from "@cuisinons/api/types";
 import { recipeFormSchema } from "@cuisinons/api/types";
+// Unit definitions with conversion factors
+import {
+  canConvertUnits,
+  convertQuantity,
+  getUnitsByCategory,
+  UnitCategory,
+} from "@cuisinons/api/units";
 
 import { SpinnerButton } from "~/components/spinner-button";
 import {
@@ -21,16 +28,14 @@ import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
 import { IngredientSelect } from "./ingredient-select";
-
-// Unit definitions with conversion factors
-import { UNIT_OPTIONS, canConvertUnits, convertQuantity } from "@cuisinons/api/units";
-
 
 export { recipeFormSchema as formSchema };
 
@@ -930,10 +935,20 @@ export default function RecipeForm({
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {UNIT_OPTIONS.map((unit) => (
-                                    <SelectItem key={unit.value} value={unit.value}>
-                                      {unit.label}
-                                    </SelectItem>
+                                  {Object.values(UnitCategory).map((category) => (
+                                    <SelectGroup key={category}>
+                                      <SelectLabel>
+                                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                                      </SelectLabel>
+                                      {getUnitsByCategory(category).map((unit) => (
+                                        <SelectItem
+                                          key={unit.id}
+                                          value={unit.id}
+                                        >
+                                          {unit.abbreviation}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectGroup>
                                   ))}
                                 </SelectContent>
                               </Select>
