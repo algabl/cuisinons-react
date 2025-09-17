@@ -160,7 +160,7 @@ export const recipeApiSchema = baseRecipeSchema.extend({
 
 // Update schema (extends create with id)
 export const recipeUpdateSchema = recipeApiSchema.extend({
-  id: z.string().uuid("Recipe ID must be a valid UUID"),
+  id: z.uuid("Recipe ID must be a valid UUID"),
 });
 
 // Other validation schemas
@@ -172,6 +172,10 @@ export const ingredientSchema = z.object({
 });
 
 export const ingredientFormSchema = ingredientSchema;
+
+export const ingredientUpdateSchema = ingredientSchema.extend({
+  id: z.uuid("Ingredient ID must be a valid UUID"),
+});
 
 // Group validation
 export const groupSchema = z.object({
@@ -197,6 +201,7 @@ export const recipeIngredientRelationSchema = z.object({
 export type RecipeFormData = z.infer<typeof recipeFormSchema>;
 export type RecipeApiData = z.infer<typeof recipeApiSchema>;
 export type RecipeUpdateData = z.infer<typeof recipeUpdateSchema>;
+export type IngredientFormData = z.infer<typeof ingredientFormSchema>;
 export type IngredientData = z.infer<typeof ingredientSchema>;
 export type GroupData = z.infer<typeof groupSchema>;
 export type RecipeIngredientData = z.infer<typeof recipeIngredientSchema>;
