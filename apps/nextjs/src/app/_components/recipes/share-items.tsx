@@ -1,7 +1,11 @@
 "use client";
 
-import { Check, Copy, Share, Users, X } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { Check, Copy, Share, Users, X } from "lucide-react";
+import { toast } from "sonner";
+
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -24,16 +28,15 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
-import { api } from "~/trpc/react";
-import { Badge } from "~/components/ui/badge";
 import { Spinner } from "~/components/ui/spinner";
-import { useAuth } from "@clerk/nextjs";
+import { api } from "~/trpc/react";
 
 export function CopyLinkButton() {
   return (
     <DropdownMenuItem
       onClick={async () => {
         await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard");
       }}
       className="flex cursor-pointer items-center gap-2"
     >
