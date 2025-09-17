@@ -28,6 +28,10 @@ import {
 import { Switch } from "~/components/ui/switch";
 import { IngredientSelect } from "./ingredient-select";
 
+// Unit definitions with conversion factors
+import { UNIT_OPTIONS, canConvertUnits, convertQuantity } from "@cuisinons/api/units";
+
+
 export { recipeFormSchema as formSchema };
 
 export default function RecipeForm({
@@ -95,7 +99,6 @@ export default function RecipeForm({
         }) ?? [],
     },
   });
-
 
   // Helper to add ingredient to form state
   function handleAddIngredient(ingredient: Ingredient) {
@@ -893,7 +896,31 @@ export default function RecipeForm({
                             <FormLabel className="sr-only">Unit</FormLabel>
                             <FormControl>
                               <Select
-                                onValueChange={field.onChange}
+                                onValueChange={(newUnit) => {
+                                  const currentQuantity = form.getValues(
+                                    `recipeIngredients.${idx}.quantity`,
+                                  ) as number;
+                                  const currentUnit = field.value;
+
+                                  // Auto-convert quantity if units are compatible
+                                  if (
+                                    currentUnit &&
+                                    currentQuantity &&
+                                    canConvertUnits(currentUnit, newUnit)
+                                  ) {
+                                    const convertedQuantity = convertQuantity(
+                                      currentQuantity,
+                                      currentUnit,
+                                      newUnit,
+                                    );
+                                    form.setValue(
+                                      `recipeIngredients.${idx}.quantity`,
+                                      convertedQuantity,
+                                    );
+                                  }
+
+                                  field.onChange(newUnit);
+                                }}
                                 value={field.value ?? ""}
                               >
                                 <SelectTrigger className="w-full overflow-hidden">
@@ -903,14 +930,11 @@ export default function RecipeForm({
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value={"none"}>None</SelectItem>
-                                  <SelectItem value="g">grams</SelectItem>
-                                  <SelectItem value="kg">kilograms</SelectItem>
-                                  <SelectItem value="ml">
-                                    milliliters
-                                  </SelectItem>
-                                  <SelectItem value="l">liters</SelectItem>
-                                  <SelectItem value="tsp">teaspoon</SelectItem>
+                                  {UNIT_OPTIONS.map((unit) => (
+                                    <SelectItem key={unit.value} value={unit.value}>
+                                      {unit.label}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </FormControl>

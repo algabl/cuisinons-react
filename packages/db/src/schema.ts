@@ -88,6 +88,13 @@ export const recipesRelations = relations(recipes, ({ many }) => ({
 
 export const ingredientTypeEnum = pgEnum("type", ["global", "user"]);
 
+export const unitCategoryEnum = pgEnum("unit_category", [
+  "volume",
+  "weight",
+  "count",
+  "special",
+]);
+
 export const ingredients = createTable("ingredient", (d) => ({
   id: d
     .varchar({ length: 255 })
@@ -122,6 +129,7 @@ export const recipeIngredients = createTable(
       .references(() => ingredients.id),
     quantity: d.real(), // Null meaning no quantity
     unit: d.varchar({ length: 255 }), // Null meaning no unit
+    unitCategory: unitCategoryEnum(), // Category of the unit for conversion validation
     userId: d.varchar({ length: 255 }),
   }),
   (t) => {

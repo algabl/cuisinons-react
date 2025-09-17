@@ -1,5 +1,8 @@
 import { z } from "zod/v4";
 
+import { UNIT_DEFINITIONS } from "./units";
+const validUnitIds = Object.keys(UNIT_DEFINITIONS);
+
 // Base recipe validation schema that can be used both on client and server
 export const baseRecipeSchema = z.object({
   name: z
@@ -137,7 +140,12 @@ export const recipeIngredientSchema = z.object({
     .number()
     .positive({ message: "Quantity must be greater than 0" })
     .max(1000, { message: "Quantity seems too high (max 1000)" }),
-  unit: z.string().min(1, { message: "Please select a unit" }).optional(),
+  unit: z
+    .string()
+    .refine((val) => validUnitIds.includes(val), {
+      message: "Please select a valid unit",
+    })
+    .optional(),
 });
 
 // For client-side forms (allows string inputs that will be coerced)
