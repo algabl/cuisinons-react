@@ -1,6 +1,13 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+
+import type { Ingredient, Recipe, RecipeFormData } from "@cuisinons/api/types";
+import { recipeFormSchema } from "@cuisinons/api/types";
+
+import { SpinnerButton } from "~/components/spinner-button";
 import {
   Form,
   FormControl,
@@ -11,11 +18,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { api } from "~/trpc/react";
-import { Switch } from "~/components/ui/switch";
-import { SpinnerButton } from "~/components/spinner-button";
-import { IngredientSelect } from "./ingredient-select";
-import type {Ingredient, Recipe, RecipeFormData} from "@cuisinons/api/types";
 import {
   Select,
   SelectContent,
@@ -23,8 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Trash2 } from "lucide-react";
-import { recipeFormSchema } from "@cuisinons/api/types";
+import { Switch } from "~/components/ui/switch";
+import { api } from "~/trpc/react";
+import { IngredientSelect } from "./ingredient-select";
 
 export { recipeFormSchema as formSchema };
 
@@ -92,18 +95,17 @@ export default function RecipeForm({
     },
   });
 
-
   const recipeUpdate = api.recipe.update.useMutation();
 
   // Helper to add ingredient to form state
   function handleAddIngredient(ingredient: Ingredient) {
     console.log("Adding ingredient:", ingredient);
-    const current = (form.getValues("recipeIngredients") as {
+    const current = form.getValues("recipeIngredients") as {
       ingredientId: string;
       quantity: number;
       unit: string;
       name: string;
-    }[]);
+    }[];
     console.log("Current ingredients:", current);
     if (!current.some((i) => i.ingredientId === ingredient.id)) {
       form.setValue("recipeIngredients", [
@@ -132,7 +134,9 @@ export default function RecipeForm({
                 <Input placeholder="Recipe name" {...field} />
               </FormControl>
               <FormDescription>This is the recipe&apos;s name.</FormDescription>
-              {form.formState.errors.name && <FormMessage>{form.formState.errors.name.message}</FormMessage>}
+              {form.formState.errors.name && (
+                <FormMessage>{form.formState.errors.name.message}</FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -149,7 +153,11 @@ export default function RecipeForm({
               <FormDescription>
                 This is the recipe&apos;s description.
               </FormDescription>
-              {form.formState.errors.description && <FormMessage>{form.formState.errors.description.message}</FormMessage>}
+              {form.formState.errors.description && (
+                <FormMessage>
+                  {form.formState.errors.description.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -166,7 +174,9 @@ export default function RecipeForm({
               <FormDescription>
                 Optional: Add a link to an image for this recipe.
               </FormDescription>
-              {form.formState.errors.image && <FormMessage>{form.formState.errors.image.message}</FormMessage>}
+              {form.formState.errors.image && (
+                <FormMessage>{form.formState.errors.image.message}</FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -178,10 +188,28 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Cooking Time (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="e.g. 30" {...field} />
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 30"
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : e.target.value,
+                    )
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  disabled={field.disabled}
+                />
               </FormControl>
               <FormDescription>How long does it take to cook?</FormDescription>
-              {form.formState.errors.cookingTime && <FormMessage>{form.formState.errors.cookingTime.message}</FormMessage>}
+              {form.formState.errors.cookingTime && (
+                <FormMessage>
+                  {form.formState.errors.cookingTime.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -193,12 +221,30 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Preparation Time (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="e.g. 15" {...field} />
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 15"
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : e.target.value,
+                    )
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  disabled={field.disabled}
+                />
               </FormControl>
               <FormDescription>
                 How long does it take to prepare?
               </FormDescription>
-              {form.formState.errors.preparationTime && <FormMessage>{form.formState.errors.preparationTime.message}</FormMessage>}
+              {form.formState.errors.preparationTime && (
+                <FormMessage>
+                  {form.formState.errors.preparationTime.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -210,12 +256,30 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Total Time (minutes)</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="e.g. 45" {...field} />
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="e.g. 45"
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : e.target.value,
+                    )
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  disabled={field.disabled}
+                />
               </FormControl>
               <FormDescription>
                 Total time from start to finish (prep + cook time)
               </FormDescription>
-              {form.formState.errors.totalTime && <FormMessage>{form.formState.errors.totalTime.message}</FormMessage>}
+              {form.formState.errors.totalTime && (
+                <FormMessage>
+                  {form.formState.errors.totalTime.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -227,12 +291,30 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Servings</FormLabel>
               <FormControl>
-                <Input type="number" min={1} placeholder="e.g. 4" {...field} />
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 4"
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : e.target.value,
+                    )
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  disabled={field.disabled}
+                />
               </FormControl>
               <FormDescription>
                 How many servings does this recipe make?
               </FormDescription>
-              {form.formState.errors.servings && <FormMessage>{form.formState.errors.servings.message}</FormMessage>}
+              {form.formState.errors.servings && (
+                <FormMessage>
+                  {form.formState.errors.servings.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -248,7 +330,16 @@ export default function RecipeForm({
                   type="number"
                   min={1}
                   placeholder="e.g. 250"
-                  {...field}
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : e.target.value,
+                    )
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  disabled={field.disabled}
                 />
               </FormControl>
               <FormDescription>
@@ -273,10 +364,21 @@ export default function RecipeForm({
                     step="0.1"
                     min={0}
                     placeholder="e.g. 12.5"
-                    {...field}
+                    value={field.value?.toString() ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? undefined : e.target.value,
+                      )
+                    }
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                    disabled={field.disabled}
                   />
                 </FormControl>
-                {form.formState.errors.fat && <FormMessage>{form.formState.errors.fat.message}</FormMessage>}
+                {form.formState.errors.fat && (
+                  <FormMessage>{form.formState.errors.fat.message}</FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -292,10 +394,23 @@ export default function RecipeForm({
                     step="0.1"
                     min={0}
                     placeholder="e.g. 15.2"
-                    {...field}
+                    value={field.value?.toString() ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? undefined : e.target.value,
+                      )
+                    }
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                    disabled={field.disabled}
                   />
                 </FormControl>
-                {form.formState.errors.protein && <FormMessage>{form.formState.errors.protein.message}</FormMessage>}
+                {form.formState.errors.protein && (
+                  <FormMessage>
+                    {form.formState.errors.protein.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -311,10 +426,23 @@ export default function RecipeForm({
                     step="0.1"
                     min={0}
                     placeholder="e.g. 30.5"
-                    {...field}
+                    value={field.value?.toString() ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? undefined : e.target.value,
+                      )
+                    }
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                    disabled={field.disabled}
                   />
                 </FormControl>
-                {form.formState.errors.carbohydrates && <FormMessage>{form.formState.errors.carbohydrates.message}</FormMessage>}
+                {form.formState.errors.carbohydrates && (
+                  <FormMessage>
+                    {form.formState.errors.carbohydrates.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -330,10 +458,23 @@ export default function RecipeForm({
                     step="0.1"
                     min={0}
                     placeholder="e.g. 5.2"
-                    {...field}
+                    value={field.value?.toString() ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? undefined : e.target.value,
+                      )
+                    }
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                    disabled={field.disabled}
                   />
                 </FormControl>
-                {form.formState.errors.fiber && <FormMessage>{form.formState.errors.fiber.message}</FormMessage>}
+                {form.formState.errors.fiber && (
+                  <FormMessage>
+                    {form.formState.errors.fiber.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -349,10 +490,23 @@ export default function RecipeForm({
                     step="0.1"
                     min={0}
                     placeholder="e.g. 8.3"
-                    {...field}
+                    value={field.value?.toString() ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? undefined : e.target.value,
+                      )
+                    }
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                    disabled={field.disabled}
                   />
                 </FormControl>
-                {form.formState.errors.sugar && <FormMessage>{form.formState.errors.sugar.message}</FormMessage>}
+                {form.formState.errors.sugar && (
+                  <FormMessage>
+                    {form.formState.errors.sugar.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -368,10 +522,23 @@ export default function RecipeForm({
                     step="0.1"
                     min={0}
                     placeholder="e.g. 1.2"
-                    {...field}
+                    value={field.value?.toString() ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? undefined : e.target.value,
+                      )
+                    }
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
+                    disabled={field.disabled}
                   />
                 </FormControl>
-                {form.formState.errors.sodium && <FormMessage>{form.formState.errors.sodium.message}</FormMessage>}
+                {form.formState.errors.sodium && (
+                  <FormMessage>
+                    {form.formState.errors.sodium.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -409,7 +576,11 @@ export default function RecipeForm({
                   </Select>
                 </FormControl>
                 <FormDescription>What type of dish is this?</FormDescription>
-                {form.formState.errors.recipeCategory && <FormMessage>{form.formState.errors.recipeCategory.message}</FormMessage>}
+                {form.formState.errors.recipeCategory && (
+                  <FormMessage>
+                    {form.formState.errors.recipeCategory.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -449,7 +620,11 @@ export default function RecipeForm({
                 <FormDescription>
                   What cuisine style is this recipe?
                 </FormDescription>
-                {form.formState.errors.recipeCuisine && <FormMessage>{form.formState.errors.recipeCuisine.message}</FormMessage>}
+                {form.formState.errors.recipeCuisine && (
+                  <FormMessage>
+                    {form.formState.errors.recipeCuisine.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -478,7 +653,11 @@ export default function RecipeForm({
                     </SelectContent>
                   </Select>
                 </FormControl>
-                {form.formState.errors.difficulty && <FormMessage>{form.formState.errors.difficulty.message}</FormMessage>}
+                {form.formState.errors.difficulty && (
+                  <FormMessage>
+                    {form.formState.errors.difficulty.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -503,7 +682,11 @@ export default function RecipeForm({
                     </SelectContent>
                   </Select>
                 </FormControl>
-                {form.formState.errors.skillLevel && <FormMessage>{form.formState.errors.skillLevel.message}</FormMessage>}
+                {form.formState.errors.skillLevel && (
+                  <FormMessage>
+                    {form.formState.errors.skillLevel.message}
+                  </FormMessage>
+                )}
               </FormItem>
             )}
           />
@@ -522,13 +705,26 @@ export default function RecipeForm({
                   step="0.01"
                   min={0}
                   placeholder="e.g. 15.50"
-                  {...field}
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === "" ? undefined : e.target.value,
+                    )
+                  }
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  disabled={field.disabled}
                 />
               </FormControl>
               <FormDescription>
                 Estimated cost to make this recipe (optional)
               </FormDescription>
-              {form.formState.errors.estimatedCost && <FormMessage>{form.formState.errors.estimatedCost.message}</FormMessage>}
+              {form.formState.errors.estimatedCost && (
+                <FormMessage>
+                  {form.formState.errors.estimatedCost.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -558,7 +754,11 @@ export default function RecipeForm({
               <FormDescription>
                 Enter keywords separated by commas
               </FormDescription>
-              {form.formState.errors.keywords && <FormMessage>{form.formState.errors.keywords.message}</FormMessage>}
+              {form.formState.errors.keywords && (
+                <FormMessage>
+                  {form.formState.errors.keywords.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -588,7 +788,11 @@ export default function RecipeForm({
               <FormDescription>
                 Enter dietary restrictions separated by commas
               </FormDescription>
-              {form.formState.errors.suitableForDiet && <FormMessage>{form.formState.errors.suitableForDiet.message}</FormMessage>}
+              {form.formState.errors.suitableForDiet && (
+                <FormMessage>
+                  {form.formState.errors.suitableForDiet.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -618,7 +822,11 @@ export default function RecipeForm({
               <FormDescription>
                 Enter required equipment separated by commas
               </FormDescription>
-              {form.formState.errors.recipeEquipment && <FormMessage>{form.formState.errors.recipeEquipment.message}</FormMessage>}
+              {form.formState.errors.recipeEquipment && (
+                <FormMessage>
+                  {form.formState.errors.recipeEquipment.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -656,8 +864,7 @@ export default function RecipeForm({
                                 type="number"
                                 step="0.1"
                                 min={0}
-                                {...field}
-                                value={field.value ?? 0}
+                                value={field.value?.toString() ?? ""}
                                 onChange={(e) =>
                                   field.onChange(
                                     e.target.value === ""
@@ -665,6 +872,10 @@ export default function RecipeForm({
                                       : Number(e.target.value),
                                   )
                                 }
+                                onBlur={field.onBlur}
+                                name={field.name}
+                                ref={field.ref}
+                                disabled={field.disabled}
                               />
                             </FormControl>
                             <FormMessage />
@@ -731,7 +942,15 @@ export default function RecipeForm({
         )}
         <IngredientSelect
           onSelect={handleAddIngredient}
-          recipeIngredients={form.watch("recipeIngredients")}
+          recipeIngredients={(form.watch("recipeIngredients") ?? []).map(
+            (ingredient) => ({
+              ...ingredient,
+              quantity:
+                typeof ingredient.quantity === "number"
+                  ? ingredient.quantity
+                  : 0,
+            }),
+          )}
         />
         {/* Instructions (as textarea, one per line) */}
         <FormField
@@ -749,7 +968,11 @@ export default function RecipeForm({
                 />
               </FormControl>
               <FormDescription>Enter each step on a new line.</FormDescription>
-              {form.formState.errors.instructions && <FormMessage>{form.formState.errors.instructions.message}</FormMessage>}
+              {form.formState.errors.instructions && (
+                <FormMessage>
+                  {form.formState.errors.instructions.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />
@@ -771,7 +994,11 @@ export default function RecipeForm({
                 Check this if you want to keep this recipe private. Sharing this
                 recipe to a group will still make it visible to that group.
               </FormDescription>
-              {form.formState.errors.isPrivate && <FormMessage>{form.formState.errors.isPrivate.message}</FormMessage>}
+              {form.formState.errors.isPrivate && (
+                <FormMessage>
+                  {form.formState.errors.isPrivate.message}
+                </FormMessage>
+              )}
             </FormItem>
           )}
         />

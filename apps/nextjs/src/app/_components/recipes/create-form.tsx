@@ -3,7 +3,7 @@
 import RecipeForm from "./form";
 import { api } from "~/trpc/react";
 import { redirect } from "next/navigation";
-import { type RecipeFormData } from "~/lib/validations";
+import type { RecipeFormData } from "~/lib/validations";
 
 export function CreateForm() {
   const recipeCreate = api.recipe.create.useMutation();
@@ -13,18 +13,18 @@ export function CreateForm() {
       name: values.name,
       description: values.description,
       image: values.image,
-      cookingTime: Number(values.cookingTime),
-      preparationTime: Number(values.preparationTime),
-      totalTime: Number(values.totalTime),
-      servings: Number(values.servings),
+      cookingTime: values.cookingTime,
+      preparationTime: values.preparationTime,
+      totalTime: values.totalTime,
+      servings: values.servings,
       instructions: values.instructions,
-      calories: Number(values.calories),
-      fat: Number(values.fat),
-      protein: Number(values.protein),
-      carbohydrates: Number(values.carbohydrates),
-      fiber: Number(values.fiber),
-      sugar: Number(values.sugar),
-      sodium: Number(values.sodium),
+      calories: values.calories,
+      fat: values.fat,
+      protein: values.protein,
+      carbohydrates: values.carbohydrates,
+      fiber: values.fiber,
+      sugar: values.sugar,
+      sodium: values.sodium,
 
       recipeCategory: values.recipeCategory,
       recipeCuisine: values.recipeCuisine,
@@ -33,9 +33,9 @@ export function CreateForm() {
       skillLevel: values.skillLevel,
       suitableForDiet: values.suitableForDiet,
       recipeEquipment: values.recipeEquipment,
-      estimatedCost: Number(values.estimatedCost),
-      isPrivate: values.isPrivate ?? true,
-      recipeIngredients: values.recipeIngredients?.map((ingredient) => ({
+      estimatedCost: values.estimatedCost,
+      isPrivate: values.isPrivate,
+      recipeIngredients: values.recipeIngredients.map((ingredient) => ({
         ingredientId: ingredient.ingredientId,
         quantity: ingredient.quantity,
         unit: ingredient.unit,
