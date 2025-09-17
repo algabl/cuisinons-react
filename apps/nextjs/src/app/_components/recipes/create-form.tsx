@@ -2,11 +2,13 @@
 
 import RecipeForm from "./form";
 import { api } from "~/trpc/react";
-import { redirect } from "next/navigation";
 import type { RecipeFormData } from "~/lib/validations";
+import { useRouter } from "next/navigation";
 
 export function CreateForm() {
   const recipeCreate = api.recipe.create.useMutation();
+
+  const router = useRouter();
 
   async function onSubmit(values: RecipeFormData) {
     const created = await recipeCreate.mutateAsync({
@@ -41,8 +43,10 @@ export function CreateForm() {
         unit: ingredient.unit,
       })),
     });
-    redirect(`/app/recipes/${created.data}`);
+    router.push(`/app/recipes/${created.data}`);
+    // redirect(`/app/recipes/${created.data}`);
+
   }
 
-  return <RecipeForm onSubmit={onSubmit} />;
+  return <RecipeForm onSubmit={onSubmit} isLoading={recipeCreate.isPending} />;
 }

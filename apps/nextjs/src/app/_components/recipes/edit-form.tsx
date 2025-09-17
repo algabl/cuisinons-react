@@ -1,15 +1,15 @@
 "use client";
 
-import { redirect } from "next/navigation";
-
 import type { Recipe } from "@cuisinons/api/types";
 
 import type { RecipeFormData } from "~/lib/validations";
 import { api } from "~/trpc/react";
 import RecipeForm from "./form";
+import { useRouter } from "next/navigation";
 
 export default function EditForm({ recipe }: { recipe: Recipe }) {
   const recipeUpdate = api.recipe.update.useMutation();
+  const router = useRouter();
   async function onSubmit(values: RecipeFormData) {
     console.log("what is going one");
     await recipeUpdate.mutateAsync({
@@ -45,8 +45,9 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
         unit: ingredient.unit,
       })),
     });
-    redirect(`/app/recipes/${recipe.id}`);
+    router.push(`/app/recipes/${recipe.id}`); 
+    // redirect(`/app/recipes/${recipe.id}`);
   }
 
-  return <RecipeForm recipe={recipe} onSubmit={onSubmit} />;
+  return <RecipeForm recipe={recipe} onSubmit={onSubmit} isLoading={true} />;
 }
