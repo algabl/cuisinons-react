@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, unauthorized } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 
 import { generateRecipeJsonLd, recipeToSchemaOrg } from "@cuisinons/validators";
 
@@ -69,8 +69,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         (groupMember) => sharing.groupId === groupMember.groupId,
       ),
     );
-    if (!isInGroup) { unauthorized(); }
+    if (!isInGroup) {
+      unauthorized();
+    }
   }
+  const client = await clerkClient();
+
+  const recipeOwner = await client.users
+    .getUser(recipe.createdById)
+    .catch(() => null);
 
   // Generate schema.org structured data
   const schemaOrgRecipe = recipeToSchemaOrg(
@@ -332,28 +339,28 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
               )}
             </div>
             <div className="mt-10 flex flex-col items-start gap-8 border-t border-black pt-8 sm:flex-row sm:items-center">
-              {/* <Avatar className="h-16 w-16 border-2 border-black">
-              <AvatarImage
-                src={session.user.image ?? undefined}
-                alt={session.user.name ?? "User"}
-              />
-              <AvatarFallback className="text-foreground bg-muted text-3xl">
-                {session.user.name?.[0] ?? "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col gap-1">
-              <div className="text-foreground text-xl font-extrabold">
-                {session.user.name ?? "Unknown User"}
-              </div>
-              <div className="text-muted-foreground text-xs">
-                Created at: {recipe.createdAt.toLocaleString()}
-              </div>
-              {recipe.updatedAt && (
-                <div className="text-muted-foreground text-xs">
-                  Updated at: {recipe.updatedAt.toLocaleString()}
+              <Avatar className="h-16 w-16 border-2 border-black">
+                <AvatarImage
+                  src={recipeOwner?.imageUrl ?? undefined}
+                  alt={recipeOwner?.fullName ?? "User"}
+                />
+                <AvatarFallback className="text-foreground bg-muted text-3xl">
+                  {recipeOwner?.fullName?.[0] ?? "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-1">
+                <div className="text-foreground text-xl font-extrabold">
+                  {recipeOwner?.fullName ?? "Unknown User"}
                 </div>
-              )}
-            </div> */}
+                <div className="text-muted-foreground text-xs">
+                  Created at: {recipe.createdAt.toLocaleString()}
+                </div>
+                {recipe.updatedAt && (
+                  <div className="text-muted-foreground text-xs">
+                    Updated at: {recipe.updatedAt.toLocaleString()}
+                  </div>
+                )}
+              </div>
               <div className="flex items-center gap-4 sm:ml-auto">
                 {isOwner && (
                   <>
