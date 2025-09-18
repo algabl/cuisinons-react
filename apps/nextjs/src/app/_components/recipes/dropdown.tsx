@@ -80,12 +80,12 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
               <DropdownMenuSubTrigger>Share</DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                  <CopyLinkButton link={`/app/recipes/${props.id}`} />
+                  <CopyLinkButton link={`${window.location.origin}/app/recipes/${props.id}`} />
                   <ShareWithGroupButton
-                    onClick={() => {
-                      setGroupOpen(true);
-                      setMenuOpen(false);
-                    }}
+                  onClick={() => {
+                    setGroupOpen(true);
+                    setMenuOpen(false);
+                  }}
                   />
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
