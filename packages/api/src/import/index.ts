@@ -1,3 +1,5 @@
+import { recipeIngredients, recipes } from "@cuisinons/db/schema";
+
 import type { RecipeApiData } from "../schemas";
 import type {
   ImportContext,
@@ -13,7 +15,6 @@ import {
   prepareContentForLLM,
 } from "./extractors/llm-extractor";
 import { IMPORT_TIMEOUT, MAX_CONTENT_LENGTH, USER_AGENT } from "./types";
-import { recipeIngredients, recipes } from "@cuisinons/db/schema";
 
 /**
  * Main recipe import function - orchestrates the multi-tier extraction strategy
@@ -151,7 +152,7 @@ async function tryExtractionMethods(
         recipe,
         extractionMethod: "schema_org",
         confidence: 95,
-        sourceUrl: url
+        sourceUrl: url,
       };
     }
   } catch (error) {
@@ -270,80 +271,75 @@ async function fetchWebpageContent(url: string): Promise<string> {
 async function saveImportedRecipe(
   recipe: RecipeApiData,
   context: ImportContext,
-): Promise<{ id: string }> {
+): Promise<{ success: boolean; id: string }> {
   const { db, userId } = context;
 
-  // This is a placeholder - the actual implementation would use your database schema
-  // and insert the recipe with proper validation
+  const created = await db
+    .insert(recipes)
+    .values({
+      name: recipe.name,
+      description: recipe.description,
+      image: recipe.image,
+      createdById: userId,
 
-  return await db.transaction(async (tx) => {
-    const created = await tx
-      .insert(recipes)
-      .values({
-        name: recipe.name,
-        description: recipe.description,
-        image: recipe.image,
-        createdById: userId,
+      cookingTime: recipe.cookingTime,
+      preparationTime: recipe.preparationTime,
+      totalTime: recipe.totalTime,
 
-        cookingTime: recipe.cookingTime,
-        preparationTime: recipe.preparationTime,
-        totalTime: recipe.totalTime,
+      servings: recipe.servings,
 
-        servings: recipe.servings,
+      calories: recipe.calories,
+      fat: recipe.fat,
+      protein: recipe.protein,
+      carbohydrates: recipe.carbohydrates,
+      fiber: recipe.fiber,
+      sugar: recipe.sugar,
+      sodium: recipe.sodium,
 
-        calories: recipe.calories,
-        fat: recipe.fat,
-        protein: recipe.protein,
-        carbohydrates: recipe.carbohydrates,
-        fiber: recipe.fiber,
-        sugar: recipe.sugar,
-        sodium: recipe.sodium,
+      recipeCategory: recipe.recipeCategory,
+      recipeCuisine: recipe.recipeCuisine,
+      keywords: recipe.keywords,
 
-        recipeCategory: recipe.recipeCategory,
-        recipeCuisine: recipe.recipeCuisine,
-        keywords: recipe.keywords,
+      // Difficulty
+      difficulty: recipe.difficulty,
+      skillLevel: recipe.skillLevel,
 
-        // Difficulty
-        difficulty: recipe.difficulty,
-        skillLevel: recipe.skillLevel,
+      // Dietary
+      suitableForDiet: recipe.suitableForDiet,
 
-        // Dietary
-        suitableForDiet: recipe.suitableForDiet,
+      // Equipment
+      recipeEquipment: recipe.recipeEquipment,
 
-        // Equipment
-        recipeEquipment: recipe.recipeEquipment,
+      // Cost
+      estimatedCost: recipe.estimatedCost,
 
-        // Cost
-        estimatedCost: recipe.estimatedCost,
+      // Existing fields
+      instructions: recipe.instructions,
+      isPrivate: true,
+    })
+    .returning();
 
-        // Existing fields
-        instructions: recipe.instructions,
-        isPrivate: true,
-      })
-      .returning();
+  if (!created[0]) {
+    throw new Error("Failed to save imported recipe");
+  }
 
-    if (!created[0]) {
-      throw new Error("Failed to save imported recipe");
-    }
+  const recipeId = created[0].id;
 
-    const recipeId = created[0].id;
-
-    if (recipe.recipeIngredients && recipeId) {
-      await Promise.all(
-        recipe.recipeIngredients.map((ing) =>
-          tx.insert(recipeIngredients).values({
-            recipeId,
-            ingredientId: ing.ingredientId,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            userId,
-          })
-        ),
-      );
-    }
-    return {
-      success: true,
-      id: created[0].id,
-    };
-  });
+  if (recipe.recipeIngredients && recipeId) {
+    await Promise.all(
+      recipe.recipeIngredients.map((ing) =>
+        db.insert(recipeIngredients).values({
+          recipeId,
+          ingredientId: ing.ingredientId,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          userId,
+        }),
+      ),
+    );
+  }
+  return {
+    success: true,
+    id: created[0].id,
+  };
 }
