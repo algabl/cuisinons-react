@@ -1,3 +1,11 @@
+import Image from "next/image";
+import Link from "next/link";
+import { MoreHorizontalIcon } from "lucide-react";
+
+import type { Recipe } from "@cuisinons/api/types";
+
+import { Dropdown } from "~/app/_components/recipes/dropdown";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -5,15 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import Image from "next/image";
-import Link from "next/link";
-import { Dropdown } from "~/app/_components/recipes/dropdown";
-import { Button } from "~/components/ui/button";
-import { MoreHorizontalIcon } from "lucide-react";
 
-import type { Recipe } from "@cuisinons/api/types";
-
-export function RecipeCard({ recipe }: { recipe: Recipe }) {
+export function RecipeCard({ recipe }: { recipe: Partial<Recipe> }) {
   return (
     <Card className="overflow-hidden pt-0">
       <div className="relative aspect-[5/3] w-full bg-gray-200">
@@ -22,7 +23,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
             <Image
               className="h-full w-full object-cover"
               src={recipe.image}
-              alt={recipe.name}
+              alt={recipe.name ?? "Recipe Image"}
               fill
               sizes="100vw, 500px"
               priority={false}
