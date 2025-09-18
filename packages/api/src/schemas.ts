@@ -1,6 +1,7 @@
 import { z } from "zod/v4";
 
 import { UNIT_DEFINITIONS } from "./units";
+
 const validUnitIds = Object.keys(UNIT_DEFINITIONS);
 
 // Base recipe validation schema that can be used both on client and server
@@ -16,7 +17,7 @@ export const baseRecipeSchema = z.object({
   image: z
     .string()
     .optional()
-    .refine((val) => !val || z.string().url().safeParse(val).success, {
+    .refine((val) => !val || z.url().safeParse(val).success, {
       message: "Must be a valid URL (e.g., https://example.com/image.jpg)",
     }),
 

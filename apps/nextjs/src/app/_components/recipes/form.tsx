@@ -1,6 +1,10 @@
 "use client";
 
+import type { ChangeEvent } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { upload } from "@vercel/blob/client";
 import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
@@ -15,6 +19,7 @@ import {
 } from "@cuisinons/api/units";
 
 import { SpinnerButton } from "~/components/spinner-button";
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
@@ -35,6 +40,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
+import { api } from "~/trpc/react";
 import { IngredientSelect } from "./ingredient-select";
 
 export { recipeFormSchema as formSchema };
@@ -48,6 +54,11 @@ export default function RecipeForm({
   onSubmit: (values: RecipeFormData) => void;
   isLoading?: boolean;
 }) {
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(
+    recipe?.image ?? null,
+  );
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
   const form = useForm({
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
@@ -128,6 +139,36 @@ export default function RecipeForm({
     }
   }
 
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    event.preventDefault();
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploadingImage(true);
+      try {
+        if (recipe?.image) {
+          // Delete the old image from blob storage if it exists
+          await api.recipe.deleteImage.useMutation().mutateAsync({
+            recipeId: recipe.id,
+          });
+        }
+
+        const newBlob = await upload(recipe?.id ?? file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/images/upload",
+        });
+        setUploadedImageUrl(newBlob.url);
+        form.setValue("image", newBlob.url);
+      } catch (error) {
+        console.log(error);
+        form.setError("image", {
+          message: "Image upload failed. Please try again.",
+        });
+      } finally {
+        setIsUploadingImage(false);
+      }
+    }
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -175,12 +216,36 @@ export default function RecipeForm({
           name="image"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
+              <>
+                {form.getValues("image") && (
+                  <div className="relative mb-2 h-40 w-40">
+                    <Image
+                      src={form.getValues("image") ?? ""}
+                      alt="Recipe Image"
+                      width={100}
+                      height={100}
+                    />
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        form.setValue("image", "");
+                      }}
+                    >
+                      Remove Image
+                    </Button>
+                  </div>
+                )}
+              </>
+              <FormLabel>Image</FormLabel>
               <FormControl>
-                <Input placeholder="https://example.com/image.jpg" {...field} />
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
               </FormControl>
               <FormDescription>
-                Optional: Add a link to an image for this recipe.
+                Optional: Add an image for this recipe.
               </FormDescription>
               {form.formState.errors.image && (
                 <FormMessage>{form.formState.errors.image.message}</FormMessage>
@@ -935,21 +1000,26 @@ export default function RecipeForm({
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {Object.values(UnitCategory).map((category) => (
-                                    <SelectGroup key={category}>
-                                      <SelectLabel>
-                                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                                      </SelectLabel>
-                                      {getUnitsByCategory(category).map((unit) => (
-                                        <SelectItem
-                                          key={unit.id}
-                                          value={unit.id}
-                                        >
-                                          {unit.abbreviation}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectGroup>
-                                  ))}
+                                  {Object.values(UnitCategory).map(
+                                    (category) => (
+                                      <SelectGroup key={category}>
+                                        <SelectLabel>
+                                          {category.charAt(0).toUpperCase() +
+                                            category.slice(1)}
+                                        </SelectLabel>
+                                        {getUnitsByCategory(category).map(
+                                          (unit) => (
+                                            <SelectItem
+                                              key={unit.id}
+                                              value={unit.id}
+                                            >
+                                              {unit.abbreviation}
+                                            </SelectItem>
+                                          ),
+                                        )}
+                                      </SelectGroup>
+                                    ),
+                                  )}
                                 </SelectContent>
                               </Select>
                             </FormControl>

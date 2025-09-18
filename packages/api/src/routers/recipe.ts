@@ -1,3 +1,4 @@
+import { del } from "@vercel/blob";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod/v4";
 
@@ -19,6 +20,7 @@ export const recipeRouter = createTRPCRouter({
     .input(recipeApiSchema)
     .mutation(async ({ ctx, input }) => {
       console.log(input);
+      // use upload function
       const created = await ctx.db
         .insert(recipes)
         .values({
@@ -366,5 +368,39 @@ export const recipeRouter = createTRPCRouter({
         message: "Ingredient added to recipe successfully",
         data: response[0],
       };
+    }),
+  deleteImage: protectedProcedure
+    .input(z.object({ recipeId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Get existing recipe to check ownership
+      const existingRecipe = await ctx.db.query.recipes.findFirst({
+        where: (recipes, { eq }) =>
+          and(
+            eq(recipes.id, input.recipeId),
+            eq(recipes.createdById, ctx.auth.userId ?? ""),
+          ),
+      });
+      if (!existingRecipe) {
+        throw new Error(
+          "Recipe not found or you do not have permission to edit it.",
+        );
+      }
+      // If there's an image, delete it from blob storage
+      if (existingRecipe.image) {
+        // Call your delete function here
+        await del(existingRecipe.image);
+        // await deleteImageFromBlobStorage(existingRecipe.image);
+      }
+      // Update the recipe to remove the image URL
+      await ctx.db
+        .update(recipes)
+        .set({ image: null })
+        .where(
+          and(
+            eq(recipes.id, input.recipeId),
+            eq(recipes.createdById, ctx.auth.userId ?? ""),
+          ),
+        );
+      return { success: true, message: "Recipe image deleted successfully" };
     }),
 });

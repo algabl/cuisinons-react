@@ -23,7 +23,12 @@ const config = {
   },
 
   images: {
-    domains: ["posthog.com", "us-assets.i.posthog.com", "img.clerk.com"],
+    remotePatterns: [
+      { protocol: "https", hostname: "posthog.com" },
+      { protocol: "https", hostname: "us-assets.i.posthog.com" },
+      { protocol: "https", hostname: "img.clerk.com" },
+      { protocol: "https", hostname: "my-store-id.public.blob.vercel-storage.com", pathname: "/**" },
+    ],
   },
 
   async rewrites() {

@@ -3,6 +3,7 @@
     "@cuisinons/auth": "workspace:*",
     "@cuisinons/db": "workspace:*",
     "@trpc/server": "catalog:",
+    "@vercel/blob": "^2.0.0",
     "superjson": "^2.2.1",
     "zod": "catalog:"
   },
