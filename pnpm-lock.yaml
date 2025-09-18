@@ -6,52 +6,18 @@ settings:
 
 catalogs:
   default:
-    '@clerk/nextjs':
-      specifier: ^6.23.0
-      version: 6.31.3
-    '@tanstack/react-query':
-      specifier: ^5.80.7
-      version: 5.85.5
-    '@trpc/client':
-      specifier: ^11.4.0
-      version: 11.5.0
-    '@trpc/server':
-      specifier: ^11.4.0
-      version: 11.5.0
-    '@trpc/tanstack-react-query':
-      specifier: ^11.4.0
-      version: 11.5.0
     eslint:
       specifier: ^9.28.0
       version: 9.33.0
     prettier:
       specifier: ^3.5.3
       version: 3.6.2
-    superjson:
-      specifier: ^2.2.2
-      version: 2.2.2
-    tailwindcss:
-      specifier: ^3.4.15
-      version: 3.4.17
     typescript:
       specifier: ^5.8.3
       version: 5.9.2
     zod:
       specifier: ^4.1.5
       version: 4.1.5
-  react19:
-    '@types/react':
-      specifier: ^19.1.6
-      version: 19.1.10
-    '@types/react-dom':
-      specifier: ^19.1.5
-      version: 19.1.7
-    react:
-      specifier: 19.0.0
-      version: 19.0.0
-    react-dom:
-      specifier: 19.0.0
-      version: 19.0.0
 
 importers:
 
@@ -428,6 +394,9 @@ importers:
       '@cuisinons/db':
         specifier: workspace:*
         version: link:../db
+      '@cuisinons/validators':
+        specifier: workspace:*
+        version: link:../validators
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.5.0(typescript@5.9.2)
@@ -494,7 +463,7 @@ importers:
         specifier: ^0.10.0
         version: 0.10.0
       drizzle-orm:
-        specifier: ^0.44.1
+        specifier: ^0.44.4
         version: 0.44.4(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@vercel/postgres@0.10.0)(kysely@0.28.5)(postgres@3.4.7)
       drizzle-zod:
         specifier: ^0.8.2
