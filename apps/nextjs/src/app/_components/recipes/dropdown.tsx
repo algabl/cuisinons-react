@@ -1,30 +1,32 @@
 "use client";
-import { Pencil, Share2, Trash } from "lucide-react";
-import Link from "next/link";
+
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Pencil, Share2, Trash } from "lucide-react";
+
 import {
-  AlertDialogContent,
   AlertDialog,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
 import {
   CopyLinkButton,
   GroupDialog,
@@ -38,7 +40,7 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
   const recipeDelete = api.recipe.delete.useMutation();
   const router = useRouter();
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     recipeDelete.mutate(
       { id },
       {
@@ -78,7 +80,7 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
               <DropdownMenuSubTrigger>Share</DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                  <CopyLinkButton />
+                  <CopyLinkButton link={`/app/recipes/${props.id}`} />
                   <ShareWithGroupButton
                     onClick={() => {
                       setGroupOpen(true);
@@ -109,8 +111,8 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={async () => {
-                await handleDelete(props.id);
+              onClick={() => {
+                handleDelete(props.id);
                 setOpen(false);
               }}
             >
