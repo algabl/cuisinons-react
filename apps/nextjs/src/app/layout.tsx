@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
+import { PostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -29,12 +30,14 @@ export default function RootLayout({
     >
       <html lang="en" className={`${geist.variable}`}>
         <body>
-          <TRPCReactProvider>
-            {/* <SessionProvider> */}
-            {children}
-            {/* </SessionProvider> */}
-            <Toaster />
-          </TRPCReactProvider>
+          <PostHogProvider>
+            <TRPCReactProvider>
+              {/* <SessionProvider> */}
+              {children}
+              {/* </SessionProvider> */}
+              <Toaster />
+            </TRPCReactProvider>
+          </PostHogProvider>
         </body>
       </html>
     </ClerkProvider>

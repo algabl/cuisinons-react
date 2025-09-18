@@ -1,5 +1,3 @@
-import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "~/server/api/root";
 import {
   Card,
   CardContent,
@@ -13,8 +11,7 @@ import { Dropdown } from "~/app/_components/recipes/dropdown";
 import { Button } from "~/components/ui/button";
 import { MoreHorizontalIcon } from "lucide-react";
 
-type RouterOutputs = inferRouterOutputs<AppRouter>;
-type Recipe = RouterOutputs["recipe"]["getAll"][number];
+import type { Recipe } from "@cuisinons/api/types";
 
 export function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
