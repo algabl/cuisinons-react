@@ -1,6 +1,7 @@
 import { z } from "zod/v4";
 
 import { UNIT_DEFINITIONS } from "./units";
+
 const validUnitIds = Object.keys(UNIT_DEFINITIONS);
 
 // Base recipe validation schema that can be used both on client and server
@@ -205,6 +206,85 @@ export const recipeIngredientRelationSchema = z.object({
   unit: z.string().optional(),
 });
 
+// Import-specific validation schemas
+export const importUrlSchema = z.object({
+  url: z
+    .string()
+    .min(1, "URL is required")
+    .url("Please provide a valid URL")
+    .refine((url) => {
+      try {
+        const parsed = new URL(url);
+        return ["http:", "https:"].includes(parsed.protocol);
+      } catch {
+        return false;
+      }
+    }, "Only HTTP and HTTPS URLs are supported")
+    .refine((url) => {
+      try {
+        const hostname = new URL(url).hostname.toLowerCase();
+        return !(
+          hostname === "localhost" ||
+          hostname.startsWith("127.") ||
+          hostname.startsWith("192.168.") ||
+          hostname.startsWith("10.") ||
+          hostname.includes("localhost")
+        );
+      } catch {
+        return false;
+      }
+    }, "Cannot import from local or private network addresses")
+    .refine((url) => {
+      const blockedDomains = [
+        "instagram.com",
+        "facebook.com",
+        "tiktok.com",
+        "twitter.com",
+        "x.com",
+      ];
+      try {
+        const domain = new URL(url).hostname.toLowerCase();
+        return !blockedDomains.some((blocked) => domain.includes(blocked));
+      } catch {
+        return false;
+      }
+    }, "This website typically blocks automated access"),
+  userConsent: z.boolean().refine((val) => val === true, {
+    message: "You must confirm you have permission to import this content",
+  }),
+  skipDirectFetch: z.boolean().default(false),
+});
+
+export const importTextSchema = z.object({
+  content: z
+    .string()
+    .min(10, "Content must be at least 10 characters")
+    .max(50000, "Content is too large (max 50,000 characters)"),
+  sourceUrl: z.string().url("Source URL must be valid").optional(),
+});
+
+export const importResultSchema = z.object({
+  status: z.enum(["success", "partial", "manual_required", "failed"]),
+  recipe: recipeApiSchema.partial().optional(),
+  extractionMethod: z
+    .enum(["schema_org", "html_scraping", "llm", "manual"])
+    .optional(),
+  warnings: z.array(z.string()).default([]),
+  sourceUrl: z.string().url().optional(),
+  confidence: z.number().min(0).max(100).optional(),
+  missingFields: z.array(z.string()).default([]),
+  recipeId: z.string().optional(),
+});
+
+export const previewImportSchema = z.object({
+  url: z.string().url(),
+});
+
+export const validateImportDataSchema = z.object({
+  recipeData: recipeApiSchema.partial(),
+  sourceUrl: z.string().url().optional(),
+});
+
 // Export types for TypeScript
 export type RecipeFormData = z.infer<typeof recipeFormSchema>;
 export type RecipeApiData = z.infer<typeof recipeApiSchema>;
@@ -213,3 +293,10 @@ export type IngredientFormData = z.infer<typeof ingredientFormSchema>;
 export type IngredientData = z.infer<typeof ingredientSchema>;
 export type GroupData = z.infer<typeof groupSchema>;
 export type RecipeIngredientData = z.infer<typeof recipeIngredientSchema>;
+
+// Import types
+export type ImportUrlData = z.infer<typeof importUrlSchema>;
+export type ImportTextData = z.infer<typeof importTextSchema>;
+export type ImportResultData = z.infer<typeof importResultSchema>;
+export type PreviewImportData = z.infer<typeof previewImportSchema>;
+export type ValidateImportDataInput = z.infer<typeof validateImportDataSchema>;
