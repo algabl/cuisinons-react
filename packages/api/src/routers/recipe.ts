@@ -78,7 +78,7 @@ export const recipeRouter = createTRPCRouter({
         // Use Promise.all for better performance
         await Promise.all(
           input.recipeIngredients.map((ingredient) =>
-            tx.insert(recipeIngredients).values({
+            ctx.db.insert(recipeIngredients).values({
               recipeId: recipeId,
               ingredientId: ingredient.ingredientId,
               quantity: ingredient.quantity,
