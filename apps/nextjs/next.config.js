@@ -22,6 +22,10 @@ const config = {
     authInterrupts: true,
   },
 
+  images: {
+    domains: ["posthog.com", "us-assets.i.posthog.com", "img.clerk.com"],
+  },
+
   async rewrites() {
     return [
       {

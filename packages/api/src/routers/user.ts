@@ -1,9 +1,10 @@
-import { clerkClient } from "@cuisinons/auth/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
+import { clerkClient } from "@cuisinons/auth/server";
 import { groupMembers } from "@cuisinons/db/schema";
 
+import { userSearchSchema } from "../schemas";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 // Zod schemas for validation and type inference
@@ -40,20 +41,39 @@ type UsersListResult = z.infer<typeof usersListResultSchema>;
 
 export const userRouter = createTRPCRouter({
   searchByEmail: protectedProcedure
-    .input(z.object({ email: z.string() }))
-    .query(async ({ input }): Promise<UserSearchResult[]> => {
+    .input(userSearchSchema)
+    .query(async ({ ctx, input }): Promise<UserSearchResult[]> => {
       const client = await clerkClient();
 
-      const { email } = input;
+      const { email, groupId } = input;
 
       try {
-        const clerkUsers = await client.users.getUserList({
+        let { data: clerkUsers, totalCount } = await client.users.getUserList({
           query: email,
           limit: 5,
         });
 
+        if (totalCount === 0) {
+          return [];
+        }
+
+        if (groupId !== undefined) {
+          // Get all userIds that are members of the given group
+          const usersInGroup = await ctx.db.query.groupMembers.findMany({
+            where: (groupMembers, { eq }) => eq(groupMembers.groupId, groupId),
+            columns: { userId: true },
+          });
+
+          // Build a Set of userIds to exclude
+          const excludedUserIds = new Set(usersInGroup.map((gm) => gm.userId));
+
+          // Filter out users who are in the group
+          clerkUsers = clerkUsers.filter(
+            (user) => !excludedUserIds.has(user.id),
+          );
+        }
         // Validate and transform the data using our schema
-        const results = clerkUsers.data.map((user) => {
+        const results = clerkUsers.map((user) => {
           const userData = {
             id: user.id,
             emailAddress: user.primaryEmailAddress?.emailAddress ?? "",

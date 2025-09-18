@@ -194,7 +194,9 @@ export const groupFormSchema = groupSchema;
 
 // User search validation
 export const userSearchSchema = z.object({
-  query: z.string().min(1, { message: "Search query is required" }),
+  email: z.string(),
+  groupId: z.string().optional(),
+  role: z.enum(["admin", "member"]).optional(),
 });
 
 // Recipe ingredient relationship validation
@@ -213,3 +215,4 @@ export type IngredientFormData = z.infer<typeof ingredientFormSchema>;
 export type IngredientData = z.infer<typeof ingredientSchema>;
 export type GroupData = z.infer<typeof groupSchema>;
 export type RecipeIngredientData = z.infer<typeof recipeIngredientSchema>;
+export type UserSearchData = z.infer<typeof userSearchSchema>;

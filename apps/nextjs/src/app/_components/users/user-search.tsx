@@ -1,10 +1,14 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+import type { UserSearchData } from "@cuisinons/api/types";
+import { userSearchSchema } from "@cuisinons/api/types";
+
 import { addMember } from "~/app/actions";
 import { Button } from "~/components/ui/button";
 import {
@@ -31,24 +35,19 @@ import {
 } from "~/components/ui/select";
 import { api } from "~/trpc/react";
 
-const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  groupId: z.string(),
-  role: z.enum(["admin", "member"]),
-});
-
 export function UserSearch(props: { groupId: string }) {
-  type FormSchemaType = z.infer<typeof formSchema>;
-  const form = useForm<FormSchemaType>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<UserSearchData>({
+    resolver: zodResolver(userSearchSchema),
     defaultValues: {
       email: "",
       groupId: props.groupId,
       role: "member",
     },
   });
-  const [search, setSearch] = useState("");
 
+  const [search, setSearch] = useState("");
+  const searchRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState(search);
 
   // Debounce search input
@@ -57,8 +56,24 @@ export function UserSearch(props: { groupId: string }) {
     return () => clearTimeout(handler);
   }, [search]);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+        setSearch("");
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const userSearch = api.user.searchByEmail.useQuery({
     email: debouncedSearch,
+    groupId: props.groupId,
   });
 
   return (
@@ -98,45 +113,51 @@ export function UserSearch(props: { groupId: string }) {
                           field.onChange(e);
                           setSearch(e.target.value);
                         }}
+                        onFocus={() => setIsOpen(true)}
                       />
-                      {search &&
-                        userSearch.data &&
-                        userSearch.data.length > 0 && (
-                          <div className="bg-popover text-popover-foreground absolute right-0 left-0 z-10 mt-1 rounded-md border shadow-lg">
-                            <Command className="max-h-48 overflow-y-auto">
-                              <CommandList>
-                                {userSearch.isLoading && (
-                                  <CommandItem disabled>Loading…</CommandItem>
-                                )}
-                                <CommandEmpty>No users found.</CommandEmpty>
-                                {userSearch.data?.map((user) => (
-                                  <CommandItem
-                                    key={user.id}
-                                    value={user.emailAddress}
-                                    onSelect={() => {
-                                      form.setValue(`email`, user.emailAddress);
-                                      setSearch(""); // close popover
-                                    }}
-                                  >
-                                    <Image
-                                      src={user.imageUrl ?? ""}
-                                      alt={user.fullName ?? ""}
-                                      className="mb-2 h-10 w-10 rounded-full"
-                                      width={40}
-                                      height={40}
-                                    />
-                                    <span className="font-medium">
-                                      {user.fullName}
-                                    </span>
-                                    <span className="text-muted-foreground ml-2 text-xs">
-                                      {user.emailAddress}
-                                    </span>
-                                  </CommandItem>
-                                ))}
-                              </CommandList>
-                            </Command>
-                          </div>
-                        )}
+                      {search && isOpen && (
+                        <div className="bg-popover text-popover-foreground absolute right-0 left-0 z-10 mt-1 rounded-md border shadow-lg">
+                          <Command className="max-h-48 overflow-y-auto">
+                            <CommandList>
+                              <CommandEmpty>No users found.</CommandEmpty>
+                              {userSearch.isFetching ? (
+                                <CommandItem disabled>Loading…</CommandItem>
+                              ) : (
+                                <>
+                                  {userSearch.data?.map((user) => (
+                                    <CommandItem
+                                      key={user.id}
+                                      value={user.emailAddress}
+                                      onSelect={() => {
+                                        form.setValue(
+                                          `email`,
+                                          user.emailAddress,
+                                        );
+                                        setSearch("");
+                                        setIsOpen(false); // close popover
+                                      }}
+                                    >
+                                      <Image
+                                        src={user.imageUrl}
+                                        alt={user.fullName ?? ""}
+                                        className="mb-2 h-10 w-10 rounded-full"
+                                        width={40}
+                                        height={40}
+                                      />
+                                      <span className="font-medium">
+                                        {user.fullName}
+                                      </span>
+                                      <span className="text-muted-foreground ml-2 text-xs">
+                                        {user.emailAddress}
+                                      </span>
+                                    </CommandItem>
+                                  ))}
+                                </>
+                              )}
+                            </CommandList>
+                          </Command>
+                        </div>
+                      )}
                     </div>
                   </FormControl>
                   <FormDescription>
