@@ -15,6 +15,7 @@ import { List as ListIcon, LayoutGrid, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import type { Recipe } from "@cuisinons/api/types";
+import { api } from "~/trpc/server";
 type ViewMode = "grid" | "list";
 type SortField = "name" | "cookingTime" | "createdAt";
 type SortDirection = "asc" | "desc";
@@ -24,6 +25,8 @@ export function List({ recipes }: { recipes: Recipe[] }) {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  // const { data: recipes = [] }, isLoading } =
+  //   api.recipe.getByUserId.useQuery(userId);
 
   const filteredRecipes = recipes
     .filter(

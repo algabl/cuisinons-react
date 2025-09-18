@@ -12,7 +12,6 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
   const recipeUpdate = api.recipe.update.useMutation();
   const router = useRouter();
   async function onSubmit(values: RecipeFormData) {
-    console.log("what is going one");
     await recipeUpdate.mutateAsync({
       id: recipe.id,
       name: values.name,

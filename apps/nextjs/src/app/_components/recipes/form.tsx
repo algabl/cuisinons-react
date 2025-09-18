@@ -1,10 +1,7 @@
 "use client";
 
-import type { ChangeEvent } from "react";
-import { useState } from "react";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { upload } from "@vercel/blob/client";
 import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
@@ -40,6 +37,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
+import { UploadButton } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { IngredientSelect } from "./ingredient-select";
 
@@ -54,11 +52,6 @@ export default function RecipeForm({
   onSubmit: (values: RecipeFormData) => void;
   isLoading?: boolean;
 }) {
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(
-    recipe?.image ?? null,
-  );
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-
   const form = useForm({
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
@@ -139,36 +132,6 @@ export default function RecipeForm({
     }
   }
 
-  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    event.preventDefault();
-    const file = event.target.files?.[0];
-    if (file) {
-      setIsUploadingImage(true);
-      try {
-        if (recipe?.image) {
-          // Delete the old image from blob storage if it exists
-          await api.recipe.deleteImage.useMutation().mutateAsync({
-            recipeId: recipe.id,
-          });
-        }
-
-        const newBlob = await upload(recipe?.id ?? file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/images/upload",
-        });
-        setUploadedImageUrl(newBlob.url);
-        form.setValue("image", newBlob.url);
-      } catch (error) {
-        console.log(error);
-        form.setError("image", {
-          message: "Image upload failed. Please try again.",
-        });
-      } finally {
-        setIsUploadingImage(false);
-      }
-    }
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -238,11 +201,26 @@ export default function RecipeForm({
               </>
               <FormLabel>Image</FormLabel>
               <FormControl>
-                <Input
+                <UploadButton
+                  endpoint="imageUploader"
+                  onClientUploadComplete={(res) => {
+                    console.log(res);
+                    if (res[0]?.ufsUrl) {
+                      form.setValue("image", res[0].ufsUrl);
+                    }
+                  }}
+                  onUploadError={(error) => {
+                    form.setError("image", {
+                      type: "manual",
+                      message: `Failed to upload image: ${error.message}`,
+                    });
+                  }}
+                />
+                {/* <Input
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                />
+                /> */}
               </FormControl>
               <FormDescription>
                 Optional: Add an image for this recipe.

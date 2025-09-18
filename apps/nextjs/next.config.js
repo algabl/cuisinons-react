@@ -27,7 +27,7 @@ const config = {
       { protocol: "https", hostname: "posthog.com" },
       { protocol: "https", hostname: "us-assets.i.posthog.com" },
       { protocol: "https", hostname: "img.clerk.com" },
-      { protocol: "https", hostname: "my-store-id.public.blob.vercel-storage.com", pathname: "/**" },
+      { protocol: "https", hostname: "jbfmbt1l40.ufs.sh", pathname: "/**" },
     ],
   },
 
