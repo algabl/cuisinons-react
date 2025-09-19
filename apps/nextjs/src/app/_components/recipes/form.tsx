@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
@@ -49,15 +50,38 @@ export default function RecipeForm({
   isLoading = false,
 }: {
   recipe?: Recipe;
-  onSubmit: (values: RecipeFormData) => void;
+  onSubmit: (values: RecipeFormData) => Promise<{ id: string }> | void;
   isLoading?: boolean;
 }) {
+  // Generate unique stage ID for this form session
+  const [stageId] = useState(() => crypto.randomUUID());
+  const formSubmittedRef = useRef(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    recipe?.stagedFile?.url ?? null,
+  );
+
+  // tRPC mutations for staging
+  const { mutate: cleanupMutate } = api.upload.cleanupStaged.useMutation();
+
+  const performCleanup = useCallback(() => {
+    if (!formSubmittedRef.current) {
+      cleanupMutate({ stageId });
+    }
+  }, [stageId, cleanupMutate, formSubmittedRef]);
+
+  useEffect(() => {
+    return () => {
+      performCleanup();
+    };
+  }, [performCleanup]);
+
   const form = useForm({
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
       name: recipe?.name ?? "",
       description: recipe?.description ?? "",
-      image: recipe?.image ?? "",
+      imageId: recipe?.imageId ?? "",
+      stageId,
 
       // Time fields
       cookingTime: recipe?.cookingTime ?? undefined,
@@ -132,9 +156,14 @@ export default function RecipeForm({
     }
   }
 
+  function handleOnSubmit(values: RecipeFormData) {
+    formSubmittedRef.current = true;
+    return onSubmit(values);
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-4">
         {/* Name */}
         <FormField
           control={form.control}
@@ -176,23 +205,26 @@ export default function RecipeForm({
         {/* Image URL */}
         <FormField
           control={form.control}
-          name="image"
-          render={({ field }) => (
+          name="imageId"
+          render={({ field: _field }) => (
             <FormItem>
               <>
-                {form.getValues("image") && (
+                {imagePreview && (
                   <div className="relative mb-2 h-40 w-40">
                     <Image
-                      src={form.getValues("image") ?? ""}
+                      src={imagePreview}
                       alt="Recipe Image"
                       width={100}
                       height={100}
                     />
                     <Button
                       variant="destructive"
-                      onClick={() => {
-                        form.setValue("image", "");
+                      onClick={(e) => {
+                        e.preventDefault();
+                        form.setValue("imageId", "");
+                        setImagePreview(null);
                       }}
+                      type="button"
                     >
                       Remove Image
                     </Button>
@@ -203,30 +235,29 @@ export default function RecipeForm({
               <FormControl>
                 <UploadButton
                   endpoint="imageUploader"
+                  input={{ stageId }}
                   onClientUploadComplete={(res) => {
                     console.log(res);
                     if (res[0]?.ufsUrl) {
-                      form.setValue("image", res[0].ufsUrl);
+                      form.setValue("imageId", res[0].serverData.fileId ?? "");
+                      setImagePreview(res[0].ufsUrl);
                     }
                   }}
                   onUploadError={(error) => {
-                    form.setError("image", {
+                    form.setError("imageId", {
                       type: "manual",
                       message: `Failed to upload image: ${error.message}`,
                     });
                   }}
                 />
-                {/* <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                /> */}
               </FormControl>
               <FormDescription>
                 Optional: Add an image for this recipe.
               </FormDescription>
-              {form.formState.errors.image && (
-                <FormMessage>{form.formState.errors.image.message}</FormMessage>
+              {form.formState.errors.imageId && (
+                <FormMessage>
+                  {form.formState.errors.imageId.message}
+                </FormMessage>
               )}
             </FormItem>
           )}
