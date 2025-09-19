@@ -1,11 +1,12 @@
-import { del } from "@vercel/blob";
-import { and, eq, inArray } from "drizzle-orm";
+import { UTApi } from "uploadthing/server";
 import { z } from "zod/v4";
 
+import { and, eq, inArray, ne } from "@cuisinons/db";
 import {
   recipeIngredients,
   recipes,
   recipeSharings,
+  stagedFiles,
 } from "@cuisinons/db/schema";
 
 import {
@@ -13,6 +14,7 @@ import {
   recipeIngredientRelationSchema,
   recipeUpdateSchema,
 } from "../schemas";
+import { publishStagedFiles } from "../services/upload";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const recipeRouter = createTRPCRouter({
@@ -26,7 +28,7 @@ export const recipeRouter = createTRPCRouter({
         .values({
           name: input.name,
           description: input.description,
-          image: input.image,
+          imageId: input.imageId,
           createdById: ctx.auth.userId ?? "",
 
           // Time fields
@@ -90,6 +92,19 @@ export const recipeRouter = createTRPCRouter({
           ),
         );
       }
+
+      // Publish any staged files associated with this recipe
+      if (input.stageId && recipeId) {
+        await publishStagedFiles(
+          {
+            stageId: input.stageId,
+            entityId: recipeId,
+            entityType: "recipe",
+          },
+          ctx,
+        );
+      }
+
       return {
         success: true,
         message: "Recipe created successfully",
@@ -177,12 +192,13 @@ export const recipeRouter = createTRPCRouter({
         }
       }
 
+      console.log("Image ID", input.imageId);
       await ctx.db
         .update(recipes)
         .set({
           name: input.name,
           description: input.description,
-          image: input.image,
+          imageId: input.imageId,
 
           // Time fields
           cookingTime: input.cookingTime,
@@ -229,11 +245,94 @@ export const recipeRouter = createTRPCRouter({
             eq(recipes.createdById, ctx.auth.userId ?? ""),
           ),
         );
+
+      console.log("Stage ID", input.stageId);
+      console.log("Existing Image ID", existingRecipe.imageId);
+      console.log("New Image ID", input.imageId);
+      console.log("Recipe ID", existingRecipe.id);
+      if (input.stageId) {
+        if (existingRecipe.imageId !== input.imageId) {
+          // Remove any files associated with this recipe, staged or published, that don't match the new imageId
+          console.log("Cleaning up old images");
+          const utapi = new UTApi();
+          const filesToDelete = await ctx.db.query.stagedFiles.findMany({
+            where: (sf, { eq, ne }) =>
+              and(
+                eq(sf.entityId, existingRecipe.id),
+                eq(sf.entityType, "recipe"),
+                eq(sf.userId, ctx.auth.userId ?? ""),
+                inArray(sf.status, ["staged", "published"]),
+                ne(sf.id, input.imageId ?? ""),
+              ),
+          });
+          console.log("Files to delete:", filesToDelete);
+          if (filesToDelete.length > 0) {
+            const map = filesToDelete.map((file) => file.key);
+            const { success, deletedCount } = await utapi.deleteFiles(map);
+            console.log("Blob deletion result:", { success, deletedCount });
+          }
+
+          await ctx.db
+            .update(stagedFiles)
+            .set({ status: "deleted" })
+            .where(
+              and(
+                eq(stagedFiles.entityId, existingRecipe.id),
+                eq(stagedFiles.entityType, "recipe"),
+                eq(stagedFiles.userId, ctx.auth.userId ?? ""),
+                inArray(stagedFiles.status, ["staged", "published"]),
+                ne(stagedFiles.id, input.imageId ?? ""),
+              ),
+            );
+        }
+        const result = await publishStagedFiles(
+          {
+            stageId: input.stageId,
+            entityId: existingRecipe.id,
+            entityType: "recipe",
+          },
+          ctx,
+        );
+        console.log("Published staged files:", result);
+      }
+
       return { success: true, message: "Recipe updated successfully" };
     }),
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const utapi = new UTApi();
+      // Delete recipe image from blob storage if it exists
+      const existingImage = await ctx.db.query.stagedFiles.findFirst({
+        where: (sf, { eq }) =>
+          and(
+            eq(sf.entityId, input.id),
+            eq(sf.entityType, "recipe"),
+            eq(sf.status, "published"),
+            eq(sf.userId, ctx.auth.userId ?? ""),
+          ),
+      });
+
+      if (existingImage) {
+        try {
+          await utapi.deleteFiles([existingImage.key]);
+        } catch (error) {
+          console.error("Error deleting image from blob storage:", error);
+        }
+      }
+
+      await ctx.db
+        .update(stagedFiles)
+        .set({ status: "deleted" })
+        .where(
+          and(
+            eq(stagedFiles.entityId, input.id),
+            eq(stagedFiles.entityType, "recipe"),
+            eq(stagedFiles.userId, ctx.auth.userId ?? ""),
+            eq(stagedFiles.status, "staged"),
+          ),
+        );
+
       // Delete recipe ingredients
       await ctx.db
         .delete(recipeIngredients)
@@ -282,6 +381,7 @@ export const recipeRouter = createTRPCRouter({
               ingredient: true,
             },
           },
+          stagedFile: true,
         },
       });
 
@@ -368,39 +468,5 @@ export const recipeRouter = createTRPCRouter({
         message: "Ingredient added to recipe successfully",
         data: response[0],
       };
-    }),
-  deleteImage: protectedProcedure
-    .input(z.object({ recipeId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      // Get existing recipe to check ownership
-      const existingRecipe = await ctx.db.query.recipes.findFirst({
-        where: (recipes, { eq }) =>
-          and(
-            eq(recipes.id, input.recipeId),
-            eq(recipes.createdById, ctx.auth.userId ?? ""),
-          ),
-      });
-      if (!existingRecipe) {
-        throw new Error(
-          "Recipe not found or you do not have permission to edit it.",
-        );
-      }
-      // If there's an image, delete it from blob storage
-      if (existingRecipe.image) {
-        // Call your delete function here
-        await del(existingRecipe.image);
-        // await deleteImageFromBlobStorage(existingRecipe.image);
-      }
-      // Update the recipe to remove the image URL
-      await ctx.db
-        .update(recipes)
-        .set({ image: null })
-        .where(
-          and(
-            eq(recipes.id, input.recipeId),
-            eq(recipes.createdById, ctx.auth.userId ?? ""),
-          ),
-        );
-      return { success: true, message: "Recipe image deleted successfully" };
     }),
 });
