@@ -1,32 +1,43 @@
 "use client";
+
 import { useState } from "react";
-import { RecipeCard } from "./card";
-import { RecipeListItem } from "./list-item";
+import Link from "next/link";
+import {
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  LayoutGrid,
+  List as ListIcon,
+  Plus,
+  Search,
+} from "lucide-react";
+
+import type { api } from "~/trpc/server";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Table,
+  TableBody,
+  TableHead,
   TableHeader,
   TableRow,
-  TableHead,
-  TableBody,
 } from "~/components/ui/table";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
-import { List as ListIcon, LayoutGrid, Plus, Search } from "lucide-react";
-import Link from "next/link";
-import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
-import type { Recipe } from "@cuisinons/api/types";
-import { api } from "~/trpc/server";
+import { RecipeCard } from "./card";
+import { RecipeListItem } from "./list-item";
+
 type ViewMode = "grid" | "list";
 type SortField = "name" | "cookingTime" | "createdAt";
 type SortDirection = "asc" | "desc";
 
-export function List({ recipes }: { recipes: Recipe[] }) {
+interface RecipeListProps {
+  recipes: Awaited<ReturnType<typeof api.recipe.getAll>>;
+}
+
+export function List({ recipes }: RecipeListProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-  // const { data: recipes = [] }, isLoading } =
-  //   api.recipe.getByUserId.useQuery(userId);
 
   const filteredRecipes = recipes
     .filter(
