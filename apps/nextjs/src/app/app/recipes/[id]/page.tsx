@@ -34,10 +34,10 @@ export async function generateMetadata({ params }: Props) {
   }
 
   return {
-    title: recipe.name,
+    title: `${recipe.name} | Cuisinons`,
     description: recipe.description ?? "No description provided.",
     openGraph: {
-      title: recipe.name,
+      title: `${recipe.name} | Cuisinons`,
       description: recipe.description ?? "No description provided.",
       images: recipe.image ? [recipe.image] : [],
     },
