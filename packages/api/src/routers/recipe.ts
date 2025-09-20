@@ -357,6 +357,9 @@ export const recipeRouter = createTRPCRouter({
     const recipes = await ctx.db.query.recipes.findMany({
       where: (recipes, { eq }) => eq(recipes.createdById, userId ?? ""),
       orderBy: (recipes, { desc }) => [desc(recipes.createdAt)],
+      with: {
+        stagedFile: true,
+      },
     });
     return recipes;
   }),
