@@ -63,7 +63,7 @@ export default async function Layout({
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <div className="@container/main flex flex-1 flex-col gap-2">
+          <div className="@container/main flex flex-1 flex-col gap-2 p-4">
             {children}
           </div>
         </div>

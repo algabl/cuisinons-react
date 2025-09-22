@@ -7,7 +7,7 @@ import { IngredientsList } from "~/app/_components/ingredients/list";
 import { api, HydrateClient } from "~/trpc/server";
 
 export const metadata: Metadata = {
-  title: "Your Ingredients",
+  title: "My Ingredients",
 };
 
 export default async function IngredientsPage() {
@@ -21,21 +21,8 @@ export default async function IngredientsPage() {
 
   return (
     <HydrateClient>
-      <main className="container mx-auto p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              My Ingredients
-            </h1>
-            <p className="text-muted-foreground">
-              Manage your ingredients and see which recipes use them.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <IngredientsList ingredients={ingredients} userId={user.id} />
-        </div>
+      <main className="container mx-auto">
+        <IngredientsList ingredients={ingredients} userId={user.id} />
       </main>
     </HydrateClient>
   );
