@@ -34,10 +34,10 @@ export async function generateMetadata({ params }: Props) {
   }
 
   return {
-    title: recipe.name,
+    title: `${recipe.name} | Cuisinons`,
     description: recipe.description ?? "No description provided.",
     openGraph: {
-      title: recipe.name,
+      title: `${recipe.name} | Cuisinons`,
       description: recipe.description ?? "No description provided.",
       images: recipe.image ? [recipe.image] : [],
     },
@@ -98,11 +98,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <div className="bg-card flex min-h-[80vh] justify-center px-2 py-10">
         <Card className="bg-card w-full max-w-3xl rounded-3xl border border-black shadow-lg">
           <CardHeader className="flex flex-col items-center gap-6 pb-0">
-            {recipe.image && (
+            {recipe.stagedFile && (
               <Image
                 width={256}
                 height={256}
-                src={recipe.image}
+                src={recipe.stagedFile.url}
                 alt={recipe.name}
                 className="mb-4 h-56 w-full rounded-2xl border border-black object-cover shadow"
                 priority

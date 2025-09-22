@@ -26,6 +26,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { env } from "~/env";
 import { api } from "~/trpc/react";
 import {
   CopyLinkButton,
@@ -80,12 +81,14 @@ export function Dropdown(props: { id: string; children: React.ReactNode }) {
               <DropdownMenuSubTrigger>Share</DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                  <CopyLinkButton link={`${window.location.origin}/app/recipes/${props.id}`} />
+                  <CopyLinkButton
+                    link={`${env.NEXT_PUBLIC_URL}/app/recipes/${props.id}`}
+                  />
                   <ShareWithGroupButton
-                  onClick={() => {
-                    setGroupOpen(true);
-                    setMenuOpen(false);
-                  }}
+                    onClick={() => {
+                      setGroupOpen(true);
+                      setMenuOpen(false);
+                    }}
                   />
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>

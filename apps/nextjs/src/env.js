@@ -13,11 +13,12 @@ export const env = createEnv({
     //     : z.string().optional(),
     // AUTH_DISCORD_ID: z.string(),
     // AUTH_DISCORD_SECRET: z.string(),
-    NEON_DATABASE_URL: z.string().url(),
+    NEON_DATABASE_URL: z.url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
     OPENROUTER_API_KEY: z.string(),
+    UPLOADTHING_TOKEN: z.string().optional(),
   },
 
   /**
@@ -27,6 +28,7 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_URL: z.url().default("http://localhost:3000"),
   },
 
   /**
@@ -40,6 +42,8 @@ export const env = createEnv({
     NEON_DATABASE_URL: process.env.NEON_DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
+    NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

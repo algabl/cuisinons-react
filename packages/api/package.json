@@ -34,6 +34,14 @@
     "./units": {
       "default": "./dist/units/index.js",
       "types": "./dist/units/index.d.ts"
+    },
+    "./services": {
+      "default": "./dist/services/index.js",
+      "types": "./dist/services/index.d.ts"
+    },
+    "./schemas": {
+      "default": "./dist/schemas/index.js",
+      "types": "./dist/schemas/index.d.ts"
     }
   },
   "name": "@cuisinons/api",

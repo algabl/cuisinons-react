@@ -11,7 +11,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { z, ZodError } from "zod/v4";
 
-import { auth, getAuth } from "@cuisinons/auth/server";
+import { auth } from "@cuisinons/auth/server";
 import { db } from "@cuisinons/db/client";
 
 /**
@@ -131,3 +131,5 @@ export const protectedProcedure: typeof t.procedure = t.procedure
       },
     });
   });
+
+export type Context = Awaited<ReturnType<typeof createTRPCContext>>;

@@ -1,4 +1,9 @@
+import { resolve } from "path";
+import { config as dotenvConfig } from "dotenv";
 import { createJiti } from "jiti";
+
+// Load environment variables from root .env.local
+dotenvConfig({ path: resolve(process.cwd(), "../../.env.local") });
 
 const jiti = createJiti(import.meta.url);
 
@@ -23,7 +28,12 @@ const config = {
   },
 
   images: {
-    domains: ["posthog.com", "us-assets.i.posthog.com", "img.clerk.com"],
+    remotePatterns: [
+      { protocol: "https", hostname: "posthog.com" },
+      { protocol: "https", hostname: "us-assets.i.posthog.com" },
+      { protocol: "https", hostname: "img.clerk.com" },
+      { protocol: "https", hostname: "jbfmbt1l40.ufs.sh", pathname: "/**" },
+    ],
   },
 
   async rewrites() {

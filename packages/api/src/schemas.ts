@@ -1,6 +1,7 @@
 import { z } from "zod/v4";
 
 import { UNIT_DEFINITIONS } from "./units";
+
 const validUnitIds = Object.keys(UNIT_DEFINITIONS);
 
 // Base recipe validation schema that can be used both on client and server
@@ -13,13 +14,8 @@ export const baseRecipeSchema = z.object({
     .string()
     .max(1000, { message: "Description must be less than 1000 characters" })
     .optional(),
-  image: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.string().url().safeParse(val).success, {
-      message: "Must be a valid URL (e.g., https://example.com/image.jpg)",
-    }),
-
+  imageId: z.string().optional(), // For staged file uploads
+  stageId: z.string().optional(), // For staged file uploads
   // Time fields (in minutes)
   cookingTime: z.coerce
     .number()
@@ -150,6 +146,7 @@ export const recipeIngredientSchema = z.object({
 
 // For client-side forms (allows string inputs that will be coerced)
 export const recipeFormSchema = baseRecipeSchema.extend({
+  stageId: z.string().optional(), // For staged file uploads
   recipeIngredients: z
     .array(
       recipeIngredientSchema.extend({
