@@ -4,18 +4,14 @@ import { z } from "zod/v4";
 
 import { stagedFiles } from "@cuisinons/db/schema";
 
+import { stageSchema } from "../schemas/upload";
 import { publishStagedFiles, stageFile } from "../services/upload";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { stageSchema } from "../schemas/upload";
-
-import { getFileTypeFromMimeType } from "../utils/uploadUtils";
 
 export const uploadRouter = createTRPCRouter({
   // Stage a file upload
   stageFile: protectedProcedure
-    .input(
-      stageSchema
-    )
+    .input(stageSchema)
     .mutation(async ({ ctx, input }) => {
       const staged = await stageFile(input, ctx);
 
@@ -59,12 +55,10 @@ export const uploadRouter = createTRPCRouter({
           ),
       });
 
-
       // Delete from blob storage
       const { success, deletedCount } = await utapi.deleteFiles(
         filesToCleanup.map((f) => f.key),
       );
-
 
       if (!success) {
         console.error("Failed to delete staged files from blob storage:");
