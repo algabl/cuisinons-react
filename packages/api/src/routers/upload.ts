@@ -8,23 +8,7 @@ import { publishStagedFiles, stageFile } from "../services/upload";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { stageSchema } from "../schemas/upload";
 
-// Helper function to determine file type from MIME type
-function getFileTypeFromMimeType(
-  mimeType: string,
-): "image" | "document" | "video" | "audio" | "other" {
-  if (mimeType.startsWith("image/")) return "image";
-  if (mimeType.startsWith("video/")) return "video";
-  if (mimeType.startsWith("audio/")) return "audio";
-  if (
-    mimeType.includes("pdf") ||
-    mimeType.includes("document") ||
-    mimeType.includes("text") ||
-    mimeType.includes("application/")
-  ) {
-    return "document";
-  }
-  return "other";
-}
+import { getFileTypeFromMimeType } from "../utils/uploadUtils";
 
 export const uploadRouter = createTRPCRouter({
   // Stage a file upload
