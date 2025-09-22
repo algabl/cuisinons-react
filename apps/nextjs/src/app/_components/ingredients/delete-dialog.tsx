@@ -75,12 +75,11 @@ export function DeleteIngredientDialog({
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {ingredient.recipeIngredients.map((ri) => (
-                    <Link href={`/app/recipes/${ri.recipe.id}`}>
-                      <Badge
-                        key={ri.recipe.id}
-                        variant="outline"
-                        className="text-xs"
-                      >
+                    <Link
+                      key={ri.recipe.id}
+                      href={`/app/recipes/${ri.recipe.id}`}
+                    >
+                      <Badge variant="outline" className="text-xs">
                         {ri.recipe.name}
                       </Badge>
                     </Link>
