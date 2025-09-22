@@ -1,4 +1,5 @@
 import type { inferRouterOutputs } from "@trpc/server";
+
 import type { AppRouter } from "../root";
 
 export type Group = NonNullable<
@@ -11,6 +12,10 @@ export type User = NonNullable<
 
 export type Ingredient = NonNullable<
   inferRouterOutputs<AppRouter>["ingredient"]["getById"]
+>;
+
+export type IngredientWithUsage = NonNullable<
+  inferRouterOutputs<AppRouter>["ingredient"]["getWithRecipeUsage"][number]
 >;
 
 export type Recipe = NonNullable<

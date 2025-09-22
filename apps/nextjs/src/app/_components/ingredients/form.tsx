@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { z } from "zod/v4";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,7 +19,6 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { ingredientFormSchema } from "~/lib/validations";
-import { api } from "~/trpc/react";
 
 export type IngredientPrefill = Partial<z.infer<typeof ingredientFormSchema>>;
 
@@ -26,10 +26,12 @@ export default function IngredientForm({
   onSubmit,
   prefill,
   isLoading = false,
+  submitWrapper,
 }: {
   onSubmit: (ingredient: IngredientFormData) => void;
   prefill?: IngredientPrefill;
   isLoading?: boolean;
+  submitWrapper?: (button: ReactNode) => ReactNode;
 }) {
   const form = useForm({
     resolver: zodResolver(ingredientFormSchema),
@@ -38,6 +40,16 @@ export default function IngredientForm({
       description: prefill?.description ?? "",
     },
   });
+
+  const submitButton = (
+    <Button
+      type="button"
+      onClick={form.handleSubmit(onSubmit)}
+      disabled={isLoading}
+    >
+      {isLoading ? "Saving..." : "Submit"}
+    </Button>
+  );
 
   return (
     <Form {...form}>
@@ -76,13 +88,7 @@ export default function IngredientForm({
             </FormItem>
           )}
         />
-        <Button
-          type="button"
-          onClick={form.handleSubmit(onSubmit)}
-          disabled={isLoading}
-        >
-          {isLoading ? "Saving..." : "Submit"}
-        </Button>
+        {submitWrapper ? submitWrapper(submitButton) : submitButton}
       </div>
     </Form>
   );

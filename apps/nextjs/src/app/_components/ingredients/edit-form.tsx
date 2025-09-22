@@ -1,27 +1,44 @@
 "use client";
 
 import type { z } from "zod/v4";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { Ingredient, ingredientSchema } from "@cuisinons/api/types";
 
+import { Button } from "~/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { api } from "~/trpc/react";
 import IngredientForm from "./form";
 
+interface EditFormProps {
+  prefill: Partial<Ingredient>;
+  userId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 export default function EditForm({
-  onSubmit,
   prefill,
   userId,
-}: {
-  onSubmit?: () => void;
-  prefill: Ingredient;
-  userId: string;
-}) {
+  open,
+  onOpenChange,
+}: EditFormProps) {
   const utils = api.useUtils();
+  const router = useRouter();
+
   const ingredientUpdate = api.ingredient.update.useMutation({
     onMutate: async (newData) => {
       // Show optimistic toast
       toast.success("Updating ingredient...");
+      onOpenChange(false);
 
       // Cancel outgoing refetches to prevent overwriting optimistic update
       await utils.ingredient.getByUserId.cancel(userId);
@@ -58,38 +75,58 @@ export default function EditForm({
     },
     onSettled: () => {
       // Refetch to ensure consistency with server
-      utils.ingredient.getByUserId.invalidate(userId);
+      router.refresh();
     },
     onSuccess: () => {
       // Show success toast
       toast.success("Ingredient updated successfully!");
-
-      // Call the onSubmit callback to close dialog, etc.
-      if (onSubmit) {
-        onSubmit();
-      }
     },
   });
 
   async function handleSubmit(ingredient: z.infer<typeof ingredientSchema>) {
-    const response = await ingredientUpdate.mutateAsync({
-      id: prefill.id,
-      name: ingredient.name,
-      description: ingredient.description,
-    });
-    if (!response.success) {
-      throw new Error(response.message);
+    if (!prefill.id) throw new Error("No ID");
+
+    try {
+      const response = await ingredientUpdate.mutateAsync({
+        id: prefill.id,
+        name: ingredient.name,
+        description: ingredient.description,
+      });
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      // Error is already handled by the mutation's onError callback
+      throw error;
     }
   }
 
   return (
-    <IngredientForm
-      onSubmit={handleSubmit}
-      isLoading={ingredientUpdate.isPending}
-      prefill={{
-        ...prefill,
-        description: prefill.description ?? undefined,
-      }}
-    />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Ingredient</DialogTitle>
+          <DialogDescription>
+            Make changes to the ingredient details.
+          </DialogDescription>
+        </DialogHeader>
+        <IngredientForm
+          onSubmit={handleSubmit}
+          isLoading={ingredientUpdate.isPending}
+          prefill={{
+            ...prefill,
+            description: prefill.description ?? undefined,
+          }}
+          submitWrapper={(button) => (
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              {button}
+            </DialogFooter>
+          )}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
