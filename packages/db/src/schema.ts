@@ -103,6 +103,7 @@ export const ingredients = createTable("ingredient", (d) => ({
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }).notNull(),
   description: d.text(),
+  emoji: d.varchar({ length: 10 }), // Stores single emoji character
   createdAt: d
     .timestamp({ withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)

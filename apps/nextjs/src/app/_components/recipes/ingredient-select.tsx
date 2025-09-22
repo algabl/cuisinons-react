@@ -127,7 +127,12 @@ export function IngredientSelect({
                         onSelect(ingredient);
                       }}
                     >
-                      {ingredient.name}
+                      <span className="flex items-center gap-2">
+                        {ingredient.emoji && (
+                          <span className="text-lg">{ingredient.emoji}</span>
+                        )}
+                        <span>{ingredient.name}</span>
+                      </span>
                     </CommandItem>
                   ))}
                 </CommandGroup>

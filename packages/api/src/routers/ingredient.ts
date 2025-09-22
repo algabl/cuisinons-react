@@ -42,6 +42,7 @@ export const ingredientRouter = createTRPCRouter({
         .values({
           name: input.name,
           description: input.description,
+          emoji: input.emoji,
           type: "user",
           createdById: ctx.auth.userId,
         })
@@ -73,6 +74,7 @@ export const ingredientRouter = createTRPCRouter({
         .set({
           name: input.name,
           description: input.description,
+          emoji: input.emoji,
         })
         .where(
           and(

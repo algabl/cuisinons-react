@@ -54,6 +54,7 @@ export default function EditForm({
                 ...ing,
                 name: newData.name,
                 description: newData.description ?? null,
+                emoji: newData.emoji ?? null,
               }
             : ing,
         ),
@@ -91,6 +92,7 @@ export default function EditForm({
         id: prefill.id,
         name: ingredient.name,
         description: ingredient.description,
+        emoji: ingredient.emoji,
       });
       if (!response.success) {
         throw new Error(response.message);
@@ -116,6 +118,7 @@ export default function EditForm({
           prefill={{
             ...prefill,
             description: prefill.description ?? undefined,
+            emoji: prefill.emoji ?? undefined,
           }}
           submitWrapper={(button) => (
             <DialogFooter>

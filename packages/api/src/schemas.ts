@@ -174,6 +174,19 @@ export const recipeUpdateSchema = recipeApiSchema.extend({
 export const ingredientSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().optional(),
+  emoji: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true; // Allow empty/undefined
+        // Check if it's a single emoji character
+        const emojiRegex =
+          /^[\p{Emoji_Presentation}\p{Extended_Pictographic}]$/u;
+        return emojiRegex.test(val);
+      },
+      { message: "Must be a single emoji character" },
+    ),
 });
 
 export const ingredientFormSchema = ingredientSchema;

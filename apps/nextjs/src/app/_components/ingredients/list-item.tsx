@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Edit, MoreHorizontal, Package2, Trash2 } from "lucide-react";
+import { Apple, Edit, MoreHorizontal, Package2, Trash2 } from "lucide-react";
 
 import type { IngredientWithUsage as Ingredient } from "@cuisinons/api/types";
 
@@ -36,7 +36,11 @@ export function IngredientListItem({
         <TableCell className="font-medium">
           <div className="flex items-center">
             <div className="bg-muted me-4 flex h-12 w-12 items-center justify-center rounded-md">
-              <Package2 className="text-muted-foreground h-6 w-6" />
+              {ingredient.emoji ? (
+                <span className="text-2xl">{ingredient.emoji}</span>
+              ) : (
+                <Apple className="text-muted-foreground h-6 w-6" />
+              )}
             </div>
             <div>
               <div className="font-medium">{ingredient.name}</div>
