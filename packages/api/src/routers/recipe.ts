@@ -192,7 +192,6 @@ export const recipeRouter = createTRPCRouter({
         }
       }
 
-      console.log("Image ID", input.imageId);
       await ctx.db
         .update(recipes)
         .set({
