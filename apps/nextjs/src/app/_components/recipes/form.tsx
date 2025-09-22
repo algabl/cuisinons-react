@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
 import { UploadButton } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { IngredientSelect } from "./ingredient-select";
@@ -816,8 +817,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Keywords/Tags</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="quick, healthy, gluten-free, vegan"
                   value={field.value?.join(", ") ?? ""}
                   onChange={(e) =>
@@ -850,8 +851,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Suitable For Diet</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="vegan, gluten-free, keto, dairy-free"
                   value={field.value?.join(", ") ?? ""}
                   onChange={(e) =>
@@ -884,8 +885,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Required Equipment</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="oven, mixing bowl, whisk, baking sheet"
                   value={field.value?.join(", ") ?? ""}
                   onChange={(e) =>
@@ -1083,8 +1084,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Instructions</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[100px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[100px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="Step 1\nStep 2\nStep 3"
                   value={field.value?.join("\n") ?? ""}
                   onChange={(e) => field.onChange(e.target.value.split("\n"))}

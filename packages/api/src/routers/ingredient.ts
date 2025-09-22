@@ -1,16 +1,38 @@
-import { z } from "zod/v4";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { ingredients } from "@cuisinons/db/schema";
-import { ingredientSchema, ingredientUpdateSchema } from "../schemas";
 import { and, eq } from "drizzle-orm";
+import { z } from "zod/v4";
+
+import { ingredients } from "@cuisinons/db/schema";
+
+import { ingredientSchema, ingredientUpdateSchema } from "../schemas";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
+
 export const ingredientRouter = createTRPCRouter({
   getByUserId: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
-      const ingredients = await ctx.db.query.ingredients.findMany({
+      return await ctx.db.query.ingredients.findMany({
         where: (ingredients, { eq }) => eq(ingredients.createdById, input),
       });
-      return ingredients;
+    }),
+  getWithRecipeUsage: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.ingredients.findMany({
+        where: (ingredients, { eq }) => eq(ingredients.createdById, input),
+        with: {
+          recipeIngredients: {
+            with: {
+              recipe: {
+                columns: {
+                  id: true,
+                  name: true,
+                  createdById: true,
+                },
+              },
+            },
+          },
+        },
+      });
     }),
   create: protectedProcedure
     .input(ingredientSchema)
@@ -20,6 +42,7 @@ export const ingredientRouter = createTRPCRouter({
         .values({
           name: input.name,
           description: input.description,
+          emoji: input.emoji,
           type: "user",
           createdById: ctx.auth.userId,
         })
@@ -51,12 +74,13 @@ export const ingredientRouter = createTRPCRouter({
         .set({
           name: input.name,
           description: input.description,
+          emoji: input.emoji,
         })
         .where(
           and(
             eq(ingredients.id, input.id),
-            eq(ingredients.createdById, ctx.auth.userId ?? "")
-          )
+            eq(ingredients.createdById, ctx.auth.userId ?? ""),
+          ),
         )
         .returning();
       return {
@@ -66,7 +90,7 @@ export const ingredientRouter = createTRPCRouter({
       };
     }),
   getById: protectedProcedure
-    .input(z.string().uuid({ message: "ID must be a UUID" }))
+    .input(z.uuid({ message: "ID must be a UUID" }))
     .query(async ({ ctx, input }) => {
       const ingredient = await ctx.db.query.ingredients.findFirst({
         where: (ingredients, { eq }) => eq(ingredients.id, input),
@@ -98,4 +122,45 @@ export const ingredientRouter = createTRPCRouter({
     });
     return ingredients;
   }),
+  delete: protectedProcedure
+    .input(z.uuid({ message: "ID must be a UUID" }))
+    .mutation(async ({ ctx, input }) => {
+      // First check if ingredient exists and belongs to user
+      const existingIngredient = await ctx.db.query.ingredients.findFirst({
+        where: (ingredients, { and, eq }) =>
+          and(
+            eq(ingredients.id, input),
+            eq(ingredients.createdById, ctx.auth.userId ?? ""),
+          ),
+      });
+
+      if (!existingIngredient) {
+        throw new Error("Ingredient not found or access denied");
+      }
+
+      // Check if ingredient is used in any recipes
+      const recipeUsage = await ctx.db.query.recipeIngredients.findFirst({
+        where: (recipeIngredients, { eq }) =>
+          eq(recipeIngredients.ingredientId, input),
+      });
+
+      if (recipeUsage) {
+        throw new Error("Cannot delete ingredient that is used in recipes");
+      }
+
+      // Delete the ingredient
+      await ctx.db
+        .delete(ingredients)
+        .where(
+          and(
+            eq(ingredients.id, input),
+            eq(ingredients.createdById, ctx.auth.userId ?? ""),
+          ),
+        );
+
+      return {
+        success: true,
+        message: "Ingredient deleted successfully",
+      };
+    }),
 });
