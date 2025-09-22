@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 const MONOREPO_ROOT = path.resolve(__dirname, "../../");
 
-dotenv.config({ path: path.resolve(MONOREPO_ROOT, ".env") });
+dotenv.config({ path: path.resolve(MONOREPO_ROOT, ".env.local") });
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
