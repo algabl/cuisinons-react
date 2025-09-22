@@ -135,14 +135,12 @@ export default function RecipeForm({
 
   // Helper to add ingredient to form state
   function handleAddIngredient(ingredient: Ingredient) {
-    console.log("Adding ingredient:", ingredient);
     const current = form.getValues("recipeIngredients") as {
       ingredientId: string;
       quantity: number;
       unit: string;
       name: string;
     }[];
-    console.log("Current ingredients:", current);
     if (!current.some((i) => i.ingredientId === ingredient.id)) {
       form.setValue("recipeIngredients", [
         ...current,
@@ -237,7 +235,6 @@ export default function RecipeForm({
                   endpoint="imageUploader"
                   input={{ stageId }}
                   onClientUploadComplete={(res) => {
-                    console.log(res);
                     if (res[0]?.ufsUrl) {
                       form.setValue("imageId", res[0].serverData.fileId ?? "");
                       setImagePreview(res[0].ufsUrl);

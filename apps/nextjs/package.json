@@ -33,7 +33,6 @@
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "catalog:",
     "@uploadthing/react": "^7.3.3",
-    "@vercel/blob": "^2.0.0",
     "ai": "^4.3.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

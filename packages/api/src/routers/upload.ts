@@ -75,16 +75,12 @@ export const uploadRouter = createTRPCRouter({
           ),
       });
 
-      console.log(
-        `Cleaning up ${filesToCleanup.length} staged files for stageId ${input.stageId}`,
-      );
 
       // Delete from blob storage
       const { success, deletedCount } = await utapi.deleteFiles(
         filesToCleanup.map((f) => f.key),
       );
 
-      console.log(`Deleted ${deletedCount} files from blob storage`);
 
       if (!success) {
         console.error("Failed to delete staged files from blob storage:");

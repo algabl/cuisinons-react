@@ -42,7 +42,6 @@ function getFileTypeFromMimeType(
 export async function stageFile(input: StageInput, ctx: Context) {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + input.expiresInHours);
-  console.log("USER ID", ctx.auth.userId);
   const fileType = input.mimeType
     ? getFileTypeFromMimeType(input.mimeType)
     : "other";
