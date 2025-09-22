@@ -1,5 +1,5 @@
 import type { FileRouter } from "uploadthing/next";
-import { stageSchema } from "node_modules/@cuisinons/api/dist/schemas/upload";
+import { stageSchema } from "@cuisinons/api/schemas";
 import { createUploadthing } from "uploadthing/next";
 import z from "zod/v4";
 

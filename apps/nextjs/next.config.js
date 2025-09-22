@@ -1,4 +1,9 @@
+import { resolve } from "path";
+import { config as dotenvConfig } from "dotenv";
 import { createJiti } from "jiti";
+
+// Load environment variables from root .env.local
+dotenvConfig({ path: resolve(process.cwd(), "../../.env.local") });
 
 const jiti = createJiti(import.meta.url);
 
