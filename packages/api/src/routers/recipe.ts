@@ -21,7 +21,6 @@ export const recipeRouter = createTRPCRouter({
   create: protectedProcedure
     .input(recipeApiSchema)
     .mutation(async ({ ctx, input }) => {
-      console.log(input);
       // use upload function
       const created = await ctx.db
         .insert(recipes)
@@ -71,7 +70,7 @@ export const recipeRouter = createTRPCRouter({
           isPrivate: input.isPrivate,
         })
         .returning();
-      console.log(created);
+
       if (!created[0]) {
         throw new Error("Failed to create recipe");
       }
@@ -245,14 +244,10 @@ export const recipeRouter = createTRPCRouter({
           ),
         );
 
-      console.log("Stage ID", input.stageId);
-      console.log("Existing Image ID", existingRecipe.imageId);
-      console.log("New Image ID", input.imageId);
-      console.log("Recipe ID", existingRecipe.id);
+
       if (input.stageId) {
         if (existingRecipe.imageId !== input.imageId) {
           // Remove any files associated with this recipe, staged or published, that don't match the new imageId
-          console.log("Cleaning up old images");
           const utapi = new UTApi();
           const filesToDelete = await ctx.db.query.stagedFiles.findMany({
             where: (sf, { eq, ne }) =>
@@ -264,11 +259,9 @@ export const recipeRouter = createTRPCRouter({
                 ne(sf.id, input.imageId ?? ""),
               ),
           });
-          console.log("Files to delete:", filesToDelete);
           if (filesToDelete.length > 0) {
             const map = filesToDelete.map((file) => file.key);
             const { success, deletedCount } = await utapi.deleteFiles(map);
-            console.log("Blob deletion result:", { success, deletedCount });
           }
 
           await ctx.db
@@ -292,7 +285,6 @@ export const recipeRouter = createTRPCRouter({
           },
           ctx,
         );
-        console.log("Published staged files:", result);
       }
 
       return { success: true, message: "Recipe updated successfully" };
