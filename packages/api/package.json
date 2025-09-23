@@ -2,6 +2,7 @@
   "dependencies": {
     "@cuisinons/auth": "workspace:*",
     "@cuisinons/db": "workspace:*",
+    "@cuisinons/validators": "workspace:*",
     "@trpc/server": "catalog:",
     "superjson": "^2.2.1",
     "zod": "catalog:"
