@@ -3,7 +3,7 @@
     "@neondatabase/serverless": "^1.0.1",
     "@t3-oss/env-nextjs": "^0.13.6",
     "@vercel/postgres": "^0.10.0",
-    "drizzle-orm": "^0.44.1",
+    "drizzle-orm": "^0.44.4",
     "drizzle-zod": "^0.8.2",
     "postgres": "^3.4.4",
     "zod": "catalog:"
@@ -49,7 +49,7 @@
     "push": "pnpm with-env drizzle-kit push",
     "studio": "pnpm with-env drizzle-kit studio",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "with-env": "dotenv -e ../../.env --"
+    "with-env": "dotenv -e ../../.env.local --"
   },
   "type": "module",
   "version": "0.1.0"

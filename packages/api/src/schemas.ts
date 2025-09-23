@@ -14,13 +14,8 @@ export const baseRecipeSchema = z.object({
     .string()
     .max(1000, { message: "Description must be less than 1000 characters" })
     .optional(),
-  image: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.string().url().safeParse(val).success, {
-      message: "Must be a valid URL (e.g., https://example.com/image.jpg)",
-    }),
-
+  imageId: z.string().optional(), // For staged file uploads
+  stageId: z.string().optional(), // For staged file uploads
   // Time fields (in minutes)
   cookingTime: z.coerce
     .number()
@@ -151,6 +146,7 @@ export const recipeIngredientSchema = z.object({
 
 // For client-side forms (allows string inputs that will be coerced)
 export const recipeFormSchema = baseRecipeSchema.extend({
+  stageId: z.string().optional(), // For staged file uploads
   recipeIngredients: z
     .array(
       recipeIngredientSchema.extend({
@@ -178,6 +174,19 @@ export const recipeUpdateSchema = recipeApiSchema.extend({
 export const ingredientSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().optional(),
+  emoji: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true; // Allow empty/undefined
+        // Check if it's a single emoji character
+        const emojiRegex =
+          /^[\p{Emoji_Presentation}\p{Extended_Pictographic}]$/u;
+        return emojiRegex.test(val);
+      },
+      { message: "Must be a single emoji character" },
+    ),
 });
 
 export const ingredientFormSchema = ingredientSchema;
@@ -195,7 +204,9 @@ export const groupFormSchema = groupSchema;
 
 // User search validation
 export const userSearchSchema = z.object({
-  query: z.string().min(1, { message: "Search query is required" }),
+  email: z.string(),
+  groupId: z.string().optional(),
+  role: z.enum(["admin", "member"]).optional(),
 });
 
 // Recipe ingredient relationship validation
@@ -293,6 +304,8 @@ export type IngredientFormData = z.infer<typeof ingredientFormSchema>;
 export type IngredientData = z.infer<typeof ingredientSchema>;
 export type GroupData = z.infer<typeof groupSchema>;
 export type RecipeIngredientData = z.infer<typeof recipeIngredientSchema>;
+export type UserSearchData = z.infer<typeof userSearchSchema>;
+
 
 // Import types
 export type ImportUrlData = z.infer<typeof importUrlSchema>;

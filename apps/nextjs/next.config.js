@@ -1,4 +1,9 @@
+import { resolve } from "path";
+import { config as dotenvConfig } from "dotenv";
 import { createJiti } from "jiti";
+
+// Load environment variables from root .env.local
+dotenvConfig({ path: resolve(process.cwd(), "../../.env.local") });
 
 const jiti = createJiti(import.meta.url);
 
@@ -21,6 +26,31 @@ const config = {
   experimental: {
     authInterrupts: true,
   },
+
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "posthog.com" },
+      { protocol: "https", hostname: "us-assets.i.posthog.com" },
+      { protocol: "https", hostname: "img.clerk.com" },
+      { protocol: "https", hostname: "jbfmbt1l40.ufs.sh", pathname: "/**" },
+    ],
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/ingest/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ingest/:path*",
+        destination: "https://us.i.posthog.com/:path*",
+      },
+    ];
+  },
+
+  // This is required to support PostHog trailing slash API requests
+  skipTrailingSlashRedirect: true,
 };
 
 export default config;

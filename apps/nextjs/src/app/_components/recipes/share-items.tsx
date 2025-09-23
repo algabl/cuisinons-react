@@ -31,11 +31,11 @@ import { Separator } from "~/components/ui/separator";
 import { Spinner } from "~/components/ui/spinner";
 import { api } from "~/trpc/react";
 
-export function CopyLinkButton() {
+export function CopyLinkButton({ link }: { link?: string }) {
   return (
     <DropdownMenuItem
       onClick={async () => {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(link ?? window.location.href);
         toast.success("Link copied to clipboard");
       }}
       className="flex cursor-pointer items-center gap-2"

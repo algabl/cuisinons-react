@@ -20,6 +20,7 @@ export const recipes = createTable(
     // Basic Recipe Info (schema.org compatible)
     name: d.varchar({ length: 255 }).notNull(), // schema.org: name
     description: d.text(), // schema.org: description
+    imageId: d.varchar({ length: 255 }), // Foreign key to stagedFiles.id
     image: d.varchar({ length: 255 }), // schema.org: image
 
     // Timing (schema.org compatible)
@@ -73,17 +74,16 @@ export const recipes = createTable(
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
     isPrivate: d.boolean().default(true),
   }),
-  (t) => {
-    return {
-      createdAtIndex: index("created_at_index").on(t.createdAt),
-      createdByIdIndex: index("created_by_id_index").on(t.createdById),
-    };
-  },
+  (t) => [
+    index("recipe_created_at_index").on(t.createdAt),
+    index("recipe_created_by_id_index").on(t.createdById),
+  ],
 );
 
-export const recipesRelations = relations(recipes, ({ many }) => ({
+export const recipesRelations = relations(recipes, ({ many, one }) => ({
   recipeIngredients: many(recipeIngredients),
   recipeSharings: many(recipeSharings),
+  stagedFile: one(stagedFiles),
 }));
 
 export const ingredientTypeEnum = pgEnum("type", ["global", "user"]);
@@ -103,6 +103,7 @@ export const ingredients = createTable("ingredient", (d) => ({
     .$defaultFn(() => crypto.randomUUID()),
   name: d.varchar({ length: 255 }).notNull(),
   description: d.text(),
+  emoji: d.varchar({ length: 10 }), // Stores single emoji character
   createdAt: d
     .timestamp({ withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
@@ -132,12 +133,10 @@ export const recipeIngredients = createTable(
     unitCategory: unitCategoryEnum(), // Category of the unit for conversion validation
     userId: d.varchar({ length: 255 }),
   }),
-  (t) => {
-    return {
-      primaryKey: primaryKey({ columns: [t.recipeId, t.ingredientId] }),
-      userIdIndex: index("recipe_ingredient_user_id_index").on(t.userId),
-    };
-  },
+  (t) => [
+    primaryKey({ columns: [t.recipeId, t.ingredientId] }),
+    index("recipe_ingredient_user_id_index").on(t.userId),
+  ],
 );
 
 export const recipeIngredientsRelations = relations(
@@ -189,11 +188,7 @@ export const groupMembers = createTable(
       role: roleEnum(),
     };
   },
-  (t) => {
-    return {
-      primaryKey: primaryKey({ columns: [t.groupId, t.userId] }),
-    };
-  },
+  (t) => [primaryKey({ columns: [t.groupId, t.userId] })],
 );
 
 export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
@@ -217,11 +212,7 @@ export const recipeSharings = createTable(
         .references(() => groups.id),
     };
   },
-  (t) => {
-    return {
-      primaryKey: primaryKey({ columns: [t.recipeId, t.groupId] }),
-    };
-  },
+  (t) => [primaryKey({ columns: [t.recipeId, t.groupId] })],
 );
 
 export const recipeSharingsRelations = relations(recipeSharings, ({ one }) => ({
@@ -232,5 +223,56 @@ export const recipeSharingsRelations = relations(recipeSharings, ({ one }) => ({
   group: one(groups, {
     fields: [recipeSharings.groupId],
     references: [groups.id],
+  }),
+}));
+
+export const statusEnum = pgEnum("status", ["staged", "published", "deleted"]);
+export const fileTypeEnum = pgEnum("file_type", [
+  "image",
+  "document",
+  "video",
+  "audio",
+  "other",
+]);
+
+export const stagedFiles = createTable(
+  "staged_file",
+  (d) => ({
+    id: d
+      .varchar({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    url: d.varchar({ length: 255 }).notNull(),
+    key: d.varchar({ length: 255 }).notNull(), // Unique file identifier in blob storage
+    filename: d.varchar({ length: 255 }),
+    size: d.integer(),
+    mimeType: d.varchar({ length: 100 }),
+    fileType: fileTypeEnum().notNull().default("other"),
+    stageId: d.varchar({ length: 255 }).notNull(), // Links multiple files to one session
+    userId: d.varchar({ length: 255 }).notNull(),
+    // metadata: d.jsonb(), // For additional file-specific metadata
+    entityId: d.varchar({ length: 255 }), // Links file to a specific entity (e.g., recipeId)
+    entityType: d.varchar({ length: 100 }), // Type of entity (e.g., "recipe", "profile")
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    expiresAt: d.timestamp({ withTimezone: true }).notNull(),
+    status: statusEnum().default("staged"),
+  }),
+  (t) => [
+    // Indexes to optimize queries based on common access patterns
+    index("staged_files_expires_at_index").on(t.expiresAt),
+    index("staged_files_stage_id_index").on(t.stageId),
+    index("staged_files_user_id_index").on(t.userId),
+    index("staged_files_file_type_index").on(t.fileType),
+  ],
+);
+
+export const stagedFilesRelations = relations(stagedFiles, ({ one }) => ({
+  recipes: one(recipes, {
+    fields: [stagedFiles.id],
+    references: [recipes.imageId],
   }),
 }));

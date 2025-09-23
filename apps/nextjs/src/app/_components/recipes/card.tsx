@@ -1,5 +1,11 @@
-import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "~/server/api/root";
+import Image from "next/image";
+import Link from "next/link";
+import { MoreHorizontalIcon } from "lucide-react";
+
+import type { Recipe } from "@cuisinons/api/types";
+
+import { Dropdown } from "~/app/_components/recipes/dropdown";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,25 +13,17 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import Image from "next/image";
-import Link from "next/link";
-import { Dropdown } from "~/app/_components/recipes/dropdown";
-import { Button } from "~/components/ui/button";
-import { MoreHorizontalIcon } from "lucide-react";
 
-type RouterOutputs = inferRouterOutputs<AppRouter>;
-type Recipe = RouterOutputs["recipe"]["getAll"][number];
-
-export function RecipeCard({ recipe }: { recipe: Recipe }) {
+export function RecipeCard({ recipe }: { recipe: Partial<Recipe> }) {
   return (
     <Card className="overflow-hidden pt-0">
       <div className="relative aspect-[5/3] w-full bg-gray-200">
         <Link href={`/app/recipes/${recipe.id}`}>
-          {recipe.image && recipe.image.length > 0 ? (
+          {recipe.stagedFile?.url ? (
             <Image
               className="h-full w-full object-cover"
-              src={recipe.image}
-              alt={recipe.name}
+              src={recipe.stagedFile.url}
+              alt={recipe.name ?? "Recipe Image"}
               fill
               sizes="100vw, 500px"
               priority={false}
