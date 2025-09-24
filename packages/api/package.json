@@ -4,6 +4,7 @@
     "@cuisinons/db": "workspace:*",
     "@cuisinons/validators": "workspace:*",
     "@trpc/server": "catalog:",
+    "recipe-scraper": "^2.1.1",
     "superjson": "^2.2.1",
     "zod": "catalog:"
   },

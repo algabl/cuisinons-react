@@ -1,10 +1,59 @@
-import type { SchemaOrgRecipe } from "@cuisinons/validators/schema-org";
-
 import type { RecipeApiData } from "../../schemas";
-import type { ExtractorResult } from "../types";
-import { ImportError } from "../types";
+import type {
+  ExtractorInput,
+  ExtractorResult,
+  RecipeExtractor,
+} from "../../types/import";
 
-export async function extractFromSchemaOrg(
+interface SchemaOrgRecipe {
+  "@type": "Recipe";
+  name?: string;
+  description?: string;
+  image?: string;
+  prepTime?: string;
+  cookTime?: string;
+  totalTime?: string;
+  recipeYield?: string | number;
+  recipeCategory?: string;
+  recipeCuisine?: string;
+  keywords?: string[];
+  suitableForDiet?: string[];
+  recipeInstructions?: string[] | { text: string }[];
+  nutrition?: {
+    calories?: string;
+    fatContent?: string;
+    proteinContent?: string;
+    carbohydrateContent?: string;
+    fiberContent?: string;
+    sugarContent?: string;
+    sodiumContent?: string;
+  };
+  tool?: string[];
+  estimatedCost?: { value: number };
+}
+
+export class SchemaOrgExtractor implements RecipeExtractor {
+  readonly name = "schema-org";
+  readonly priority = 1;
+
+  canHandle(input: ExtractorInput): boolean {
+    return !!input.html?.includes("application/ld+json");
+  }
+
+  async extract(input: ExtractorInput): Promise<ExtractorResult> {
+    if (!input.html) {
+      return {
+        status: "failed",
+        warnings: ["No HTML content provided"],
+        confidence: 0,
+      };
+    }
+
+    return extractFromSchemaOrg(input.html, input.url);
+  }
+}
+
+export function extractFromSchemaOrg(
   html: string,
   sourceUrl: string,
 ): Promise<ExtractorResult> {
@@ -111,7 +160,7 @@ function convertSchemaOrgToRecipeApi(
   const recipe: Partial<RecipeApiData> = {
     name: schema.name || "",
     description: schema.description || undefined,
-    image: schema.image || undefined,
+    imageId: schema.image || undefined, // Note: This would need to be processed to upload and get an imageId
     isPrivate: true, // Force all imports to be private
   };
 

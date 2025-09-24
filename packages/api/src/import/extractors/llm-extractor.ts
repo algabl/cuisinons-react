@@ -1,5 +1,55 @@
 import type { RecipeApiData } from "../../schemas";
-import { ImportError } from "../types";
+import type {
+  ExtractorInput,
+  ExtractorResult,
+  RecipeExtractor,
+} from "../../types/import";
+import { ImportError } from "../../types/import";
+
+export class LLMExtractor implements RecipeExtractor {
+  readonly name = "llm";
+  readonly priority = 3;
+
+  canHandle(input: ExtractorInput): boolean {
+    return !!(input.html || input.content);
+  }
+
+  async extract(input: ExtractorInput): Promise<ExtractorResult> {
+    const content =
+      input.content || (input.html ? prepareContentForLLM(input.html) : "");
+
+    if (!content.trim()) {
+      return {
+        status: "failed",
+        warnings: ["No content available for LLM extraction"],
+        confidence: 0,
+      };
+    }
+
+    try {
+      const recipe = await extractWithLLM({
+        content,
+        url: input.url,
+        maxTokens: input.options?.maxTokens,
+        temperature: input.options?.temperature,
+      });
+
+      return {
+        status: "success",
+        recipe,
+        confidence: 70,
+      };
+    } catch (error) {
+      return {
+        status: "failed",
+        warnings: [
+          error instanceof Error ? error.message : "LLM extraction failed",
+        ],
+        confidence: 0,
+      };
+    }
+  }
+}
 
 interface LLMExtractorOptions {
   content: string;
