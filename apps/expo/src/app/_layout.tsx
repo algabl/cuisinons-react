@@ -9,6 +9,10 @@ import { queryClient, setAuthTokenGetter } from "~/utils/api";
 
 import "../styles.css";
 
+import {
+  initialWindowMetrics,
+  SafeAreaProvider,
+} from "react-native-safe-area-context";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -51,18 +55,22 @@ export default function RootLayout() {
         <AuthSetup />
         {/*
           The Stack component displays the current page.
-          It also allows you to configure your screens 
+          It also allows you to configure your screens
         */}
-        <Stack
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: "#f472b6",
-            },
-            contentStyle: {
-              backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
-            },
-          }}
-        />
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <Stack
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: "#f472b6",
+              },
+              contentStyle: {
+                backgroundColor: colorScheme === "dark" ? "#09090B" : "#FFFFFF",
+              },
+            }}
+          >
+            <Stack.Screen name="(home)" options={{ headerShown: false }} />
+          </Stack>
+        </SafeAreaProvider>
         <StatusBar />
       </QueryClientProvider>
     </ClerkProvider>

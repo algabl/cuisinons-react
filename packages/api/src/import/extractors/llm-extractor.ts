@@ -118,7 +118,7 @@ Please extract the following information and return it as valid JSON:
   "title": "Recipe title",
   "description": "Brief description (optional)",
   "prepTime": 30, // in minutes
-  "cookTime": 45, // in minutes  
+  "cookTime": 45, // in minutes
   "totalTime": 75, // in minutes (optional if prep + cook provided)
   "servings": 4, // number of servings
   "ingredients": [
@@ -157,13 +157,13 @@ function parseMarkdownResponse(response: string): Partial<RecipeApiData> {
       throw new Error("No JSON found in response");
     }
 
-    const parsed = JSON.parse(jsonMatch[1]);
+    // const parsed = JSON.parse(jsonMatch[1]);
 
-    if (parsed.error) {
-      throw new ImportError(parsed.error, "NO_RECIPE_FOUND");
-    }
+    // if (parsed.error) {
+    //   throw new ImportError(parsed.error, "NO_RECIPE_FOUND");
+    // }
 
-    return parsed;
+    return {};
   } catch (error) {
     throw new ImportError(
       `Failed to parse LLM response: ${error instanceof Error ? error.message : "Invalid format"}`,
@@ -198,7 +198,7 @@ function validateAndCleanResult(
     instructions: Array.isArray(result.instructions)
       ? result.instructions.map((i: any) => String(i).trim()).filter(Boolean)
       : [],
-    image: result.imageUrl ? String(result.imageUrl).trim() : undefined,
+    // image: result.imageUrl ? String(result.imageUrl).trim() : undefined,
     isPrivate: true,
   };
 }

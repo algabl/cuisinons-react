@@ -4,7 +4,11 @@
     "@cuisinons/prettier-config": "workspace:*",
     "@turbo/gen": "^2.5.4",
     "@types/minimatch": "^6.0.0",
+    "expo": "~54.0.10",
+    "minimatch": "^10.0.3",
     "prettier": "^3.5.3",
+    "react": "catalog:react19",
+    "react-native": "0.81.4",
     "turbo": "^2.5.4",
     "typescript": "^5.8.2"
   },

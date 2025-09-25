@@ -56,7 +56,7 @@ export class SchemaOrgExtractor implements RecipeExtractor {
 export function extractFromSchemaOrg(
   html: string,
   sourceUrl: string,
-): Promise<ExtractorResult> {
+): ExtractorResult {
   try {
     // Extract all JSON-LD script tags
     const jsonLdMatches = html.match(
@@ -85,7 +85,7 @@ export function extractFromSchemaOrg(
           const missingFields = findMissingFields(converted);
 
           return {
-            status: "success",
+            status: "failed",
             recipe: converted,
             confidence: calculateConfidence(converted),
             missingFields,
