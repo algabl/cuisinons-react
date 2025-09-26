@@ -9,7 +9,7 @@ import {
   stagedFiles,
 } from "@cuisinons/db/schema";
 
-import { importRecipeFromText, importRecipeFromUrl } from "../import";
+// import { importRecipeFromText, importRecipeFromUrl } from "../import";
 import {
   importTextSchema,
   importUrlSchema,
@@ -464,55 +464,55 @@ export const recipeRouter = createTRPCRouter({
     }),
 
   // Import procedures
-  importFromUrl: protectedProcedure
-    .input(importUrlSchema)
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const result = await importRecipeFromUrl({
-          url: input.url,
-          userId: ctx.auth.userId ?? "",
-          db: ctx.db,
-          skipDirectFetch: input.skipDirectFetch,
-        });
+  // importFromUrl: protectedProcedure
+  //   .input(importUrlSchema)
+  //   .mutation(async ({ ctx, input }) => {
+  //     try {
+  //       const result = await importRecipeFromUrl({
+  //         url: input.url,
+  //         userId: ctx.auth.userId ?? "",
+  //         db: ctx.db,
+  //         skipDirectFetch: input.skipDirectFetch,
+  //       });
 
-        return {
-          success: result.status === "success",
-          data: result,
-          message:
-            result.status === "success"
-              ? "Recipe imported successfully"
-              : result.status === "manual_required"
-                ? "Manual import required - some content could not be extracted automatically"
-                : "Import failed",
-        };
-      } catch (error) {
-        handleImportError(error);
-      }
-    }),
+  //       return {
+  //         success: result.status === "success",
+  //         data: result,
+  //         message:
+  //           result.status === "success"
+  //             ? "Recipe imported successfully"
+  //             : result.status === "manual_required"
+  //               ? "Manual import required - some content could not be extracted automatically"
+  //               : "Import failed",
+  //       };
+  //     } catch (error) {
+  //       handleImportError(error);
+  //     }
+  //   }),
 
-  importFromText: protectedProcedure
-    .input(importTextSchema)
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const result = await importRecipeFromText({
-          content: input.content,
-          sourceUrl: input.sourceUrl,
-          userId: ctx.auth.userId ?? "",
-          db: ctx.db,
-        });
+  // importFromText: protectedProcedure
+  //   .input(importTextSchema)
+  //   .mutation(async ({ ctx, input }) => {
+  //     try {
+  //       const result = await importRecipeFromText({
+  //         content: input.content,
+  //         sourceUrl: input.sourceUrl,
+  //         userId: ctx.auth.userId ?? "",
+  //         db: ctx.db,
+  //       });
 
-        return {
-          success: result.status === "success",
-          data: result,
-          message:
-            result.status === "success"
-              ? "Recipe imported from text successfully"
-              : result.status === "manual_required"
-                ? "Could not extract complete recipe from text - please review and edit"
-                : "Text import failed",
-        };
-      } catch (error) {
-        handleImportError(error);
-      }
-    }),
+  //       return {
+  //         success: result.status === "success",
+  //         data: result,
+  //         message:
+  //           result.status === "success"
+  //             ? "Recipe imported from text successfully"
+  //             : result.status === "manual_required"
+  //               ? "Could not extract complete recipe from text - please review and edit"
+  //               : "Text import failed",
+  //       };
+  //     } catch (error) {
+  //       handleImportError(error);
+  //     }
+  //   }),
 });

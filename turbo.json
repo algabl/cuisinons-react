@@ -52,7 +52,9 @@
     "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL",
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
     "CLERK_SECRET_KEY",
-    "PORT"
+    "PORT",
+    "UPLOADTHING_TOKEN",
+    "SENTRY_AUTH_TOKEN"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",
@@ -60,6 +62,7 @@
     "VERCEL",
     "VERCEL_ENV",
     "VERCEL_URL",
-    "npm_lifecycle_event"
+    "npm_lifecycle_event",
+    "VERCEL_PROJECT_PRODUCTION_URL"
   ]
 }

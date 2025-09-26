@@ -81,19 +81,18 @@ export function extractFromSchemaOrg(
         const recipe = findRecipeInJsonLd(data);
 
         if (recipe) {
-          const converted = convertSchemaOrgToRecipeApi(recipe);
-          const missingFields = findMissingFields(converted);
-
-          return {
-            status: "success",
-            recipe: converted,
-            confidence: calculateConfidence(converted),
-            missingFields,
-            warnings:
-              missingFields.length > 0
-                ? [`Missing optional fields: ${missingFields.join(", ")}`]
-                : [],
-          };
+          // const converted = convertSchemaOrgToRecipeApi(recipe);
+          // const missingFields = findMissingFields(converted);
+          // return {
+          //   status: "success",
+          //   recipe: converted,
+          //   confidence: calculateConfidence(converted),
+          //   missingFields,
+          //   warnings:
+          //     missingFields.length > 0
+          //       ? [`Missing optional fields: ${missingFields.join(", ")}`]
+          //       : [],
+          // };
         }
       } catch (parseError) {
         console.warn("Failed to parse JSON-LD block:", parseError);
@@ -164,133 +163,133 @@ function convertSchemaOrgToRecipeApi(
     isPrivate: true, // Force all imports to be private
   };
 
-  // Convert time fields from ISO 8601 duration to minutes
-  if (schema.prepTime) {
-    recipe.preparationTime = parseDurationToMinutes(schema.prepTime);
-  }
+  //   // Convert time fields from ISO 8601 duration to minutes
+  //   if (schema.prepTime) {
+  //     recipe.preparationTime = parseDurationToMinutes(schema.prepTime);
+  //   }
 
-  if (schema.cookTime) {
-    recipe.cookingTime = parseDurationToMinutes(schema.cookTime);
-  }
+  //   if (schema.cookTime) {
+  //     recipe.cookingTime = parseDurationToMinutes(schema.cookTime);
+  //   }
 
-  if (schema.totalTime) {
-    recipe.totalTime = parseDurationToMinutes(schema.totalTime);
-  }
+  //   if (schema.totalTime) {
+  //     recipe.totalTime = parseDurationToMinutes(schema.totalTime);
+  //   }
 
-  // Handle yield/servings
-  if (schema.recipeYield) {
-    if (typeof schema.recipeYield === "number") {
-      recipe.servings = schema.recipeYield;
-    } else if (typeof schema.recipeYield === "string") {
-      const servings = parseInt(schema.recipeYield.replace(/\D/g, ""), 10);
-      if (!isNaN(servings) && servings > 0) {
-        recipe.servings = servings;
-      }
-    }
-  }
+  //   // Handle yield/servings
+  //   if (schema.recipeYield) {
+  //     if (typeof schema.recipeYield === "number") {
+  //       recipe.servings = schema.recipeYield;
+  //     } else if (typeof schema.recipeYield === "string") {
+  //       const servings = parseInt(schema.recipeYield.replace(/\D/g, ""), 10);
+  //       if (!isNaN(servings) && servings > 0) {
+  //         recipe.servings = servings;
+  //       }
+  //     }
+  //   }
 
-  // Categories and cuisine
-  if (schema.recipeCategory) {
-    recipe.recipeCategory = schema.recipeCategory;
-  }
+  //   // Categories and cuisine
+  //   if (schema.recipeCategory) {
+  //     recipe.recipeCategory = schema.recipeCategory;
+  //   }
 
-  if (schema.recipeCuisine) {
-    recipe.recipeCuisine = schema.recipeCuisine;
-  }
+  //   if (schema.recipeCuisine) {
+  //     recipe.recipeCuisine = schema.recipeCuisine;
+  //   }
 
-  // Keywords and dietary info
-  if (schema.keywords && Array.isArray(schema.keywords)) {
-    recipe.keywords = schema.keywords;
-  }
+  //   // Keywords and dietary info
+  //   if (schema.keywords && Array.isArray(schema.keywords)) {
+  //     recipe.keywords = schema.keywords;
+  //   }
 
-  if (schema.suitableForDiet && Array.isArray(schema.suitableForDiet)) {
-    recipe.suitableForDiet = schema.suitableForDiet;
-  }
+  //   if (schema.suitableForDiet && Array.isArray(schema.suitableForDiet)) {
+  //     recipe.suitableForDiet = schema.suitableForDiet;
+  //   }
 
-  // Instructions
-  if (schema.recipeInstructions && Array.isArray(schema.recipeInstructions)) {
-    recipe.instructions = schema.recipeInstructions
-      .map((instruction) => {
-        if (typeof instruction === "string") {
-          return instruction;
-        }
-        if (typeof instruction === "object" && instruction?.text) {
-          return instruction.text;
-        }
-        return "";
-      })
-      .filter(Boolean);
-  }
+  //   // Instructions
+  //   if (schema.recipeInstructions && Array.isArray(schema.recipeInstructions)) {
+  //     recipe.instructions = schema.recipeInstructions
+  //       .map((instruction) => {
+  //         if (typeof instruction === "string") {
+  //           return instruction;
+  //         }
+  //         if (typeof instruction === "object" && instruction?.text) {
+  //           return instruction.text;
+  //         }
+  //         return "";
+  //       })
+  //       .filter(Boolean);
+  //   }
 
-  // Nutrition information
-  if (schema.nutrition) {
-    const nutrition = schema.nutrition;
+  //   // Nutrition information
+  //   if (schema.nutrition) {
+  //     const nutrition = schema.nutrition;
 
-    if (nutrition.calories) {
-      const calories = parseInt(nutrition.calories.replace(/\D/g, ""), 10);
-      if (!isNaN(calories)) {
-        recipe.calories = calories;
-      }
-    }
+  //     if (nutrition.calories) {
+  //       const calories = parseInt(nutrition.calories.replace(/\D/g, ""), 10);
+  //       if (!isNaN(calories)) {
+  //         recipe.calories = calories;
+  //       }
+  //     }
 
-    if (nutrition.fatContent) {
-      const fat = parseFloat(nutrition.fatContent.replace(/[^\d.]/g, ""));
-      if (!isNaN(fat)) {
-        recipe.fat = fat;
-      }
-    }
+  //     if (nutrition.fatContent) {
+  //       const fat = parseFloat(nutrition.fatContent.replace(/[^\d.]/g, ""));
+  //       if (!isNaN(fat)) {
+  //         recipe.fat = fat;
+  //       }
+  //     }
 
-    if (nutrition.proteinContent) {
-      const protein = parseFloat(
-        nutrition.proteinContent.replace(/[^\d.]/g, ""),
-      );
-      if (!isNaN(protein)) {
-        recipe.protein = protein;
-      }
-    }
+  //     if (nutrition.proteinContent) {
+  //       const protein = parseFloat(
+  //         nutrition.proteinContent.replace(/[^\d.]/g, ""),
+  //       );
+  //       if (!isNaN(protein)) {
+  //         recipe.protein = protein;
+  //       }
+  //     }
 
-    if (nutrition.carbohydrateContent) {
-      const carbs = parseFloat(
-        nutrition.carbohydrateContent.replace(/[^\d.]/g, ""),
-      );
-      if (!isNaN(carbs)) {
-        recipe.carbohydrates = carbs;
-      }
-    }
+  //     if (nutrition.carbohydrateContent) {
+  //       const carbs = parseFloat(
+  //         nutrition.carbohydrateContent.replace(/[^\d.]/g, ""),
+  //       );
+  //       if (!isNaN(carbs)) {
+  //         recipe.carbohydrates = carbs;
+  //       }
+  //     }
 
-    if (nutrition.fiberContent) {
-      const fiber = parseFloat(nutrition.fiberContent.replace(/[^\d.]/g, ""));
-      if (!isNaN(fiber)) {
-        recipe.fiber = fiber;
-      }
-    }
+  //     if (nutrition.fiberContent) {
+  //       const fiber = parseFloat(nutrition.fiberContent.replace(/[^\d.]/g, ""));
+  //       if (!isNaN(fiber)) {
+  //         recipe.fiber = fiber;
+  //       }
+  //     }
 
-    if (nutrition.sugarContent) {
-      const sugar = parseFloat(nutrition.sugarContent.replace(/[^\d.]/g, ""));
-      if (!isNaN(sugar)) {
-        recipe.sugar = sugar;
-      }
-    }
+  //     if (nutrition.sugarContent) {
+  //       const sugar = parseFloat(nutrition.sugarContent.replace(/[^\d.]/g, ""));
+  //       if (!isNaN(sugar)) {
+  //         recipe.sugar = sugar;
+  //       }
+  //     }
 
-    if (nutrition.sodiumContent) {
-      const sodium = parseFloat(nutrition.sodiumContent.replace(/[^\d.]/g, ""));
-      if (!isNaN(sodium)) {
-        recipe.sodium = sodium;
-      }
-    }
-  }
+  //     if (nutrition.sodiumContent) {
+  //       const sodium = parseFloat(nutrition.sodiumContent.replace(/[^\d.]/g, ""));
+  //       if (!isNaN(sodium)) {
+  //         recipe.sodium = sodium;
+  //       }
+  //     }
+  //   }
 
-  // Equipment
-  if (schema.tool && Array.isArray(schema.tool)) {
-    recipe.recipeEquipment = schema.tool;
-  }
+  //   // Equipment
+  //   if (schema.tool && Array.isArray(schema.tool)) {
+  //     recipe.recipeEquipment = schema.tool;
+  //   }
 
-  // Cost
-  if (schema.estimatedCost?.value) {
-    recipe.estimatedCost = schema.estimatedCost.value;
-  }
+  //   // Cost
+  //   if (schema.estimatedCost?.value) {
+  //     recipe.estimatedCost = schema.estimatedCost.value;
+  //   }
 
-  return recipe;
+  //   return recipe;
 }
 
 function parseDurationToMinutes(duration: string): number | undefined {
