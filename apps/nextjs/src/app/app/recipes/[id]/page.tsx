@@ -100,8 +100,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           <CardHeader className="flex flex-col items-center gap-6 pb-0">
             {recipe.stagedFile && (
               <Image
-                width={256}
-                height={256}
+                width={500}
+                height={500}
                 src={recipe.stagedFile.url}
                 alt={recipe.name}
                 className="mb-4 h-56 w-full rounded-2xl border border-black object-cover shadow"

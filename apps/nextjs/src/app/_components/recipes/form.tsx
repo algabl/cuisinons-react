@@ -207,14 +207,22 @@ export default function RecipeForm({
           name="imageId"
           render={({ field: _field }) => (
             <FormItem>
-              <>
+              <FormLabel>Image</FormLabel>
+                <div
+                className={`relative mb-2 w-full transition-all duration-300 ease-in-out ${
+                  imagePreview
+                  ? "opacity-100 scale-100 pointer-events-auto h-auto"
+                  : "opacity-0 scale-95 pointer-events-none h-0"
+                }`}
+                >
                 {imagePreview && (
-                  <div className="relative mb-2 h-40 w-40">
+                  <div className="group relative w-full">
                     <Image
                       src={imagePreview}
                       alt="Recipe Image"
-                      width={100}
-                      height={100}
+                      width={500}
+                      height={500}
+                      className="w-full rounded-md object-cover"
                     />
                     <Button
                       variant="destructive"
@@ -224,13 +232,14 @@ export default function RecipeForm({
                         setImagePreview(null);
                       }}
                       type="button"
+                      className="absolute right-2 bottom-2 z-10 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100"
+                      size="sm"
                     >
-                      Remove Image
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
-              </>
-              <FormLabel>Image</FormLabel>
+              </div>
               <FormControl>
                 <UploadButton
                   endpoint="imageUploader"

@@ -48,6 +48,7 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
     });
     router.push(`/app/recipes/${recipe.id}`);
     // redirect(`/app/recipes/${recipe.id}`);
+    return { id: recipe.id };
   }
 
   return (
