@@ -34,10 +34,10 @@ export async function generateMetadata({ params }: Props) {
   }
 
   return {
-    title: recipe.name,
+    title: `${recipe.name} | Cuisinons`,
     description: recipe.description ?? "No description provided.",
     openGraph: {
-      title: recipe.name,
+      title: `${recipe.name} | Cuisinons`,
       description: recipe.description ?? "No description provided.",
       images: recipe.image ? [recipe.image] : [],
     },
@@ -98,11 +98,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <div className="bg-card flex min-h-[80vh] justify-center px-2 py-10">
         <Card className="bg-card w-full max-w-3xl rounded-3xl border border-black shadow-lg">
           <CardHeader className="flex flex-col items-center gap-6 pb-0">
-            {recipe.image && (
+            {recipe.stagedFile && (
               <Image
                 width={256}
                 height={256}
-                src={recipe.image}
+                src={recipe.stagedFile.url}
                 alt={recipe.name}
                 className="mb-4 h-56 w-full rounded-2xl border border-black object-cover shadow"
                 priority
@@ -298,13 +298,13 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
               </h2>
               {Array.isArray(recipe.recipeIngredients) &&
               recipe.recipeIngredients.length > 0 ? (
-                <ul className="list-inside list-disc space-y-6 text-lg">
+                <ul className="list-none space-y-6 text-lg">
                   {recipe.recipeIngredients.map((ingredient, idx: number) => (
                     <li
                       key={idx}
-                      className="bg-muted text-foreground rounded-md border border-black px-6 py-4 font-semibold shadow"
+                      className="bg-muted text-foreground relative rounded-md border border-black px-6 py-4 pl-6 font-semibold shadow"
                     >
-                      {ingredient.quantity}{" "}
+                      {ingredient.ingredient.emoji} {ingredient.quantity}{" "}
                       {ingredient.unit != "none" ? `${ingredient.unit} ` : ""}
                       {ingredient.ingredient.name}
                     </li>

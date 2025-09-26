@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -15,6 +17,7 @@ import {
 } from "@cuisinons/api/units";
 
 import { SpinnerButton } from "~/components/spinner-button";
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
@@ -35,6 +38,9 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
+import { UploadButton } from "~/lib/utils";
+import { api } from "~/trpc/react";
 import { IngredientSelect } from "./ingredient-select";
 
 export { recipeFormSchema as formSchema };
@@ -45,15 +51,38 @@ export default function RecipeForm({
   isLoading = false,
 }: {
   recipe?: Recipe;
-  onSubmit: (values: RecipeFormData) => void;
+  onSubmit: (values: RecipeFormData) => Promise<{ id: string }> | void;
   isLoading?: boolean;
 }) {
+  // Generate unique stage ID for this form session
+  const [stageId] = useState(() => crypto.randomUUID());
+  const formSubmittedRef = useRef(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    recipe?.stagedFile?.url ?? null,
+  );
+
+  // tRPC mutations for staging
+  const { mutate: cleanupMutate } = api.upload.cleanupStaged.useMutation();
+
+  const performCleanup = useCallback(() => {
+    if (!formSubmittedRef.current) {
+      cleanupMutate({ stageId });
+    }
+  }, [stageId, cleanupMutate, formSubmittedRef]);
+
+  useEffect(() => {
+    return () => {
+      performCleanup();
+    };
+  }, [performCleanup]);
+
   const form = useForm({
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
       name: recipe?.name ?? "",
       description: recipe?.description ?? "",
-      image: recipe?.image ?? "",
+      imageId: recipe?.imageId ?? "",
+      stageId,
 
       // Time fields
       cookingTime: recipe?.cookingTime ?? undefined,
@@ -107,14 +136,12 @@ export default function RecipeForm({
 
   // Helper to add ingredient to form state
   function handleAddIngredient(ingredient: Ingredient) {
-    console.log("Adding ingredient:", ingredient);
     const current = form.getValues("recipeIngredients") as {
       ingredientId: string;
       quantity: number;
       unit: string;
       name: string;
     }[];
-    console.log("Current ingredients:", current);
     if (!current.some((i) => i.ingredientId === ingredient.id)) {
       form.setValue("recipeIngredients", [
         ...current,
@@ -128,9 +155,14 @@ export default function RecipeForm({
     }
   }
 
+  function handleOnSubmit(values: RecipeFormData) {
+    formSubmittedRef.current = true;
+    return onSubmit(values);
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleOnSubmit)} className="space-y-4">
         {/* Name */}
         <FormField
           control={form.control}
@@ -172,18 +204,58 @@ export default function RecipeForm({
         {/* Image URL */}
         <FormField
           control={form.control}
-          name="image"
-          render={({ field }) => (
+          name="imageId"
+          render={({ field: _field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
+              <>
+                {imagePreview && (
+                  <div className="relative mb-2 h-40 w-40">
+                    <Image
+                      src={imagePreview}
+                      alt="Recipe Image"
+                      width={100}
+                      height={100}
+                    />
+                    <Button
+                      variant="destructive"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        form.setValue("imageId", "");
+                        setImagePreview(null);
+                      }}
+                      type="button"
+                    >
+                      Remove Image
+                    </Button>
+                  </div>
+                )}
+              </>
+              <FormLabel>Image</FormLabel>
               <FormControl>
-                <Input placeholder="https://example.com/image.jpg" {...field} />
+                <UploadButton
+                  endpoint="imageUploader"
+                  input={{ stageId }}
+                  onClientUploadComplete={(res) => {
+                    if (res[0]?.ufsUrl) {
+                      form.setValue("imageId", res[0].serverData.fileId ?? "");
+                      setImagePreview(res[0].ufsUrl);
+                    }
+                  }}
+                  onUploadError={(error) => {
+                    form.setError("imageId", {
+                      type: "manual",
+                      message: `Failed to upload image: ${error.message}`,
+                    });
+                  }}
+                />
               </FormControl>
               <FormDescription>
-                Optional: Add a link to an image for this recipe.
+                Optional: Add an image for this recipe.
               </FormDescription>
-              {form.formState.errors.image && (
-                <FormMessage>{form.formState.errors.image.message}</FormMessage>
+              {form.formState.errors.imageId && (
+                <FormMessage>
+                  {form.formState.errors.imageId.message}
+                </FormMessage>
               )}
             </FormItem>
           )}
@@ -745,8 +817,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Keywords/Tags</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="quick, healthy, gluten-free, vegan"
                   value={field.value?.join(", ") ?? ""}
                   onChange={(e) =>
@@ -779,8 +851,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Suitable For Diet</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="vegan, gluten-free, keto, dairy-free"
                   value={field.value?.join(", ") ?? ""}
                   onChange={(e) =>
@@ -813,8 +885,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Required Equipment</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[60px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="oven, mixing bowl, whisk, baking sheet"
                   value={field.value?.join(", ") ?? ""}
                   onChange={(e) =>
@@ -935,21 +1007,26 @@ export default function RecipeForm({
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {Object.values(UnitCategory).map((category) => (
-                                    <SelectGroup key={category}>
-                                      <SelectLabel>
-                                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                                      </SelectLabel>
-                                      {getUnitsByCategory(category).map((unit) => (
-                                        <SelectItem
-                                          key={unit.id}
-                                          value={unit.id}
-                                        >
-                                          {unit.abbreviation}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectGroup>
-                                  ))}
+                                  {Object.values(UnitCategory).map(
+                                    (category) => (
+                                      <SelectGroup key={category}>
+                                        <SelectLabel>
+                                          {category.charAt(0).toUpperCase() +
+                                            category.slice(1)}
+                                        </SelectLabel>
+                                        {getUnitsByCategory(category).map(
+                                          (unit) => (
+                                            <SelectItem
+                                              key={unit.id}
+                                              value={unit.id}
+                                            >
+                                              {unit.abbreviation}
+                                            </SelectItem>
+                                          ),
+                                        )}
+                                      </SelectGroup>
+                                    ),
+                                  )}
                                 </SelectContent>
                               </Select>
                             </FormControl>
@@ -1007,8 +1084,8 @@ export default function RecipeForm({
             <FormItem>
               <FormLabel>Instructions</FormLabel>
               <FormControl>
-                <textarea
-                  className="border-input bg-background min-h-[100px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+                <Textarea
+                  // className="border-input bg-background min-h-[100px] w-full rounded-md border px-3 py-2 text-sm shadow-sm"
                   placeholder="Step 1\nStep 2\nStep 3"
                   value={field.value?.join("\n") ?? ""}
                   onChange={(e) => field.onChange(e.target.value.split("\n"))}

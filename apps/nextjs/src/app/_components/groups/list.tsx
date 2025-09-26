@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 
 export async function List() {
   const session = await auth();
-  const groups = session?.userId
+  const groups = session.userId
     ? await api.group.getByUserId(session.userId)
     : [];
 

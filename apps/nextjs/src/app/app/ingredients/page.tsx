@@ -3,11 +3,11 @@ import { unauthorized } from "next/navigation";
 
 import { getCurrentUser } from "@cuisinons/auth/server";
 
-import IngredientList from "~/app/_components/ingredients/list";
+import { IngredientsList } from "~/app/_components/ingredients/list";
 import { api, HydrateClient } from "~/trpc/server";
 
 export const metadata: Metadata = {
-  title: "Your Ingredients",
+  title: "My Ingredients",
 };
 
 export default async function IngredientsPage() {
@@ -16,14 +16,13 @@ export default async function IngredientsPage() {
     unauthorized();
   }
 
-  // Prefetch the data for better UX
-  await api.ingredient.getByUserId.prefetch(user.id);
+  // Prefetch and get the enhanced data for better UX
+  const ingredients = await api.ingredient.getWithRecipeUsage(user.id);
 
   return (
     <HydrateClient>
       <main className="container mx-auto">
-        Ingredients Page
-        <IngredientList userId={user.id} />
+        <IngredientsList ingredients={ingredients} userId={user.id} />
       </main>
     </HydrateClient>
   );

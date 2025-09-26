@@ -21,13 +21,10 @@ export async function addMember(formData: FormData) {
     redirect("/sign-in");
   }
   const groupId = formData.get("groupId") as string;
-  console.log("groupId", groupId);
   const email = formData.get("email") as string;
-  console.log("email", email);
   const roleValue = formData.get("role");
   const role =
     roleValue === "admin" || roleValue === "member" ? roleValue : "member";
-  console.log("role", role);
   await api.group.addMember({
     groupId,
     email,
@@ -54,9 +51,8 @@ export async function updateMember(formData: FormData) {
   // redirect(`/app/groups/${groupId}`);
 }
 
-export async function deleteMember(formData: FormData) {
+export async function deleteMember(_formData: FormData) {
   const session = await auth();
-  console.log(formData);
   if (!session.userId) {
     redirect("/sign-in");
   }
