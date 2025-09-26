@@ -66,3 +66,4 @@ dist/
 
 # turbo
 .turbo
+apps/nextjs/.env.sentry-build-plugin
