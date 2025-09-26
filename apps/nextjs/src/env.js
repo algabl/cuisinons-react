@@ -45,7 +45,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
-    NEXT_PUBLIC_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
   },
