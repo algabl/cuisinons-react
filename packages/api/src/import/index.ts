@@ -45,24 +45,24 @@ export async function importRecipeFromUrl(
     // Try extraction methods in order of preference
     const result = await tryExtractionMethods(html, url, context);
 
-    if (result.status === "success" && result.recipe) {
-      // Save the recipe to database
-      const savedRecipe = await saveImportedRecipe(result.recipe, context);
-      return {
-        ...result,
-        recipeId: savedRecipe.id,
-      };
-    }
+    // if (result.status === "success" && result.recipe) {
+    // Save the recipe to database
+    // const savedRecipe = await saveImportedRecipe(result.recipe, context);
+    //   return {
+    //     ...result,
+    //     recipeId: savedRecipe.id,
+    //   };
+    // }
 
     return result;
   } catch (error) {
-    if (error instanceof ImportError) {
-      return {
-        status: "failed",
-        warnings: [error.message],
-        sourceUrl: url,
-      };
-    }
+    // if (error instanceof ImportError) {
+    //   return {
+    //     status: "failed",
+    //     warnings: [error.message],
+    //     sourceUrl: url,
+    //   };
+    // }
 
     return {
       status: "failed",
@@ -82,31 +82,29 @@ export async function importRecipeFromText(
 ): Promise<ImportResult> {
   const { content, sourceUrl, userId, db } = options;
 
-  if (!content.trim()) {
-    throw new ImportError("No content provided", "VALIDATION_FAILED");
-  }
+  // if (!content.trim()) {
+  //   throw new ImportError("No content provided", "VALIDATION_FAILED");
+  // }
 
   const context: ImportContext = { userId, db };
 
   try {
     // Use LLM extraction for text content
-    const cleanContent = prepareContentForLLM(content);
-    const recipe = await extractWithLLM({
-      content: cleanContent,
-      url: sourceUrl,
-    });
+    // const cleanContent = prepareContentForLLM(content);
+    // const recipe = await extractWithLLM({
+    //   content: cleanContent,
+    //   url: sourceUrl,
+    // });
 
-    if (recipe) {
-      const savedRecipe = await saveImportedRecipe(recipe, context);
-      return {
-        status: "success",
-        recipe,
-        extractionMethod: "llm",
-        confidence: 75, // Lower confidence for text-only import
-        sourceUrl,
-        recipeId: savedRecipe.id,
-      };
-    }
+    // const savedRecipe = await saveImportedRecipe(recipe, context);
+    // return {
+    //   status: "success",
+    //   recipe,
+    //   extractionMethod: "llm",
+    //   confidence: 75, // Lower confidence for text-only import
+    //   sourceUrl,
+    //   recipeId: savedRecipe.id,
+    // };
 
     return {
       status: "manual_required",
@@ -114,13 +112,13 @@ export async function importRecipeFromText(
       sourceUrl,
     };
   } catch (error) {
-    if (error instanceof ImportError) {
-      return {
-        status: "failed",
-        warnings: [error.message],
-        sourceUrl,
-      };
-    }
+    // if (error instanceof ImportError) {
+    //   return {
+    //     status: "failed",
+    //     warnings: [error.message],
+    //     sourceUrl,
+    //   };
+    // }
 
     return {
       status: "failed",
@@ -145,16 +143,16 @@ async function tryExtractionMethods(
 
   // Tier 1: Try Schema.org JSON-LD extraction
   try {
-    const recipe = await extractFromSchemaOrg(html, url);
-    if (recipe) {
-      return {
-        status: "success",
-        recipe,
-        extractionMethod: "schema_org",
-        confidence: 95,
-        sourceUrl: url,
-      };
-    }
+    // const recipe = await extractFromSchemaOrg(html, url);
+    // if (recipe) {
+    //   return {
+    //     status: "success",
+    //     recipe,
+    //     extractionMethod: "schema_org",
+    //     confidence: 95,
+    //     sourceUrl: url,
+    //   };
+    // }
   } catch (error) {
     lastError =
       error instanceof Error
@@ -191,19 +189,17 @@ async function tryExtractionMethods(
       url,
     });
 
-    if (recipe) {
-      return {
-        status: "success",
-        recipe,
-        extractionMethod: "llm",
-        confidence: 70,
-        sourceUrl: url,
-        warnings: warnings.length > 0 ? warnings : undefined,
-      };
-    }
+    return {
+      status: "success",
+      recipe,
+      extractionMethod: "llm",
+      confidence: 70,
+      sourceUrl: url,
+      warnings: warnings.length > 0 ? warnings : undefined,
+    };
   } catch (error) {
-    lastError =
-      error instanceof Error ? error : new Error("LLM extraction failed");
+    // lastError =
+    //   error instanceof Error ? error : new Error("LLM extraction failed");
     warnings.push("LLM extraction failed");
   }
 
@@ -279,7 +275,7 @@ async function saveImportedRecipe(
     .values({
       name: recipe.name,
       description: recipe.description,
-      image: recipe.image,
+      // image: recipe.image,
       createdById: userId,
 
       cookingTime: recipe.cookingTime,
