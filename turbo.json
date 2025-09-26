@@ -53,7 +53,8 @@
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
     "CLERK_SECRET_KEY",
     "PORT",
-    "UPLOADTHING_TOKEN"
+    "UPLOADTHING_TOKEN",
+    "SENTRY_AUTH_TOKEN"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",
