@@ -7,6 +7,7 @@ import type { Recipe } from "@cuisinons/api/types";
 import type { RecipeFormData } from "~/lib/validations";
 import { api } from "~/trpc/react";
 import RecipeForm from "./form";
+import { id } from "zod/v4/locales";
 
 export default function EditForm({ recipe }: { recipe: Recipe }) {
   const recipeUpdate = api.recipe.update.useMutation();
@@ -48,6 +49,7 @@ export default function EditForm({ recipe }: { recipe: Recipe }) {
     });
     router.push(`/app/recipes/${recipe.id}`);
     // redirect(`/app/recipes/${recipe.id}`);
+    return { id: recipe.id };
   }
 
   return (
