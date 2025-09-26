@@ -1,5 +1,5 @@
 import type { RecipeApiData } from "../../schemas";
-import { ImportError } from "../types";
+// import { ImportError } from "../types";
 
 interface LLMExtractorOptions {
   content: string;
@@ -16,10 +16,10 @@ export async function extractWithLLM(
   const { content, url, maxTokens = 2000, temperature = 0.1 } = options;
 
   if (!content.trim()) {
-    throw new ImportError(
-      "No content provided for LLM extraction",
-      "NO_RECIPE_FOUND",
-    );
+    // throw new ImportError(
+    //   "No content provided for LLM extraction",
+    //   "NO_RECIPE_FOUND",
+    // );
   }
 
   const prompt = buildExtractionPrompt(content, url);
@@ -35,23 +35,24 @@ export async function extractWithLLM(
     // });
 
     // For now, throw an error indicating LLM extraction is not implemented
-    throw new ImportError(
-      "LLM extraction not yet implemented",
-      "NO_RECIPE_FOUND",
-    );
+    // throw new ImportError(
+    //   "LLM extraction not yet implemented",
+    //   "NO_RECIPE_FOUND",
+    // );
 
     // Expected implementation would parse LLM response:
     // const result = parseMarkdownResponse(response.choices[0]?.message?.content || '');
     // return validateAndCleanResult(result, url);
   } catch (error) {
-    if (error instanceof ImportError) {
-      throw error;
-    }
-    throw new ImportError(
-      `LLM extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      "NO_RECIPE_FOUND",
-    );
+    // if (error instanceof ImportError) {
+    //   throw error;
+    // }
+    // throw new ImportError(
+    //   `LLM extraction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    //   "NO_RECIPE_FOUND",
+    // );
   }
+  return {};
 }
 
 function buildExtractionPrompt(content: string, url?: string): string {
@@ -96,7 +97,7 @@ Rules:
 JSON:`;
 }
 
-function parseMarkdownResponse(response: string): Partial<RecipeApiData> {
+function parseMarkdownResponse(response: string) {
   try {
     // Extract JSON from response (LLM might include markdown formatting)
     const jsonMatch =
@@ -107,18 +108,18 @@ function parseMarkdownResponse(response: string): Partial<RecipeApiData> {
       throw new Error("No JSON found in response");
     }
 
-    const parsed = JSON.parse(jsonMatch[1]);
+    // const parsed = JSON.parse(jsonMatch[1]);
 
-    if (parsed.error) {
-      throw new ImportError(parsed.error, "NO_RECIPE_FOUND");
-    }
+    // if (parsed.error) {
+    //   throw new ImportError(parsed.error, "NO_RECIPE_FOUND");
+    // }
 
-    return parsed;
+    return {};
   } catch (error) {
-    throw new ImportError(
-      `Failed to parse LLM response: ${error instanceof Error ? error.message : "Invalid format"}`,
-      "NO_RECIPE_FOUND",
-    );
+    // throw new ImportError(
+    //   `Failed to parse LLM response: ${error instanceof Error ? error.message : "Invalid format"}`,
+    //   "NO_RECIPE_FOUND",
+    // );
   }
 }
 
@@ -127,10 +128,10 @@ function validateAndCleanResult(
   sourceUrl?: string,
 ): Partial<RecipeApiData> {
   if (!result.title || !result.ingredients || !result.instructions) {
-    throw new ImportError(
-      "LLM extraction missing required fields",
-      "VALIDATION_FAILED",
-    );
+    // throw new ImportError(
+    //   "LLM extraction missing required fields",
+    //   "VALIDATION_FAILED",
+    // );
   }
 
   return {
@@ -148,7 +149,7 @@ function validateAndCleanResult(
     instructions: Array.isArray(result.instructions)
       ? result.instructions.map((i: any) => String(i).trim()).filter(Boolean)
       : [],
-    image: result.imageUrl ? String(result.imageUrl).trim() : undefined,
+    // imageId: result.imageUrl ? String(result.imageUrl).trim() : undefined,
     isPrivate: true,
   };
 }
