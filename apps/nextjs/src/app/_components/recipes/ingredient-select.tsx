@@ -1,7 +1,13 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import type { z } from "zod";
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
+import { createPortal } from "react-dom";
+
+import type { Ingredient } from "@cuisinons/api/types";
+
+import type { formSchema } from "./form";
 import { Button } from "~/components/ui/button";
 import {
   Command,
@@ -24,10 +30,7 @@ import {
 } from "~/components/ui/popover";
 import { api } from "~/trpc/react";
 import CreateForm from "../ingredients/create-form";
-import type {Ingredient} from "@cuisinons/api/types";
-import type { z } from "zod";
-import type { formSchema } from "./form";
-import { createPortal } from "react-dom";
+import { EditIngredientDialog } from "../ingredients/edit-dialog";
 
 interface IngredientSelectProps {
   recipeIngredients?: z.infer<typeof formSchema>["recipeIngredients"];
@@ -77,6 +80,8 @@ export function IngredientSelect({
     </Dialog>
   );
 
+  // const dialogNode = <CreateIngredientDialog ingredient={{name: search}}
+
   return (
     <>
       <div className="flex flex-col space-x-2">
@@ -122,7 +127,12 @@ export function IngredientSelect({
                         onSelect(ingredient);
                       }}
                     >
-                      {ingredient.name}
+                      <span className="flex items-center gap-2">
+                        {ingredient.emoji && (
+                          <span className="text-lg">{ingredient.emoji}</span>
+                        )}
+                        <span>{ingredient.name}</span>
+                      </span>
                     </CommandItem>
                   ))}
                 </CommandGroup>

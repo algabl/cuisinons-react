@@ -1,9 +1,10 @@
-import { createCallerFactory, createTRPCRouter } from "./trpc";
-import { recipeRouter } from "./routers/recipe";
 import { groupRouter } from "./routers/group";
-import { userRouter } from "./routers/user";
-import { sharingRouter } from "./routers/sharing";
 import { ingredientRouter } from "./routers/ingredient";
+import { recipeRouter } from "./routers/recipe";
+import { sharingRouter } from "./routers/sharing";
+import { uploadRouter } from "./routers/upload";
+import { userRouter } from "./routers/user";
+import { createCallerFactory, createTRPCRouter } from "./trpc";
 
 /**
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   sharing: sharingRouter,
   ingredient: ingredientRouter,
+  upload: uploadRouter,
 });
 
 // export type definition of API

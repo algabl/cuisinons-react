@@ -14,7 +14,8 @@ export function CreateForm() {
     const created = await recipeCreate.mutateAsync({
       name: values.name,
       description: values.description,
-      image: values.image,
+      imageId: values.imageId,
+      stageId: values.stageId,
       cookingTime: values.cookingTime,
       preparationTime: values.preparationTime,
       totalTime: values.totalTime,

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { z } from "zod/v4";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -7,6 +8,7 @@ import { useForm } from "react-hook-form";
 import type { IngredientFormData } from "@cuisinons/api/types";
 
 import { Button } from "~/components/ui/button";
+import EmojiPicker from "~/components/ui/emoji-picker";
 import {
   Form,
   FormControl,
@@ -18,7 +20,6 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { ingredientFormSchema } from "~/lib/validations";
-import { api } from "~/trpc/react";
 
 export type IngredientPrefill = Partial<z.infer<typeof ingredientFormSchema>>;
 
@@ -26,39 +27,78 @@ export default function IngredientForm({
   onSubmit,
   prefill,
   isLoading = false,
+  submitWrapper,
 }: {
   onSubmit: (ingredient: IngredientFormData) => void;
   prefill?: IngredientPrefill;
   isLoading?: boolean;
+  submitWrapper?: (button: ReactNode) => ReactNode;
 }) {
   const form = useForm({
     resolver: zodResolver(ingredientFormSchema),
     defaultValues: {
       name: prefill?.name ?? "",
       description: prefill?.description ?? "",
+      emoji: prefill?.emoji ?? "",
     },
   });
+
+  const submitButton = (
+    <Button
+      type="button"
+      onClick={form.handleSubmit(onSubmit)}
+      disabled={isLoading}
+    >
+      {isLoading ? "Saving..." : "Submit"}
+    </Button>
+  );
 
   return (
     <Form {...form}>
       <div className="space-y-4">
         {/* Name */}
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Ingredient name" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is the ingredient&apos;s name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex items-center gap-2">
+          {/* Emoji */}
+          <FormField
+            control={form.control}
+            name="emoji"
+            render={({ field }) => (
+              <FormItem>
+                {/*<FormLabel>Emoji</FormLabel>*/}
+                <FormControl>
+                  <EmojiPicker
+                    value={field.value}
+                    onEmojiSelect={field.onChange}
+                  />
+                </FormControl>
+                {/*<FormDescription>
+                  Choose an emoji to represent this ingredient.
+                </FormDescription>*/}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                {/*<FormLabel>Name</FormLabel>*/}
+                <FormControl>
+                  <Input
+                    className="h-10"
+                    placeholder="Ingredient name"
+                    {...field}
+                  />
+                </FormControl>
+                {/*<FormDescription>
+                  This is the ingredient&apos;s name.
+                </FormDescription>*/}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         {/* Description */}
         <FormField
           control={form.control}
@@ -76,13 +116,7 @@ export default function IngredientForm({
             </FormItem>
           )}
         />
-        <Button
-          type="button"
-          onClick={form.handleSubmit(onSubmit)}
-          disabled={isLoading}
-        >
-          {isLoading ? "Saving..." : "Submit"}
-        </Button>
+        {submitWrapper ? submitWrapper(submitButton) : submitButton}
       </div>
     </Form>
   );

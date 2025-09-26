@@ -1,22 +1,30 @@
 "use client";
 
+import type Error from "next/error";
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
-export default function Error({
+import { Button } from "~/components/ui/button";
+
+export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: Error;
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error("Error occurred:", error);
+    Sentry.captureException(error);
   }, [error]);
+
   return (
-    <div>
-      <h2>Something went wrong!</h2>
-      <button onClick={() => reset()}>Try again</button>
-    </div>
+    <html>
+      <body>
+        <div>
+          <h2>Something went wrong!</h2>
+          <Button onClick={() => reset()}>Try again</Button>
+        </div>
+      </body>
+    </html>
   );
 }
