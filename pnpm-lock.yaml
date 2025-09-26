@@ -440,6 +440,9 @@ importers:
       '@cuisinons/db':
         specifier: workspace:*
         version: link:../db
+      '@cuisinons/validators':
+        specifier: workspace:*
+        version: link:../validators
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.5.0(typescript@5.9.2)
