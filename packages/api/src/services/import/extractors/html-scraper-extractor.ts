@@ -4,7 +4,7 @@ import type {
   ExtractorInput,
   ExtractorResult,
   RecipeExtractor,
-} from "../../types/import";
+} from "../../../types/import";
 
 export class HtmlScraperExtractor implements RecipeExtractor {
   readonly name = "html-scraper";

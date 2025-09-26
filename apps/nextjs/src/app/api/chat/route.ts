@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import type { ToolSet } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { streamText, tool, type ToolSet } from "ai";
+import { streamText, tool } from "ai";
 import { z } from "zod";
+
 import { env } from "~/env";
 import { api } from "~/trpc/server";
 

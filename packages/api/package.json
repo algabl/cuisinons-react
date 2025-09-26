@@ -3,7 +3,9 @@
     "@cuisinons/auth": "workspace:*",
     "@cuisinons/db": "workspace:*",
     "@cuisinons/validators": "workspace:*",
+    "@t3-oss/env-nextjs": "catalog:",
     "@trpc/server": "catalog:",
+    "ai": "catalog:",
     "recipe-scraper": "^2.1.1",
     "superjson": "^2.2.1",
     "zod": "catalog:"

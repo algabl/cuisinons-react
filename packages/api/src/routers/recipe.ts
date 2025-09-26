@@ -17,6 +17,11 @@ import {
   recipeIngredientRelationSchema,
   recipeUpdateSchema,
 } from "../schemas";
+import {
+  createRecipe,
+  importRecipeFromText,
+  importRecipeFromUrl,
+} from "../services";
 import { publishStagedFiles } from "../services/upload";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -24,92 +29,7 @@ export const recipeRouter = createTRPCRouter({
   create: protectedProcedure
     .input(recipeApiSchema)
     .mutation(async ({ ctx, input }) => {
-      const created = await ctx.db
-        .insert(recipes)
-        .values({
-          name: input.name,
-          description: input.description,
-          imageId: input.imageId,
-          createdById: ctx.auth.userId ?? "",
-
-          // Time fields
-          cookingTime: input.cookingTime,
-          preparationTime: input.preparationTime,
-          totalTime: input.totalTime,
-
-          // Yield
-          servings: input.servings,
-
-          // Nutrition
-          calories: input.calories,
-          fat: input.fat,
-          protein: input.protein,
-          carbohydrates: input.carbohydrates,
-          fiber: input.fiber,
-          sugar: input.sugar,
-          sodium: input.sodium,
-
-          // Categories
-          recipeCategory: input.recipeCategory,
-          recipeCuisine: input.recipeCuisine,
-          keywords: input.keywords,
-
-          // Difficulty
-          difficulty: input.difficulty,
-          skillLevel: input.skillLevel,
-
-          // Dietary
-          suitableForDiet: input.suitableForDiet,
-
-          // Equipment
-          recipeEquipment: input.recipeEquipment,
-
-          // Cost
-          estimatedCost: input.estimatedCost,
-
-          // Existing fields
-          instructions: input.instructions,
-          isPrivate: input.isPrivate,
-        })
-        .returning();
-
-      if (!created[0]) {
-        throw new Error("Failed to create recipe");
-      }
-
-      const recipeId = created[0].id;
-
-      if (input.recipeIngredients && recipeId) {
-        // Use Promise.all for better performance
-        await Promise.all(
-          input.recipeIngredients.map((ingredient) =>
-            ctx.db.insert(recipeIngredients).values({
-              recipeId: recipeId,
-              ingredientId: ingredient.ingredientId,
-              quantity: ingredient.quantity,
-              unit: ingredient.unit,
-              userId: ctx.auth.userId,
-            }),
-          ),
-        );
-      }
-
-      // Publish any staged files associated with this recipe
-      if (input.stageId && recipeId) {
-        await publishStagedFiles(
-          {
-            stageId: input.stageId,
-            entityId: recipeId,
-            entityType: "recipe",
-          },
-          ctx,
-        );
-      }
-      return {
-        success: true,
-        message: "Recipe created successfully",
-        data: created[0].id,
-      };
+      return await createRecipe(input, ctx);
     }),
   update: protectedProcedure
     .input(recipeUpdateSchema)
@@ -464,55 +384,45 @@ export const recipeRouter = createTRPCRouter({
     }),
 
   // Import procedures
-  // importFromUrl: protectedProcedure
-  //   .input(importUrlSchema)
-  //   .mutation(async ({ ctx, input }) => {
-  //     try {
-  //       const result = await importRecipeFromUrl({
-  //         url: input.url,
-  //         userId: ctx.auth.userId ?? "",
-  //         db: ctx.db,
-  //         skipDirectFetch: input.skipDirectFetch,
-  //       });
+  importFromUrl: protectedProcedure
+    .input(importUrlSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await importRecipeFromUrl({
+        url: input.url,
+        ctx,
+        skipDirectFetch: input.skipDirectFetch,
+      });
 
-  //       return {
-  //         success: result.status === "success",
-  //         data: result,
-  //         message:
-  //           result.status === "success"
-  //             ? "Recipe imported successfully"
-  //             : result.status === "manual_required"
-  //               ? "Manual import required - some content could not be extracted automatically"
-  //               : "Import failed",
-  //       };
-  //     } catch (error) {
-  //       handleImportError(error);
-  //     }
-  //   }),
+      return {
+        success: result.status === "success",
+        data: result,
+        message:
+          result.status === "success"
+            ? "Recipe imported successfully"
+            : result.status === "manual_required"
+              ? "Manual import required - some content could not be extracted automatically"
+              : "Import failed",
+      };
+    }),
 
-  // importFromText: protectedProcedure
-  //   .input(importTextSchema)
-  //   .mutation(async ({ ctx, input }) => {
-  //     try {
-  //       const result = await importRecipeFromText({
-  //         content: input.content,
-  //         sourceUrl: input.sourceUrl,
-  //         userId: ctx.auth.userId ?? "",
-  //         db: ctx.db,
-  //       });
+  importFromText: protectedProcedure
+    .input(importTextSchema)
+    .mutation(async ({ ctx, input }) => {
+      const result = await importRecipeFromText({
+        content: input.content,
+        sourceUrl: input.sourceUrl,
+        ctx,
+      });
 
-  //       return {
-  //         success: result.status === "success",
-  //         data: result,
-  //         message:
-  //           result.status === "success"
-  //             ? "Recipe imported from text successfully"
-  //             : result.status === "manual_required"
-  //               ? "Could not extract complete recipe from text - please review and edit"
-  //               : "Text import failed",
-  //       };
-  //     } catch (error) {
-  //       handleImportError(error);
-  //     }
-  //   }),
+      return {
+        success: result.status === "success",
+        data: result,
+        message:
+          result.status === "success"
+            ? "Recipe imported from text successfully"
+            : result.status === "manual_required"
+              ? "Could not extract complete recipe from text - please review and edit"
+              : "Text import failed",
+      };
+    }),
 });
