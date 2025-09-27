@@ -83,7 +83,7 @@ export const baseRecipeSchema = z.object({
   sodium: z.coerce
     .number()
     .min(0, { message: "Sodium content cannot be negative" })
-    .max(50, { message: "Sodium content seems too high (max 50g)" })
+    .max(500, { message: "Sodium content seems too high (max 50g)" })
     .optional(),
 
   // Category and classification
@@ -305,7 +305,6 @@ export type IngredientData = z.infer<typeof ingredientSchema>;
 export type GroupData = z.infer<typeof groupSchema>;
 export type RecipeIngredientData = z.infer<typeof recipeIngredientSchema>;
 export type UserSearchData = z.infer<typeof userSearchSchema>;
-
 
 // Import types
 export type ImportUrlData = z.infer<typeof importUrlSchema>;

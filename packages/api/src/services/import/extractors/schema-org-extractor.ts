@@ -1,6 +1,12 @@
 import type { recipes } from "@cuisinons/db/schema";
-import type { SchemaOrgRecipe } from "@cuisinons/validators";
-import { schemaOrgToRecipe } from "@cuisinons/validators";
+import type {
+  FlexibleSchemaOrgRecipe,
+  SchemaOrgRecipe,
+} from "@cuisinons/validators";
+import {
+  flexibleSchemaOrgToRecipe,
+  schemaOrgToRecipe,
+} from "@cuisinons/validators";
 
 import type {
   ExtractorInput,
@@ -62,15 +68,14 @@ export async function extractFromSchemaOrg(
 
       try {
         const data = JSON.parse(jsonContent);
-        const recipe = findRecipeInJsonLd(data);
+        const result = findRecipeInJsonLd(data);
 
-        if (recipe) {
-          const { recipe: converted, missingFields } =
-            schemaOrgToRecipe(recipe);
+        if (result) {
+          const { recipe, missingFields, ingredients } = result;
           return {
             status: "success",
-            recipe: converted,
-            confidence: calculateConfidence(converted),
+            recipe,
+            confidence: calculateConfidence(recipe),
             missingFields,
             warnings:
               missingFields.length > 0
@@ -101,17 +106,22 @@ export async function extractFromSchemaOrg(
   }
 }
 
-function findRecipeInJsonLd(data: any): SchemaOrgRecipe | null {
+function findRecipeInJsonLd(data: any): {
+  recipe: Partial<typeof recipes.$inferInsert>;
+  missingFields: string[];
+  ingredients: string[];
+} | null {
+  console.log(data);
   // Handle single object
   if (data?.["@type"] === "Recipe") {
-    return data as SchemaOrgRecipe;
+    return flexibleSchemaOrgToRecipe(data as FlexibleSchemaOrgRecipe);
   }
 
   // Handle arrays
   if (Array.isArray(data)) {
     for (const item of data) {
       if (item?.["@type"] === "Recipe") {
-        return item as SchemaOrgRecipe;
+        return flexibleSchemaOrgToRecipe(item as FlexibleSchemaOrgRecipe);
       }
     }
   }
@@ -129,6 +139,7 @@ function findRecipeInJsonLd(data: any): SchemaOrgRecipe | null {
         (typeof value === "object" && value !== null)
       ) {
         const result = findRecipeInJsonLd(value);
+        console.log(result);
         if (result) return result;
       }
     }

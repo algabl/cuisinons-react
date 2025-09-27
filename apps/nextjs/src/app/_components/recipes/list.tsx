@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
+  Download,
   LayoutGrid,
   List as ListIcon,
   Plus,
@@ -23,6 +24,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { RecipeCard } from "./card";
+import { ImportDialog } from "./import-dialog";
 import { RecipeListItem } from "./list-item";
 
 type ViewMode = "grid" | "list";
@@ -38,6 +40,7 @@ export function List({ recipes }: RecipeListProps) {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const filteredRecipes = recipes
     .filter(
@@ -94,7 +97,15 @@ export function List({ recipes }: RecipeListProps) {
           >
             <ListIcon className="h-5 w-5" />
           </Button>
-          <Button asChild className="ml-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowImportDialog(true)}
+            className="ml-2"
+          >
+            <Download className="h-4 w-4" />
+            Import Recipe
+          </Button>
+          <Button asChild>
             <Link href="/app/recipes/create">
               <Plus className="h-4 w-4" />
               New Recipe
@@ -102,6 +113,11 @@ export function List({ recipes }: RecipeListProps) {
           </Button>
         </div>
       </div>
+
+      <ImportDialog
+        isOpen={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+      />
 
       {/* Sorting */}
       <div className="mb-4 flex gap-2">

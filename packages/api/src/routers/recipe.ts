@@ -387,11 +387,14 @@ export const recipeRouter = createTRPCRouter({
   importFromUrl: protectedProcedure
     .input(importUrlSchema)
     .mutation(async ({ ctx, input }) => {
+      console.log("Importing recipe from URL:", input.url);
       const result = await importRecipeFromUrl({
         url: input.url,
         ctx,
         skipDirectFetch: input.skipDirectFetch,
       });
+
+      console.log(result);
 
       return {
         success: result.status === "success",

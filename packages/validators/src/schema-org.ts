@@ -235,6 +235,373 @@ export function recipeToSchemaOrg(
   return schemaRecipe;
 }
 
+// Type for flexible schema.org Recipe data that can come from various sources
+export interface FlexibleSchemaOrgRecipe {
+  "@context"?: string;
+  "@type": "Recipe";
+  name: string;
+  description?: string;
+  image?:
+    | string
+    | string[]
+    | { url?: string; "@type"?: string; [key: string]: any }[];
+  author?:
+    | string
+    | { "@type"?: string; name: string; [key: string]: any }
+    | { "@type"?: string; name: string; [key: string]: any }[];
+  prepTime?: string | number;
+  cookTime?: string | number;
+  totalTime?: string | number;
+  recipeYield?:
+    | string
+    | number
+    | string[]
+    | number[]
+    | {
+        "@type"?: string;
+        name?: string;
+        value?: string | number;
+        [key: string]: any;
+      }[];
+  recipeCategory?: string | string[];
+  recipeCuisine?: string | string[];
+  keywords?: string | string[];
+  suitableForDiet?: string | string[];
+  recipeIngredient?: string | string[];
+  recipeInstructions?:
+    | string
+    | string[]
+    | {
+        "@type"?: string;
+        text?: string;
+        name?: string;
+        [key: string]: any;
+      }[];
+  nutrition?: {
+    "@type"?: string;
+    calories?: string | number;
+    fatContent?: string | number;
+    proteinContent?: string | number;
+    carbohydrateContent?: string | number;
+    fiberContent?: string | number;
+    sugarContent?: string | number;
+    sodiumContent?: string | number;
+    [key: string]: any;
+  };
+  aggregateRating?: {
+    "@type"?: string;
+    ratingValue: number;
+    ratingCount: number;
+    [key: string]: any;
+  };
+  tool?: string | string[];
+  estimatedCost?:
+    | number
+    | string
+    | {
+        "@type"?: string;
+        currency?: string;
+        value: number | string;
+        [key: string]: any;
+      };
+  [key: string]: any; // Allow for any additional properties
+}
+
+// Helper functions to extract data from flexible formats
+function extractString(
+  value: string | string[] | undefined,
+): string | undefined {
+  if (typeof value === "string") return value;
+  if (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    typeof value[0] === "string"
+  ) {
+    return value[0];
+  }
+  return undefined;
+}
+
+function extractStringArray(
+  value: string | string[] | undefined,
+): string[] | undefined {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  return undefined;
+}
+
+function extractImageUrl(
+  image: FlexibleSchemaOrgRecipe["image"],
+): string | undefined {
+  if (typeof image === "string") return image;
+  if (Array.isArray(image)) {
+    // Handle array of strings
+    const firstString = image.find(
+      (item): item is string => typeof item === "string",
+    );
+    if (firstString) return firstString;
+
+    // Handle array of objects with url property
+    const firstWithUrl = image.find(
+      (item) => typeof item === "object" && item !== null && "url" in item,
+    );
+    if (
+      firstWithUrl &&
+      typeof firstWithUrl === "object" &&
+      "url" in firstWithUrl &&
+      typeof firstWithUrl.url === "string"
+    ) {
+      return firstWithUrl.url;
+    }
+  }
+  return undefined;
+}
+
+function extractAuthorName(
+  author: FlexibleSchemaOrgRecipe["author"],
+): string | undefined {
+  if (typeof author === "string") return author;
+  if (typeof author === "object" && author !== null && !Array.isArray(author)) {
+    return author.name;
+  }
+  if (Array.isArray(author) && author.length > 0) {
+    const firstAuthor = author[0];
+    if (
+      typeof firstAuthor === "object" &&
+      firstAuthor !== null &&
+      "name" in firstAuthor
+    ) {
+      return firstAuthor.name;
+    }
+  }
+  return undefined;
+}
+
+function extractRecipeYield(
+  recipeYield: FlexibleSchemaOrgRecipe["recipeYield"],
+): number | undefined {
+  if (typeof recipeYield === "number") return recipeYield;
+  if (typeof recipeYield === "string") {
+    // Extract numbers from string like "4 servings" or "Makes 6"
+    const match = recipeYield.match(/\d+/);
+    if (match) {
+      const parsed = parseInt(match[0], 10);
+      if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+  }
+  if (Array.isArray(recipeYield)) {
+    // Handle array - take first valid number
+    for (const item of recipeYield) {
+      if (typeof item === "number") return item;
+      if (typeof item === "string") {
+        const match = item.match(/\d+/);
+        if (match) {
+          const parsed = parseInt(match[0], 10);
+          if (!isNaN(parsed) && parsed > 0) return parsed;
+        }
+      }
+      if (typeof item === "object" && item !== null && "value" in item) {
+        const value = item.value;
+        if (typeof value === "number") return value;
+        if (typeof value === "string") {
+          const parsed = parseInt(value, 10);
+          if (!isNaN(parsed) && parsed > 0) return parsed;
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+function extractInstructions(
+  instructions: FlexibleSchemaOrgRecipe["recipeInstructions"],
+): string[] | undefined {
+  if (typeof instructions === "string") return [instructions];
+  if (Array.isArray(instructions)) {
+    const extractedInstructions: string[] = [];
+
+    for (const instruction of instructions) {
+      if (typeof instruction === "string") {
+        extractedInstructions.push(instruction);
+      } else if (typeof instruction === "object" && instruction !== null) {
+        // Try to extract text from common properties
+        const text =
+          instruction.text || instruction.name || instruction.description;
+        if (typeof text === "string") {
+          extractedInstructions.push(text);
+        }
+      }
+    }
+
+    return extractedInstructions.length > 0 ? extractedInstructions : undefined;
+  }
+  return undefined;
+}
+
+function extractNutritionValue(
+  value: string | number | undefined,
+): number | undefined {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    // Extract numeric value from strings like "250 calories" or "10g"
+    const numericMatch = value.match(/[\d.]+/);
+    if (numericMatch) {
+      const parsed = parseFloat(numericMatch[0]);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  return undefined;
+}
+
+function extractEstimatedCost(
+  cost: FlexibleSchemaOrgRecipe["estimatedCost"],
+): number | undefined {
+  if (typeof cost === "number") return cost;
+  if (typeof cost === "string") {
+    // Extract numeric value from strings like "$12.50" or "12.50 USD"
+    const numericMatch = cost.match(/[\d.]+/);
+    if (numericMatch) {
+      const parsed = parseFloat(numericMatch[0]);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  if (typeof cost === "object" && cost !== null && "value" in cost) {
+    const value = cost.value;
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      const parsed = parseFloat(value);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  return undefined;
+}
+
+export function flexibleSchemaOrgToRecipe(schema: FlexibleSchemaOrgRecipe): {
+  recipe: Partial<typeof recipes.$inferInsert>;
+  missingFields: string[];
+  ingredients: string[];
+} {
+  const recipe: Partial<typeof recipes.$inferInsert> = {
+    name: schema.name,
+  };
+
+  // Extract description
+  if (schema.description) {
+    recipe.description = schema.description;
+  }
+
+  // Extract image URL
+  const imageUrl = extractImageUrl(schema.image);
+  if (imageUrl) {
+    recipe.image = imageUrl;
+  }
+
+  // Extract time fields
+  if (schema.prepTime) {
+    recipe.preparationTime = iso8601ToMinutes(String(schema.prepTime));
+  }
+
+  if (schema.cookTime) {
+    recipe.cookingTime = iso8601ToMinutes(String(schema.cookTime));
+  }
+
+  if (schema.totalTime) {
+    recipe.totalTime = iso8601ToMinutes(String(schema.totalTime));
+  }
+
+  // Extract yield/servings
+  const yield_ = extractRecipeYield(schema.recipeYield);
+  if (yield_) {
+    recipe.servings = yield_;
+  }
+
+  // Extract categories and cuisine
+  const category = extractString(schema.recipeCategory);
+  if (category) {
+    recipe.recipeCategory = category;
+  }
+
+  const cuisine = extractString(schema.recipeCuisine);
+  if (cuisine) {
+    recipe.recipeCuisine = cuisine;
+  }
+
+  // Extract keywords
+  const keywords = extractStringArray(schema.keywords);
+  if (keywords) {
+    recipe.keywords = keywords;
+  }
+
+  // Extract dietary information
+  const dietaryInfo = extractStringArray(schema.suitableForDiet);
+  if (dietaryInfo) {
+    recipe.suitableForDiet = dietaryInfo;
+  }
+
+  // Extract instructions
+  const instructions = extractInstructions(schema.recipeInstructions);
+  if (instructions) {
+    recipe.instructions = instructions;
+  }
+
+  // Extract nutrition information
+  if (schema.nutrition) {
+    const calories = extractNutritionValue(schema.nutrition.calories);
+    if (calories) recipe.calories = Math.round(calories);
+
+    const fat = extractNutritionValue(schema.nutrition.fatContent);
+    if (fat) recipe.fat = fat;
+
+    const protein = extractNutritionValue(schema.nutrition.proteinContent);
+    if (protein) recipe.protein = protein;
+
+    const carbs = extractNutritionValue(schema.nutrition.carbohydrateContent);
+    if (carbs) recipe.carbohydrates = carbs;
+
+    const fiber = extractNutritionValue(schema.nutrition.fiberContent);
+    if (fiber) recipe.fiber = fiber;
+
+    const sugar = extractNutritionValue(schema.nutrition.sugarContent);
+    if (sugar) recipe.sugar = sugar;
+
+    const sodium = extractNutritionValue(schema.nutrition.sodiumContent);
+    if (sodium) recipe.sodium = sodium;
+  }
+
+  // Extract rating information
+  if (schema.aggregateRating) {
+    if (typeof schema.aggregateRating.ratingValue === "number") {
+      recipe.aggregateRating = schema.aggregateRating.ratingValue;
+    }
+    if (typeof schema.aggregateRating.ratingCount === "number") {
+      recipe.ratingCount = schema.aggregateRating.ratingCount;
+    }
+  }
+
+  // Extract equipment/tools
+  const tools = extractStringArray(schema.tool);
+  if (tools) {
+    recipe.recipeEquipment = tools;
+  }
+
+  // Extract estimated cost
+  const cost = extractEstimatedCost(schema.estimatedCost);
+  if (cost) {
+    recipe.estimatedCost = cost;
+  }
+
+  // Extract ingredients list
+  const ingredients = extractStringArray(schema.recipeIngredient) ?? [];
+
+  return {
+    recipe,
+    missingFields: findMissingFields(recipe),
+    ingredients,
+  };
+}
+
 export function schemaOrgToRecipe(schema: SchemaOrgRecipe): {
   recipe: Partial<typeof recipes.$inferInsert>;
   missingFields: string[];

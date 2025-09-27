@@ -50,5 +50,5 @@ export interface RecipeExtractor {
 export const IMPORT_TIMEOUT_MS = 45000;
 export const USER_AGENT =
   "CuisinonsBot/1.0 (+https://cuisinons.imalexblack.dev)";
-export const MAX_CONTENT_LENGTH = 100000; // 100 KB
+export const MAX_CONTENT_LENGTH = 1000000; // 100 KB
 export const CONFIDENCE_THRESHOLD = 0.6;

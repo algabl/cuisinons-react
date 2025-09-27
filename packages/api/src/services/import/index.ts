@@ -37,17 +37,17 @@ export async function importRecipeFromUrl(
     // Fetch webpage content
 
     const html = await fetchWebpageContent(url);
-
+    // console.log(html);
     // Try extraction methods in order of preference
     const result = await tryExtractionMethods(html, url);
 
     if (result.status === "success" && result.recipe) {
       const parsed = recipeApiSchema.parse(result.recipe);
       // Save the recipe to database
-      const savedRecipe = await createRecipe(parsed, ctx);
+      // const savedRecipe = await createRecipe(parsed, ctx);
       return {
         ...result,
-        recipeId: savedRecipe.data,
+        recipe: parsed,
       };
     }
   } catch (error) {
@@ -89,12 +89,12 @@ export async function importRecipeFromText(
     extractors,
   );
   const parsed = recipeApiSchema.parse(recipe);
-  const savedRecipe = await createRecipe(parsed, ctx);
+  // const savedRecipe = await createRecipe(parsed, ctx);
 
   return {
     status: "success",
     sourceUrl,
-    recipeId: savedRecipe.data,
+    recipe: parsed,
   };
 }
 
@@ -122,12 +122,16 @@ async function tryExtractionMethods(
     },
   };
 
+  // console.log(input);
+
   for (const extractor of extractors) {
+    console.log("extractor name", extractor.name);
     if (!extractor.canHandle(input)) {
       warnings.push(`${extractor.name} extractor cannot handle this input`);
       continue;
     }
     const result = await extractor.extract(input);
+    // console.log(result);
     if (
       result.status === "success" &&
       result.recipe &&
@@ -187,12 +191,13 @@ async function fetchWebpageContent(url: string): Promise<string> {
     }
 
     const contentLength = response.headers.get("content-length");
+    // console.log("Content length: ", contentLength);
     if (contentLength && parseInt(contentLength) > MAX_CONTENT_LENGTH) {
       throw new Error("Content too large to process");
     }
 
     const html = await response.text();
-
+    // console.log("HTML Length", html.length);
     if (html.length > MAX_CONTENT_LENGTH) {
       throw new Error("Content too large to process");
     }
